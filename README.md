@@ -1,1 +1,1 @@
-# Capstone_SatCast_Trilemma
+# DSCI-591_SatCast_Trilemma
