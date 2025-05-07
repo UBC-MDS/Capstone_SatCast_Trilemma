@@ -1,0 +1,36 @@
+---
+title: Data Overview
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.16.4
+  kernelspec:
+    display_name: Python 3 (ipykernel)
+    language: python
+    name: python3
+---
+
+```{python}
+from IPython.display import Markdown
+import pandas as pd
+des = pd.read_csv("description.csv")
+```
+
+
+We use Bitcoin Mempool data, which records hourly time series information about unconfirmed transactions waiting to be confirmed in the blockchain. The categories of key features include projected data, fee rates, mempool state, and difficulty adjustment. This rich dataset captures the real-time dynamics of network demand and transaction prioritization. It provides the necessary historical context for building accurate fee rate forecasting models. 
+![Real-time data of Bitcoin Mempool.](../img/mempool.png){#fig-mempool}
+
+
+## Data Description
+
+Our dataset contains 11,902 hourly entries and 67 features across several categories relevant to fee prediction, including recommended fee rates, mempool statistics, detailed fee histograms, mining difficulty adjustments, and price data in various fiat currencies. The projected data contains projected mempool blocks, transaction sizes, and their associated fee ranges. The fee rate features provide various types of recommended fees for different confirmation targets, including fastest, half-hour, hour, minute, and economy rates, along with 37 binned fee categories based on transaction counts. The mempool state captures aggregate statistics such as the total transaction count, virtual size (vsize), and total fees observed at each time step. Lastly, the difficulty adjustment data includes information about the current difficulty epoch, such as its progress percentage and the estimated time to the next retarget event. Below is the table including the key categories of features. 
+
+```{python}
+#| label: tbl-description
+#| tbl-cap: Data descriptions by categories.
+
+Markdown(des.to_markdown(index = False))
+```
