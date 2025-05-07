@@ -1,0 +1,30 @@
+---
+title: "Proposal Report: Forecasting Bitcoin Transaction Fees"
+author: "Jenny (Yuci) Zhang, Tengwei Wang, Ximin Xu, Yajing Liu"
+format:
+    pdf
+        toc: true
+        toc-depth: 2
+bibliography: references.bib
+execute:
+  echo: false
+  warning: false
+---
+
+## Introduction
+
+{{< include _introduction.qmd >}}
+
+## Data Overview
+
+{{< include _data.qmd >}}
+
+## Data Science Techniques
+
+{{< include _methodology.qmd >}}
+
+## Workflow & Timeline
+
+{{< include _timeline.qmd >}}
+
+## References
