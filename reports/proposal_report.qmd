@@ -1,8 +1,10 @@
 ---
 title: "Proposal Report: Forecasting Bitcoin Transaction Fees"
+subtitle: "Partner: Trilemma Foundation"
 author: "Jenny (Yuci) Zhang, Tengwei Wang, Ximin Xu, Yajing Liu"
+date: "May 9, 2025"
 format:
-    pdf
+    pdf:
         toc: true
         toc-depth: 2
 bibliography: references.bib
