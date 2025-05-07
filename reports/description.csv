@@ -1,5 +1,5 @@
 Category,Description,Columns,Range
-,Projected Data,"Projected mempool blocks, transaction sizes and their fee ranges",5,Varies by feature and type
-,Fee Rates,Different types of recommended fee rates and confirmation targets. Fees are also binned by counts.,"5 fee rates including fastest, half hour, hour, minute and economy and 37 binned","Min: 1 sat / vbyte, Max: 41 sats / vbyte, Median: 2-3 sats  / vbyte"
-,Mempool State,"Aggregate mempool statistics (e.g., total vsize, count)","3 - count, vsize, total_fee","Count: 24 - 57, 169, vsize:  1.2e4-5.6e7 vbytes, Fee: 1.2e4-2.3e8 sats"
-,Difficulty Adjustment,"Data related to the current difficulty epoch (progress%, estimated retarget)",10,Varies by feature and type
+,Projected Data,"Projected mempool blocks, transaction sizes and their fee ranges.",5,"Varies by feature and type."
+,Fee Rates,Different types of recommended fee rates and confirmation targets. Fees are also binned by counts.,"5 fee rates and 37 binned","Min: 1 sat / vbyte, Max: 41 sats / vbyte, Median: 2-3 sats  / vbyte"
+,Mempool State,"Aggregate mempool statistics (e.g., total vsize, count).","3 (count, vsize and total_fee)","Count: 24 - 169, vsize:  1.2e4 - 5.6e7 vbytes, Fee: 1.2e4 - 2.3e8 sats"
+,Difficulty Adjustment,"Data related to the current difficulty epoch (progress%, estimated retarget)",10,"Varies by feature and type."

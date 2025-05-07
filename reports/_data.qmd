@@ -19,9 +19,11 @@ import pandas as pd
 des = pd.read_csv("description.csv")
 ```
 
-
 We use Bitcoin Mempool data, which records hourly time series information about unconfirmed transactions waiting to be confirmed in the blockchain. The categories of key features include projected data, fee rates, mempool state, and difficulty adjustment. This rich dataset captures the real-time dynamics of network demand and transaction prioritization. It provides the necessary historical context for building accurate fee rate forecasting models. 
-![Real-time data of Bitcoin Mempool.](../img/mempool.png){#fig-mempool}
+
+::: {.quarto-figure-center}
+![Real-time data of Bitcoin Mempool.](../img/mempool.png)
+:::
 
 
 ## Data Description
@@ -31,6 +33,12 @@ Our dataset contains 11,902 hourly entries and 67 features across several catego
 ```{python}
 #| label: tbl-description
 #| tbl-cap: Data descriptions by categories.
+#| tbl-colwidths:
+#|   - 15
+#|   - 35
+#|   - 15
+#|   - 35
 
 Markdown(des.to_markdown(index = False))
 ```
+
