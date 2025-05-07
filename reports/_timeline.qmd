@@ -1,0 +1,18 @@
+
+### Workflow
+
+The workflow diagram below outlines the end-to-end structure of our project. We begin by collecting raw time series data from the Bitcoin mempool, which is then processed and explored during the EDA phase. After feature engineering, we build baseline models to establish initial benchmarks. We then transition to advanced models for improved performance and uncertainty estimation. Once the best-performing models are selected, we evaluate them based on success criteria including prediction accuracy and interval reliability. We follow this with timeframe optimization to determine which forecast intervals are most dependable. Finally, we deploy the selected model to AWS for real-time fee prediction.
+
+![](../img/figs/workflow-diagram.png)
+*Figure 3: Workflow of the modeling pipeline from data preprocessing to deployment.*
+
+### Timeline
+
+| Week   | Milestone |
+|--------|-----------|
+| Week 1 | Write proposal report, conduct initial EDA, and create a full data specification notebook to document and visualize all available features and the target. |
+| Week 2 | Train and evaluate baseline models, including ARIMA, Holt-Winters, and XGBoost; use Linear Regression for exploratory analysis of external features. |
+| Week 3 | Build advanced models such as Prophet, DeepAR, and Temporal Fusion Transformer. |
+| Week 4 | Continue building advanced models if needed; test and compare their performance against baselines using standard metrics. |
+| Week 5 | Perform timeframe optimization by analyzing model performance across the 24-hour forecast horizon. |
+| Week 6 | Integrate modeling pipeline, finalize deliverables, and prepare for final presentation and AWS deployment. |
