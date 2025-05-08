@@ -7,11 +7,16 @@ format:
     pdf:
         toc: true
         toc-depth: 2
+number-sections: true
 bibliography: references.bib
 execute:
   echo: false
   warning: false
 ---
+
+# Executive Summary
+
+{{< include _summary.qmd >}}
 
 # Introduction
 
