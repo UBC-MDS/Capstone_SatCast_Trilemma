@@ -3,6 +3,7 @@ title: "Proposal Report: Forecasting Bitcoin Transaction Fees"
 subtitle: "Partner: Trilemma Foundation"
 author: "Jenny (Yuci) Zhang, Tengwei Wang, Ximin Xu, Yajing Liu"
 date: "May 9, 2025"
+jupyter: python3
 format:
     pdf:
         toc: true
@@ -34,5 +35,9 @@ execute:
 # Workflow & Timeline
 
 {{< include _timeline.qmd >}}
+
+# Appendix
+
+{{< include _appendix.qmd >}}
 
 # References
