@@ -28,6 +28,7 @@ execute:
 
 # Data Science Techniques
 
+{{< include _preprocess.qmd >}}
 {{< include _methodology.qmd >}}
 
 # Workflow & Timeline
