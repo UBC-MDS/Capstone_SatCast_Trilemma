@@ -7,26 +7,31 @@ format:
     pdf:
         toc: true
         toc-depth: 2
+number-sections: true
 bibliography: references.bib
 execute:
   echo: false
   warning: false
 ---
 
-## Introduction
+# Executive Summary
+
+{{< include _summary.qmd >}}
+
+# Introduction
 
 {{< include _introduction.qmd >}}
 
-## Data Overview
+# Data Overview
 
 {{< include _data.qmd >}}
 
-## Data Science Techniques
+# Data Science Techniques
 
 {{< include _methodology.qmd >}}
 
-## Workflow & Timeline
+# Workflow & Timeline
 
 {{< include _timeline.qmd >}}
 
-## References
+# References
