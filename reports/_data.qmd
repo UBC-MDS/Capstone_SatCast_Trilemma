@@ -26,7 +26,7 @@ Our dataset (@tbl-description) consists of `{python} f"{num_rows:,}"` hourly ent
 \textbf{Category} & \textbf{Description} & \textbf{Columns} & \textbf{Range} \\
 \hline
 Projected Data & Projected mempool blocks, transaction sizes and their fee ranges & 5 & Varies by feature / type \\
-Fee Rates & Different types of recommended fee rates and confirmation targets. Fees are also binned by counts. & \begin{minipage}[t]{2cm} \vtop{\vbox{5 fee rates \\ e.g. fastest \\ 37 binned}} \end{minipage} & \begin{minipage}[t]{5cm}  \vtop{\vbox{Min: 1 sat/vbyte \\ Max: 41 sats/vbyte \\ Median: 2--3 sats/vbyte}} \end{minipage} \\
+Fee Rates & Different types of recommended fee rates and confirmation targets. Fees are also binned by counts. & \begin{minipage}[t]{2cm} \vtop{\vbox{5 fee rates - \\ e.g. fastest \\ 37 binned}} \end{minipage} & \begin{minipage}[t]{5cm}  \vtop{\vbox{Min: 1 sat/vbyte \\ Max: 41 sats/vbyte \\ Median: 2--3 sats/vbyte}} \end{minipage} \\
 Mempool State & Aggregate mempool statistics (count, vsize and total\_fee) & 3 & \begin{minipage}[t]{5cm} \vtop{\vbox{count: 24--169 \\ vsize: 1.2e4--5.6e7 vbytes \\ fee: 1.2e4--2.3e8 sats}} \end{minipage} \\
 Difficulty Adjustment & Data related to the current difficulty epoch (progress\%, estimated retarget) & 10 & Varies by feature / type \\
 BTC Prices & Current BTC price data in multiple currencies & 7 & \begin{minipage}[t]{5cm} \vtop{\vbox{Median: 83,845 USD \\ Max: 92,736 USD}} \end{minipage} \\
