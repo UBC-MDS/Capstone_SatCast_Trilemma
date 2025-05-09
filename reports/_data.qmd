@@ -6,6 +6,17 @@ We use Bitcoin Mempool data [@mempool], which records hourly time series informa
 ![Real-time data of Bitcoin Mempool.](../img/mempool.png){#fig-mempool width=100%}
 :::
 
+```{python}
+import pandas as pd
+import numpy as np
+import pickle
+from IPython.display import Markdown, display
+from tabulate import tabulate
+
+diabetes = pd.read_csv("../data/raw/diabetes.csv")
+diabetes_validated = pd.read_csv("../data/processed/diabetes_validated.csv")
+dropped_obs = diabetes.shape[0] - diabetes_validated.shape[0]
+```
 
 ## Data Description
 
