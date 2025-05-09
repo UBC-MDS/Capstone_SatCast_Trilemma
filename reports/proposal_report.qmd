@@ -19,10 +19,7 @@ execute:
 ---
 ::: {.pagebreak}
 :::
-<<<<<<< HEAD
-=======
 
->>>>>>> b22cfbd2f05b6648cbccc8c86ddcf235faf4b965
 # Executive Summary
 
 {{< include _summary.qmd >}}
