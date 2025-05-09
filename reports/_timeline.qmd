@@ -1,6 +1,9 @@
+
+The following section presents the workflow and provides a detailed project timeline for the duration of the capstone.
+
 ## Workflow
 
-The workflow diagram (@fig-workflow) outlines the end-to-end structure of our project detailed in previous sections, ensuring adherence to best data science project protocols. We begin with raw Bitcoin mempool time series data, followed by exploratory data analysis (EDA) and feature engineering. Next, we establish baseline models to set benchmarks and then progress to advanced models for improved performance and uncertainty estimation. The top-performing models are evaluated based on prediction accuracy and interval reliability. We optimize the forecast intervals, selecting the most reliable ones, before deploying the final model to AWS for real-time, ongoing fee prediction.
+The workflow diagram (@fig-workflow) outlines the project's end-to-end structure, ensuring adherence to best data science practices. We begin with raw Bitcoin mempool data, followed by EDA, feature engineering, and model development. Next, we establish baseline models to set benchmarks and then progress to advanced models for improved accuracy and reliability. Ultimately, the best-performing model will be deployed to AWS for real-time fee prediction.
 
 ::: {.quarto-figure-center}
 ![Workflow of the modeling pipeline from data preprocessing to deployment.](../img/workflow_diagram.png){#fig-workflow width=100%}
