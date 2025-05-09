@@ -1,6 +1,8 @@
-## Data Overview
+This rich dataset sources data from [*mempool.space*](https://mempool.space/) and provides the necessary historical context for building accurate fee rate forecasting models. 
 
-We use Bitcoin Mempool data [@mempool], which records hourly time series information about unconfirmed transactions waiting to be confirmed in the blockchain (@fig-mempool). The mempool acts as a dynamic queue, with transaction size represented by block space and fee ranges indicated by color, where red signals higher fees and green signals lower fees. This rich dataset provides the necessary historical context for building accurate fee rate forecasting models. 
+## Mempool Overview
+
+We use Bitcoin Mempool data [@mempool], which records hourly time series information about unconfirmed transactions waiting to be confirmed in the blockchain (@fig-mempool). The mempool acts as a dynamic queue, with transaction size represented by block space and fee ranges indicated by color, where red signals higher fees and green signals lower fees. 
 
 ::: {.quarto-figure-center}
 ![Real-time data of Bitcoin Mempool.](../img/mempool.png){#fig-mempool width=100%}
