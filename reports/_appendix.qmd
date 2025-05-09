@@ -1,20 +1,37 @@
 ## Terminology
 
-| Term    | Definition |
-|---------|------------|
-| Bitcoin | Unit of currency is called "bitcoin" with a small b, and system is called "Bitcoin," with a capital B. When referred as currency, it is a virtual currency (cryptocurrency) designed to act as money and a form of payment outside the control of any one person, group, or entity (i.e. decentralized) |
-| Bitcoin Address | “1DSrfJdB2AnWaFNgSbv3MZC2m74996JafV” An encoded base58check version of a public key 160-bit hash consists of a string of letters and numbers. Think of it analogous to an email address when sending someone an email |
-| Blockchain | A decentralized digital ledger that records transactions across a network of computers, making it transparent, immutable, and resistant to tampering. Technology used by Bitcoin |
-| Satoshi | The smallest denomination of bitcoin that can be recorded on the blockchain. 1 Bitcoin is equivalent of 100 million satoshis, named after creator of Bitcoin, Satoshi Nakamoto |
-| Node | Refers to blockchain stakeholders and their devices that keep a copy of the distributed ledger and serve as communication points within the network. Major purpose is to verify the validity of the transactions within a particular blockchain |
-| Fees | The sender of a transaction often includes a fee to the network for processing the requested transaction. Most transactions require a minimum fee of 0.5 mBTC (millibitcoin) = 0.001 BTC. Typical unit measurement in satoshi / bytes |
-| Block | A grouping of transactions, marked with a timestamp, and a commitment to the previous block. The block header is hashed to produce a proof of work, thereby validating the transactions. Valid blocks are added to the main blockchain by network consensus |
-| Mempool | The bitcoin Mempool (memory pool) is a collection of all transaction data in a block that have been verified by Bitcoin nodes, but are not yet confirmed |
-| Mining / Miner | A process / network node that finds valid proof of work for new blocks, by repeated hashing |
-| Hash | A function that converts an input of letters and numbers into an encrypted output of a fixed length. The hash is irreversible, meaning it cannot be decrypted back to the original input. Hashes are used in Bitcoin to create blocks and verify transactions |
-| Proof-of-Work | A piece of data that requires significant computation to find; In bitcoin, miners must find a numeric solution to the SHA256 algorithm that meets a network-wide target, the difficulty target |
+<!--\begin{table}-->
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{p{3cm}p{12cm}}
+\hline
+\textbf{Term} & \textbf{Definition} \\
+\hline
+Bitcoin & Unit of currency is called "bitcoin" with a small b, and system is called "Bitcoin," with a capital B. "bitcoin" is a virtual currency (cryptocurrency) designed to act as money and a form of payment outside the control of any one person, group, or entity (i.e. decentralized). \\
+\hline
+Bitcoin Address & “1DSrfJdB2AnWaFNgSbv3MZC2m74996JafV” An encoded base58-check version of a public key 160-bit hash consists of a string of letters and numbers. Think of it analogous to an email address when sending someone an email. \\
+\hline
+Blockchain & A decentralized digital ledger that records transactions across a network of computers, making it transparent, immutable, and resistant to tampering. Technology used by Bitcoin. \\
+\hline
+Fees & The sender of a transaction often includes a fee to the network for processing the requested transaction. Most transactions require a minimum fee of 0.5 mBTC (millibitcoin) = 0.0005 BTC. Typical unit measurement in satoshi/bytes. \\
+\hline
+Hash & A function that converts an input of letters and numbers into an encrypted output of a fixed length. The hash is irreversible, meaning it cannot be decrypted back to the original input. Hashes are used in Bitcoin to create blocks and verify transactions. \\
+\hline
+Mempool & The bitcoin Mempool (memory pool) is a collection of all transaction data in a block that have been verified by Bitcoin nodes, but are not yet confirmed. \\
+\hline
+Mining / Miner & A process/network node that finds valid proof of work for new blocks, by repeated hashing. \\
+\hline
+Node & Refers to blockchain stakeholders and their devices that keep a copy of the distributed ledger and serve as communication points within the network. Major purpose is to verify the validity of the transactions within a particular blockchain. \\
+\hline
+Proof-of-Work & A piece of data that requires significant computation to find; In bitcoin, miners must find a numeric solution to the SHA256 algorithm that meets a network-wide target, the difficulty target. \\
+\hline
+Satoshi & The smallest denomination of bitcoin that can be recorded on the blockchain. 1 Bitcoin is equivalent to 100 million satoshis, named after the creator of Bitcoin, Satoshi Nakamoto. \\
+\hline
+\end{longtable}
+\caption{Key Terms and Definitions in Bitcoin and Blockchain (Alphabetically Ordered)}
+\label{tbl-terms}
+<!--\end{table}-->
 
-## Bitcoin Transaction Process [@bitcoin_process]
+<!--## Bitcoin Transaction Process [@bitcoin_process]
 ::: {.quarto-figure-center}
 ![Visualization of the Bitcoin transaction process from initiation to confirmation.](../img/bitcoin_process.png){#fig-bitcoin_process width=100%}
-:::
+:::-->
