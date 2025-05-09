@@ -8,19 +8,14 @@ We use Bitcoin Mempool data [@mempool], which records hourly time series informa
 
 ```{python}
 import pandas as pd
-import numpy as np
-import pickle
-from IPython.display import Markdown, display
-from tabulate import tabulate
 
-diabetes = pd.read_csv("../data/raw/diabetes.csv")
-diabetes_validated = pd.read_csv("../data/processed/diabetes_validated.csv")
-dropped_obs = diabetes.shape[0] - diabetes_validated.shape[0]
+clean_df = pd.read_csv("../data/processed/clean_df.csv")
+num_rows, num_cols = clean_df.shape
 ```
 
 ## Data Description
 
-Our dataset (@tbl-description) consists of 11,902 hourly entries and 67 features across several categories relevant to fee prediction, including recommended fee rates, mempool statistics, fee histograms, mining difficulty adjustments, and price data in various fiat currencies. The projected data covers mempool blocks, transaction sizes, and associated fee ranges. Fee rate features include recommended fees for different confirmation targets (fastest, half-hour, hour, minimum, economy) and 37 binned fee categories based on transaction counts. Mempool statistics capture aggregate data like transaction count, virtual size (vsize), and total fees per time step. Difficulty adjustments include the current difficulty epoch, progress percentage, and estimated time to the next retarget event. 
+Our dataset (@tbl-description) consists of `{python} f"{num_rows:,}"` hourly entries and `{python} f"{num_cols:,}"` features across several categories relevant to fee prediction, including recommended fee rates, mempool statistics, fee histograms, mining difficulty adjustments, and price data in various fiat currencies. The projected data covers mempool blocks, transaction sizes, and associated fee ranges. Fee rate features include recommended fees for different confirmation targets (fastest, half-hour, hour, minimum, economy) and 37 binned fee categories based on transaction counts. Mempool statistics capture aggregate data like transaction count, virtual size (vsize), and total fees per time step. Difficulty adjustments include the current difficulty epoch, progress percentage, and estimated time to the next retarget event. 
 
 \renewcommand{\arraystretch}{1.5}
 <!--\begin{table}-->

@@ -2,11 +2,11 @@
 
 <!--\begin{table}-->
 \renewcommand{\arraystretch}{1.5}
-\begin{longtable}{p{2.5cm}p{12.5cm}}
+\begin{longtable}{p{3cm}p{12cm}}
 \hline
 \textbf{Term} & \textbf{Definition} \\
 \hline
-Bitcoin & Unit of currency is called "bitcoin" with a small b, and system is called "Bitcoin," with a capital B. When referred as currency, it is a virtual currency (cryptocurrency) designed to act as money and a form of payment outside the control of any one person, group, or entity (i.e. decentralized). \\
+Bitcoin & Unit of currency is called "bitcoin" with a small b, and system is called "Bitcoin," with a capital B. "bitcoin" is a virtual currency (cryptocurrency) designed to act as money and a form of payment outside the control of any one person, group, or entity (i.e. decentralized). \\
 \hline
 Bitcoin Address & “1DSrfJdB2AnWaFNgSbv3MZC2m74996JafV” An encoded base58check version of a public key 160-bit hash consists of a string of letters and numbers. Think of it analogous to an email address when sending someone an email. \\
 \hline
