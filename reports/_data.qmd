@@ -1,29 +1,36 @@
 ## Data Overview
 
-We use Bitcoin Mempool data [@mempool], which records hourly time series information about unconfirmed transactions waiting to be confirmed in the blockchain. The categories of key features include projected data, fee rates, mempool state, and difficulty adjustment. This rich dataset captures the real-time dynamics of network demand and transaction prioritization. It provides the necessary historical context for building accurate fee rate forecasting models. 
+We use Bitcoin Mempool data [@mempool], which records hourly time series information about unconfirmed transactions waiting to be confirmed in the blockchain (@fig-mempool). The mempool acts as a dynamic queue, with transaction size represented by block space and fee ranges indicated by color, where red signals higher fees and green signals lower fees. This rich dataset provides the necessary historical context for building accurate fee rate forecasting models. 
 
 ::: {.quarto-figure-center}
-![Real-time data of Bitcoin Mempool.](../img/mempool.png)
+![Real-time data of Bitcoin Mempool.](../img/mempool.png){#fig-mempool width=100%}
 :::
 
+```{python}
+import pandas as pd
+
+clean_df = pd.read_csv("../data/processed/clean_df.csv")
+num_rows, num_cols = clean_df.shape
+```
 
 ## Data Description
 
-Our dataset contains 11,902 hourly entries and 67 features across several categories relevant to fee prediction, including recommended fee rates, mempool statistics, detailed fee histograms, mining difficulty adjustments, and price data in various fiat currencies. The projected data contains projected mempool blocks, transaction sizes, and their associated fee ranges. The fee rate features provide various types of recommended fees for different confirmation targets, including fastest, half-hour, hour, minute, and economy rates, along with 37 binned fee categories based on transaction counts. The mempool state captures aggregate statistics such as the total transaction count, virtual size (vsize), and total fees observed at each time step. Lastly, the difficulty adjustment data includes information about the current difficulty epoch, such as its progress percentage and the estimated time to the next retarget event. Below is the table including the key categories of features. 
+Our dataset (@tbl-description) consists of `{python} f"{num_rows:,}"` hourly entries and `{python} f"{num_cols:,}"` features across several categories relevant to fee prediction, including recommended fee rates, mempool statistics, fee histograms, mining difficulty adjustments, and price data in various fiat currencies. The projected data covers mempool blocks, transaction sizes, and associated fee ranges. Fee rate features include recommended fees for different confirmation targets (fastest, half-hour, hour, minimum, economy) and 37 binned fee categories based on transaction counts. Mempool statistics capture aggregate data like transaction count, virtual size (vsize), and total fees per time step. Difficulty adjustments include the current difficulty epoch, progress percentage, and estimated time to the next retarget event. 
 
 \renewcommand{\arraystretch}{1.5}
-\begin{table}
-\begin{tabular}{p{3cm}p{5cm}p{3cm}p{5cm}}
+<!--\begin{table}-->
+\begin{longtable}{m{2cm}m{5cm}m{2cm}m{5cm}}
 \hline
 \textbf{Category} & \textbf{Description} & \textbf{Columns} & \textbf{Range} \\
 \hline
-Projected Data & Projected mempool blocks, transaction sizes and their fee ranges & 5 & Varies by feature and type \\
-Fee Rates & Different types of recommended fee rates and confirmation targets. Fees are also binned by counts. & 5 fee rates and 37 binned & \begin{minipage}[t]{5cm} Min: 1 sat/vbyte \\ Max: 41 sats/vbyte \\ Median: 2--3 sats/vbyte \end{minipage} \\
-Mempool State & Aggregate mempool statistics (e.g., total vsize, count) & 3 (count, vsize and total\_fee) & \begin{minipage}[t]{5cm} Count: 24--169 \\ vsize: 1.2e4--5.6e7 vbytes \\ Fee: 1.2e4--2.3e8 sats \end{minipage} \\
-Difficulty Adjustment & Data related to the current difficulty epoch (progress\%, estimated retarget) & 10 & Varies by feature and type \\
+Projected Data & Projected mempool blocks, transaction sizes and their fee ranges & 5 & Varies by feature / type \\
+Fee Rates & Different types of recommended fee rates and confirmation targets. Fees are also binned by counts. & \begin{minipage}[t]{2cm} \vtop{\vbox{5 fee rates \\ 37 binned}} \end{minipage} & \begin{minipage}[t]{5cm}  \vtop{\vbox{Min: 1 sat/vbyte \\ Max: 41 sats/vbyte \\ Median: 2--3 sats/vbyte}} \end{minipage} \\
+Mempool State & Aggregate mempool statistics (count, vsize and total\_fee) & 3 & \begin{minipage}[t]{5cm} \vtop{\vbox{Count: 24--169 \\ vsize: 1.2e4--5.6e7 vbytes \\ Fee: 1.2e4--2.3e8 sats}} \end{minipage} \\
+Difficulty Adjustment & Data related to the current difficulty epoch (progress\%, estimated retarget) & 10 & Varies by feature / type \\
+BTC Prices & Current BTC price data in multiple currencies & 7 & \begin{minipage}[t]{5cm} \vtop{\vbox{Median: 83,845 USD \\ Max: 92,736 USD}} \end{minipage} \\
 \hline
-\end{tabular}
+\end{longtable}
 \caption{Data descriptions by categories.}
 \label{tbl-description}
-\end{table}
+<!--\end{table}-->
 

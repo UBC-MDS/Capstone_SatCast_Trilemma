@@ -8,6 +8,8 @@ format:
     pdf:
         toc: true
         toc-depth: 2
+        fig-pos: "H"
+        tbl-pos: "H"
 number-sections: true
 bibliography: references.bib
 execute:
@@ -36,6 +38,7 @@ execute:
 
 {{< include _timeline.qmd >}}
 
+\newpage
 # Appendix
 
 {{< include _appendix.qmd >}}
