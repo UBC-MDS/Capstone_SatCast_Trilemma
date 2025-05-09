@@ -1,3 +1,4 @@
+# conda env update -f environment.yml to update environment
 name: satcast
 channels:
   - defaults
@@ -11,3 +12,4 @@ dependencies:
   - jupyterlab=4.3.4
   - pyarrow=19.0.0
   - fastparquet=2024.11.0
+  - statsmodels=0.14.4
