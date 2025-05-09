@@ -8,11 +8,11 @@
 \hline
 Bitcoin & Unit of currency is called "bitcoin" with a small b, and system is called "Bitcoin," with a capital B. "bitcoin" is a virtual currency (cryptocurrency) designed to act as money and a form of payment outside the control of any one person, group, or entity (i.e. decentralized). \\
 \hline
-Bitcoin Address & “1DSrfJdB2AnWaFNgSbv3MZC2m74996JafV” An encoded base58check version of a public key 160-bit hash consists of a string of letters and numbers. Think of it analogous to an email address when sending someone an email. \\
+Bitcoin Address & “1DSrfJdB2AnWaFNgSbv3MZC2m74996JafV” An encoded base58-check version of a public key 160-bit hash consists of a string of letters and numbers. Think of it analogous to an email address when sending someone an email. \\
 \hline
 Blockchain & A decentralized digital ledger that records transactions across a network of computers, making it transparent, immutable, and resistant to tampering. Technology used by Bitcoin. \\
 \hline
-Fees & The sender of a transaction often includes a fee to the network for processing the requested transaction. Most transactions require a minimum fee of 0.5 mBTC (millibitcoin) = 0.001 BTC. Typical unit measurement in satoshi/bytes. \\
+Fees & The sender of a transaction often includes a fee to the network for processing the requested transaction. Most transactions require a minimum fee of 0.5 mBTC (millibitcoin) = 0.0005 BTC. Typical unit measurement in satoshi/bytes. \\
 \hline
 Hash & A function that converts an input of letters and numbers into an encrypted output of a fixed length. The hash is irreversible, meaning it cannot be decrypted back to the original input. Hashes are used in Bitcoin to create blocks and verify transactions. \\
 \hline
