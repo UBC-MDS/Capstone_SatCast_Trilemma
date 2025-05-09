@@ -31,7 +31,7 @@ Satoshi & The smallest denomination of bitcoin that can be recorded on the block
 \label{tbl-terms}
 <!--\end{table}-->
 
-## Bitcoin Transaction Process [@bitcoin_process]
+<!--## Bitcoin Transaction Process [@bitcoin_process]
 ::: {.quarto-figure-center}
 ![Visualization of the Bitcoin transaction process from initiation to confirmation.](../img/bitcoin_process.png){#fig-bitcoin_process width=100%}
-:::
+:::-->
