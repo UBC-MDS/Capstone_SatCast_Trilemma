@@ -17,9 +17,8 @@ execute:
   echo: false
   warning: false
 ---
-::: {.pagebreak}
-:::
 
+\newpage
 # Executive Summary
 
 {{< include _summary.qmd >}}
