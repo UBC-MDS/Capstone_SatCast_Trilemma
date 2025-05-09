@@ -1,18 +1,32 @@
 ## Workflow
 
-The workflow diagram below outlines the end-to-end structure of our project. We begin by collecting raw time series data from the Bitcoin mempool, which is then processed and explored during the EDA phase. After feature engineering, we build baseline models to establish initial benchmarks. We then transition to advanced models for improved performance and uncertainty estimation. Once the best-performing models are selected, we evaluate them based on success criteria including prediction accuracy and interval reliability. We follow this with timeframe optimization to determine which forecast intervals are most dependable. Finally, we deploy the selected model to AWS for real-time fee prediction.
+The workflow diagram (@fig-workflow) outlines the end-to-end structure of our project detailed in previous sections, ensuring adherence to best data science project protocols. We begin with raw Bitcoin mempool time series data, followed by exploratory data analysis (EDA) and feature engineering. Next, we establish baseline models to set benchmarks and then progress to advanced models for improved performance and uncertainty estimation. The top-performing models are evaluated based on prediction accuracy and interval reliability. We optimize the forecast intervals, selecting the most reliable ones, before deploying the final model to AWS for real-time, ongoing fee prediction.
 
 ::: {.quarto-figure-center}
-![Workflow of the modeling pipeline from data preprocessing to deployment.](../img/workflow_diagram.png)
+![Workflow of the modeling pipeline from data preprocessing to deployment.](../img/workflow_diagram.png){#fig-workflow width=100%}
 :::
 
 ## Timeline
 
-| Week   | Milestone |
-|--------|-----------|
-| Week 1 | Write proposal report, conduct initial EDA, and create a full data specification notebook to document and visualize all available features and the target. |
-| Week 2 | Train and evaluate baseline models, including ARIMA, Holt-Winters, and XGBoost; use Linear Regression for exploratory analysis of external features. |
-| Week 3 | Build advanced models such as Prophet, DeepAR, and Temporal Fusion Transformer. |
-| Week 4 | Continue building advanced models if needed; test and compare their performance against baselines using standard metrics. |
-| Week 5 | Perform timeframe optimization by analyzing model performance across the 24-hour forecast horizon. |
-| Week 6 | Integrate modeling pipeline, finalize deliverables, and prepare for final presentation and AWS deployment. |
+<!--\begin{table}-->
+\renewcommand{\arraystretch}{1.5} 
+\begin{longtable}{|p{3cm}|p{12cm}|}
+\hline
+\textbf{Week} & \textbf{Milestone} \\
+\hline
+Week 1 & Write proposal report, conduct initial EDA, and create a full data specification notebook to document and visualize all available features and the target. \\
+\hline
+Week 2 & Train and evaluate baseline models, including ARIMA, Holt-Winters, and XGBoost; Use Linear Regression for exploratory analysis of external features. \\
+\hline
+Week 3 & Build advanced models such as Prophet, DeepAR, and Temporal Fusion Transformer. \\
+\hline
+Week 4 & Continue building advanced models if needed; test and compare their performance against baselines using standard metrics. \\
+\hline
+Week 5 & Perform timeframe optimization by analyzing model performance across the 24-hour forecast horizon. \\
+\hline
+Week 6 & Integrate modeling pipeline for AWS deployment; finalize deliverables and prepare for final presentation. \\
+\hline
+\end{longtable}
+\caption{Weekly Project Timeline}
+\label{tbl-timeline}
+<!--\end{table}-->
