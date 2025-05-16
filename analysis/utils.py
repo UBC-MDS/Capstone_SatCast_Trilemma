@@ -5,6 +5,11 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from itertools import product
 import warnings
 
+def mean_absolute_percentage_error(y_true, y_pred):
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    mask = y_true != 0
+    return np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
+
 def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, step=288, param_grid=None, scaler=None):
     """
     Perform sliding window cross-validation for Holt-Winters Exponential Smoothing.
@@ -35,7 +40,7 @@ def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, 
     total_windows = (len(series) - window_size - horizon) // step + 1
 
     for trend, seasonal, damped in param_grid:
-        mae_scores, rmse_scores = [], []
+        mae_scores, mape_scores, rmse_scores = [], [], []
         valid = True
 
         for i in range(total_windows):
@@ -67,9 +72,11 @@ def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, 
                     forecast = fit.forecast(horizon)
 
                     mae = mean_absolute_error(test, forecast)
+                    mape = mean_absolute_percentage_error(test, forecast)
                     rmse = np.sqrt(mean_squared_error(test, forecast))
 
                     mae_scores.append(mae)
+                    mape_scores.append(mape)
                     rmse_scores.append(rmse)
             except Exception:
                 valid = False
@@ -81,8 +88,9 @@ def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, 
                 "seasonal": seasonal,
                 "damped": damped,
                 "avg_mae": np.mean(mae_scores),
+                "avg_mape": np.mean(mape_scores),
                 "avg_rmse": np.mean(rmse_scores)
             })
 
-    df_results = pd.DataFrame(results).sort_values("avg_rmse")
+    df_results = pd.DataFrame(results).sort_values("avg_mae")
     return df_results
