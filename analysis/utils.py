@@ -166,6 +166,7 @@ def hwes_train_test(
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", ConvergenceWarning)
+                warnings.simplefilter("ignore", RuntimeWarning)
                 fit = ExponentialSmoothing(
                     train,
                     trend=trend,
@@ -252,6 +253,7 @@ def hwes_train_test(
 
 #             with warnings.catch_warnings():
 #                 warnings.simplefilter("ignore", ConvergenceWarning)
+#                 warnings.simplefilter("ignore", RuntimeWarning)
 #                 model = ExponentialSmoothing(
 #                     train,
 #                     trend=trend,
