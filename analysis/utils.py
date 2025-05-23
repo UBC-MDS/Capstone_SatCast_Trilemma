@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from itertools import product
 import warnings
+from statsmodels.tools.sm_exceptions import ConvergenceWarning
 
-def mean_absolute_percentage_error(y_true, y_pred):
+def mape(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)
     mask = y_true != 0
     return np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
@@ -94,3 +95,88 @@ def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, 
 
     df_results = pd.DataFrame(results).sort_values("avg_mae")
     return df_results
+
+
+def hwes_train_test(
+    series,
+    seasonal_periods=288,
+    horizon=288,
+    window_size=2016,
+    method='expanding',
+    trend='mul',
+    seasonal='mult',
+    damped_trend=True
+):
+    """
+    Perform cross-validation for Holt-Winters Exponential Smoothing (HWES) using expanding or sliding window.
+
+    Parameters
+    ----------
+    series : pd.Series
+        Time series data indexed by timestamp (e.g., Bitcoin transaction fees).
+    seasonal_periods : int, optional
+        Number of periods in a full seasonal cycle (default is 288 for daily seasonality in 5-minute data).
+    horizon : int, optional
+        Forecast horizon in number of time steps (e.g., 288 = next 24 hours if 5-min interval).
+    window_size : int, optional
+        Size of the training window (used only if method='sliding').
+    method : {'expanding', 'sliding'}, optional
+        Cross-validation method:
+            - 'expanding': growing training window starting from window_size
+            - 'sliding' : fixed-size window moving forward by horizon each iteration
+    trend : {'add', 'mul', None}, optional
+        Trend component of HWES. 'add' = additive trend, 'mul' = multiplicative trend, None = no trend.
+    seasonal : {'add', 'mul', None}, optional
+        Seasonal component of HWES. Same options as trend.
+    damped_trend : bool, optional
+        Whether to dampen the trend component.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the following columns for each training/evaluation split:
+        - 'train_end' : Timestamp of the last point in the training set
+        - 'mae'       : Mean Absolute Error
+        - 'rmse'      : Root Mean Squared Error
+        - 'mape'      : Mean Absolute Percentage Error (0-1 scale)
+    """
+    errors = []
+    series = series.sort_index()
+
+    if method == 'expanding':
+        split_points = range(window_size, len(series) - horizon, window_size)
+    elif method == 'sliding':
+        split_points = range(0, len(series) - window_size - horizon, horizon)
+    else:
+        raise ValueError("Method must be 'expanding' or 'sliding'")
+
+    for split in split_points:
+        if method == 'expanding':
+            train = series.iloc[:split]
+            test = series.iloc[split:split + horizon]
+        else:
+            train = series.iloc[split:split + window_size]
+            test = series.iloc[split + window_size:split + window_size + horizon]
+
+        try:
+            if len(test) < horizon:
+                continue
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", ConvergenceWarning)
+                model = ExponentialSmoothing(
+                    train,
+                    trend=trend,
+                    seasonal=seasonal,
+                    damped_trend=damped_trend,
+                    seasonal_periods=seasonal_periods
+                ).fit()
+            forecast = model.forecast(horizon)
+            mae = mean_absolute_error(test, forecast)
+            rmse = np.sqrt(mean_squared_error(test, forecast))
+            mape = mean_absolute_percentage_error(test, forecast)
+            errors.append((train.index[-1], mae, rmse, mape))
+        except Exception:
+            errors.append((train.index[-1], None, None, None))
+
+    return pd.DataFrame(errors, columns=['train_end', 'mae', 'rmse', 'mape'])
