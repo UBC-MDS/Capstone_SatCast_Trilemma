@@ -61,8 +61,8 @@ def build_random_search(y_train, param_dist,interval,if_sliding=1):
 
     # expanding window cv
     train_size = len(y_train)
-    initial_window = int(0.8 * train_size)  # Initial training window covers 80% of data
-    step_length = int(0.2 * train_size)    # Step size to create ~5 folds
+    initial_window = int(0.8 * train_size)  
+    step_length = int(0.2 * train_size)    
     excv = ExpandingWindowSplitter(
         initial_window=initial_window,
         step_length=step_length,
