@@ -1,9 +1,11 @@
 # conda env update -f environment.yml to update environment
+# conda env create -f environment.yml
 name: satcast
 channels:
+  - conda-forge
   - defaults
 dependencies:
-  - python=3.12
+  - python=3.11
   - pandas=2.2.3
   - numpy=2.2.4
   - scikit-learn=1.6.1
@@ -19,5 +21,16 @@ dependencies:
   - xgboost=3.0.1
   - pip
   - pip:
-      - gluonts[torch]==0.16.1
-      - prophet==1.1.6
+    - --extra-index-url https://download.pytorch.org/whl/cu126
+    - torch==2.7.0
+    - torchvision==0.22.0
+    - torchaudio==2.7.0
+    - pillow==11.2.1
+    - pytorch-lightning==2.4.0
+    - pytorch-forecasting==1.3.0
+    - gluonts[torch]==0.16.1
+    - prophet==1.1.6
+    - pytorch_optimizer==3.6.0
+    - tensorboard==2.19.0
+    - optuna-integration==4.3.0
+    - optuna==4.3.0
