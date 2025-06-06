@@ -1,16 +1,14 @@
-"""
-preprocess_raw_parquet.py
+# preprocess_raw_parquet.py
 
-This module handles:
-- Loading raw Bitcoin fee and mempool histogram data from a Parquet file
-- Dropping uninformative columns
-- Converting timestamps and setting the time index
-- Resampling to a fixed interval
-- Basic linear interpolation
+# This module handles:
+# - Loading raw Bitcoin fee and mempool histogram data from a Parquet file
+# - Dropping uninformative columns
+# - Converting timestamps and setting the time index
+# - Resampling to a fixed interval
+# - Basic linear interpolation
 
-Author: Ximin Xu
-Date: 2025-06-04
-"""
+# Author: Ximin Xu
+# Date: 2025-06-04
 
 import os
 import pandas as pd
