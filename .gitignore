@@ -1,11 +1,12 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+
 *.py[cod]
 *$py.class
 
 # C extensions
 *.so
-
+lightning_logs/
 # PyTorch Lightning learning rate finder checkpoints
 .lr_find_*.ckpt
 
