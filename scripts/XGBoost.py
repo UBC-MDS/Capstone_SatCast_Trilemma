@@ -19,7 +19,7 @@ def data_split(df,interval):
     X = df.drop(columns = "recommended_fee_fastestFee")
     shift_steps = int(24*(60/interval)) # shift 24h
     X = X.shift(periods=shift_steps)
-    X.dropna(inplace=True)
+    X = X.iloc[shift_steps:]
     y = y.loc[X.index]
 
     # last 24h as test
@@ -49,9 +49,9 @@ def build_random_search(y_train, param_dist,interval,if_sliding=1):
     )
 
     # sliding window cv
-    train_size = len(y_train)
-    window_length = int(0.8 * train_size)  # Training window covers 80% of data
-    step_length = int(0.2 * train_size)   # Step size to create ~5 folds
+    # train_size = len(y_train)
+    window_length = int(2*n)  # Training window covers 80% of data
+    step_length = n   # Step size to create ~5 folds
     slcv = SlidingWindowSplitter(
         window_length=window_length,
         step_length=step_length,
@@ -61,8 +61,8 @@ def build_random_search(y_train, param_dist,interval,if_sliding=1):
 
     # expanding window cv
     train_size = len(y_train)
-    initial_window = int(0.8 * train_size)  
-    step_length = int(0.2 * train_size)    
+    initial_window = int(0.8*train_size)
+    step_length = int(0.2*train_size)   
     excv = ExpandingWindowSplitter(
         initial_window=initial_window,
         step_length=step_length,
