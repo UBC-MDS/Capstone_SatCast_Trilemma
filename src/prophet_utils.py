@@ -152,33 +152,59 @@ def mae_with_std_and_shape_penalty(y_true, y_pred, std_weight=1.0, de_weight=1.0
         float: combined loss
     """
 
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
+    # y_true = np.array(y_true)
+    # y_pred = np.array(y_pred)
 
+    # base_loss = np.abs(y_pred - y_true)
+    # base_mae = np.mean(base_loss)
+
+    # # ---- STD penalty ----
+    # pred_std = np.std(y_pred)
+    # true_std = np.std(y_true)
+    # std_penalty = np.abs(pred_std - true_std)
+    # w_std = base_mae / (std_penalty + 1e-8)
+    # if clip_weight_std is not None:
+    #     w_std = min(w_std, clip_weight_std)
+
+    # # ---- Shape deviation penalty ----
+    # pred_dev = y_pred - np.mean(y_pred)
+    # true_dev = y_true - np.mean(y_true)
+    # dev_error = np.abs(pred_dev - true_dev)
+    # w_dev = base_loss / (dev_error + 1e-8)
+    # if clip_weight_dev is not None:
+    #     w_dev = np.clip(w_dev, None, clip_weight_dev)
+
+    # # Final loss
+    # shape_penalty = np.mean(w_dev * dev_error)
+    # total_loss = base_mae + std_weight * w_std * std_penalty + de_weight * shape_penalty
+
+    # return total_loss
     base_loss = np.abs(y_pred - y_true)
-    base_mae = np.mean(base_loss)
+    mae = base_loss.mean()
 
-    # ---- STD penalty ----
+    # Std penalty
     pred_std = np.std(y_pred)
     true_std = np.std(y_true)
     std_penalty = np.abs(pred_std - true_std)
-    w_std = base_mae / (std_penalty + 1e-8)
-    if clip_weight_std is not None:
-        w_std = min(w_std, clip_weight_std)
 
-    # ---- Shape deviation penalty ----
-    pred_dev = y_pred - np.mean(y_pred)
-    true_dev = y_true - np.mean(y_true)
+    w_std = mae / (std_penalty + 1e-8)
+    if clip_weight_std is not None:
+        w_std = np.minimum(w_std, clip_weight_std)
+
+    # Deviation penalty
+    pred_mean = np.mean(y_pred)
+    true_mean = np.mean(y_true)
+    pred_dev = y_pred - pred_mean
+    true_dev = y_true - true_mean
     dev_error = np.abs(pred_dev - true_dev)
+
     w_dev = base_loss / (dev_error + 1e-8)
     if clip_weight_dev is not None:
-        w_dev = np.clip(w_dev, None, clip_weight_dev)
+        w_dev = np.minimum(w_dev, clip_weight_dev)
 
-    # Final loss
-    shape_penalty = np.mean(w_dev * dev_error)
-    total_loss = base_mae + std_weight * w_std * std_penalty + de_weight * shape_penalty
-
-    return total_loss
+    # Total loss
+    total_loss = base_loss + std_weight * w_std * std_penalty + de_weight * w_dev * dev_error
+    return total_loss.mean()
 
 def get_result_new(df,y_test,y):
     df.index = y.index

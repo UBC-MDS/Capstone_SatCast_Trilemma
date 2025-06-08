@@ -205,12 +205,12 @@ def evaluate_sliding_window(df, data_split_func, build_random_search_func, param
         mae = mean_absolute_error(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         mape = mean_absolute_percentage_error(y_test, y_pred)
-        mae_std = mae_with_std_penalty(y_test, y_pred, std_weight)
+        mae_std = mae_with_std_and_shape_penalty(y_test, y_pred, std_weight)
 
         base_mae = mean_absolute_error(y_test, y_baseline)
         base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
         base_mape = mean_absolute_percentage_error(y_test, y_baseline)
-        base_mae_std = mae_with_std_penalty(y_test, y_baseline, std_weight)
+        base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline, std_weight)
 
         avg_mae += mae
         avg_rmse += rmse
