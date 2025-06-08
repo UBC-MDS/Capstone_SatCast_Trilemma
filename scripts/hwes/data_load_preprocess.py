@@ -4,8 +4,8 @@
 
 # Usage:
 # python scripts/hwes/data_load_preprocess.py \
-#     --url="https://www.kaggle.com/api/v1/datasets/download/uciml/pima-indians-diabetes-database" \
-#     --write-to=data/raw
+#     --data="./data/raw/mar_5_may_12.parquet" \
+#     --data-to=./data/processed/hwes
 
 import click
 import os
@@ -20,7 +20,10 @@ from src.save_csv_data import save_csv_data
 @click.option('--data', type=str, default="./data/raw/mar_5_may_12.parquet", help="Path to file where raw data is saved")
 @click.option('--data-to', type=str, default="./data/processed/hwes", help="Path to directory where processed data will be written to")
 def main(data, data_to):
-    """Downloads data zip data from the web to a local filepath and extracts it."""
+    """
+    Cleans and preprocesses raw Parquet data, extracts the target time series,
+    and saves the result for modeling.
+    """
     
     # Raw data cleaning and resample
     df = preprocess_raw_parquet(data)
@@ -34,7 +37,7 @@ def main(data, data_to):
     fee_series.index.freq = pd.infer_freq(fee_series.index)
 
     # Save the preprocessed data
-    save_csv_data(fee_series, os.path.join(data_to, 'preprocessed.csv'))
+    save_csv_data(fee_series, os.path.join(data_to, 'preprocessed.csv'), index=True)
 
 if __name__ == '__main__':
     main()
