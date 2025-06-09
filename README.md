@@ -70,6 +70,7 @@ Run `data_spec.ipynb` to explore the dataset and gain insights:
 
 Baseline models include Holt-Winters, SARIMA, and XGBoost.
 
+
 #### Model I: Holt-Winters Exponential Smoothing (HWES) 
    - `baseline_hwes.ipynb`
    - Captures trend and seasonality
@@ -80,6 +81,7 @@ Run the following command to evaluate the HWES model:
    jupyter lab analysis/baseline_hwes.ipynb
    python scripts/hwes_main.py
    ```
+
 
 #### Model II: SARIMA (Seasonal Autoregressive Integrated Moving Average)
    - `baseline_sarima.ipynb`  
@@ -94,6 +96,7 @@ Run the following command to evaluate the HWES SARIMA model:
    **⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
    If you wish to inspect the model or rerun the evaluation, please run `scripts/sarima_main.py` locally.
 
+
 #### Model III: XGBoost
    - `baseline_xgboost.ipynb`  
    - Gradient boosting tree model with lagged features and rolling statistics
@@ -105,16 +108,19 @@ Run the following command to evaluate the XGBoost model:
    python scripts/xx.py
    ```
 
+
 To implement the expanding/sliding window experiments for baseline models, please go to respective model subfolders under `scripts` and run respectively. 
 
 **⚠️ Note:** These window experiments are not included in the main scripts. Please run the corresponding scripts individually if needed.
 
 **❗IMPORTANT:** The running of these scripts will take a long time, as they are designed to evaluate the model performance over multiple time windows.
 
+
 ---
 ### Step 3: Advanced Models
 
 Advanced models include Prophet, DeepAR, and Temporal Fusion Transformers (TFT).
+
 
 #### Model IV: Prophet
    - `advanced_prophet.ipynb`  
@@ -140,7 +146,8 @@ jupyter lab analysis/advanced_deepar.ipynb
 python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
 ```
 **⚠️ Note:** Replace the path with your own `.parquet` file if needed.
-  
+
+
 #### Model VI. Temporal Fusion Transformer (TFT)
    - `advanced_tft.ipynb`
    - A state-of-the-art deep learning model for time series forecasting
