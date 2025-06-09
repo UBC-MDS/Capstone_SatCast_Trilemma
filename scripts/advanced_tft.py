@@ -20,7 +20,6 @@ from tft_data_preparation import tft_prepare_data
 from tft_create_dataloaders import tft_make_dataloaders
 from tft_custom_loss import MAEWithStdPenalty
 from tft_train_model import tft_train_model
-from tft_load_best_model import tft_load_best_model
 
 # Argument parser
 parser = argparse.ArgumentParser(description="Run full TFT forecasting pipeline.")
