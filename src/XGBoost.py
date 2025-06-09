@@ -1,15 +1,10 @@
 import pandas as pd
 import numpy as np
 import xgboost as xgb
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error, make_scorer, mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 import matplotlib.pyplot as plt
-import joblib  
-from scipy.stats import uniform, randint
-from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-import seaborn as sns
 from sktime.forecasting.compose import make_reduction
-from sktime.forecasting.model_selection import temporal_train_test_split, ForecastingRandomizedSearchCV
+from sktime.forecasting.model_selection import ForecastingRandomizedSearchCV
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.performance_metrics.forecasting import mean_absolute_error as mean_absolute_error_sktime
 from sktime.split import SlidingWindowSplitter,ExpandingWindowSplitter
@@ -413,15 +408,65 @@ def evaluate_best_model(df, param_dist, interval=15, fh=None):
     base_mape = mean_absolute_percentage_error(y_test, y_baseline)
     base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
 
-    avg_mae += mae
-    avg_rmse += rmse
-    avg_mape += mape
-    avg_mae_std += mae_std
+    metrics.append({
+        "mae": mae,
+        "rmse": rmse,
+        "mape": mape,
+        "mae_std": mae_std,
+        "base_mae": base_mae,
+        "base_rmse": base_rmse,
+        "base_mape": base_mape,
+        "base_mae_std": base_mae_std
+    })
 
-    base_avg_mae += base_mae
-    base_avg_rmse += base_rmse
-    base_avg_mape += base_mape
-    base_avg_mae_std += base_mae_std
+    return metrics,y_test,y_pred, best_forecaster
+    
+def calculate_metrics(best_model,df,interval,fh):
+    """
+    Evaluate the best model performance over the whole dataset.
+
+    Parameters:
+    ----------
+    best_model : Forecast
+        The best model
+    df: pd.DataFrame
+        Original dataset.
+    interval: int
+        Time interval between data points.
+    fh: ForecastingHorizon
+        Forecasting time range.
+
+    Returns:
+    -------
+    dic
+        Dict of predict values. 
+    list 
+        LIST of dicts for each week's metrics.
+    dict
+        Dict of average metrics over all weeks.
+
+    Examples:
+    --------
+    >>> metrics_per_week, avg_metrics,y_test,y_pred = evaluate_model(df,param_dist,15,fh)
+    """
+    metrics = []
+
+    X_train, X_test, y_train, y_test = data_split(df, interval)
+
+    y_pred = best_model.predict(fh=fh, X=X_test)
+    y_pred.index = X_test.index
+
+    y_baseline = [y_train.median()] * len(y_test)
+
+    mae = mean_absolute_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    mape = mean_absolute_percentage_error(y_test, y_pred)
+    mae_std = mae_with_std_and_shape_penalty(y_test, y_pred)
+
+    base_mae = mean_absolute_error(y_test, y_baseline)
+    base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
+    base_mape = mean_absolute_percentage_error(y_test, y_baseline)
+    base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
 
     metrics.append({
         "mae": mae,
@@ -435,8 +480,6 @@ def evaluate_best_model(df, param_dist, interval=15, fh=None):
     })
 
     return metrics,y_test,y_pred
-    
-
 
 
 
