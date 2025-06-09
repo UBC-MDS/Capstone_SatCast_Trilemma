@@ -79,6 +79,7 @@ if __name__ == '__main__':
     # Save the final training results using save_model
     os.makedirs(os.path.join(RESULTS_DIR, 'models'), exist_ok=True)
     save_model(final_fit, os.path.join(RESULTS_DIR, 'models', 'hwes_best_train.pkl'))
+    # save_model(final_fit, os.path.join(RESULTS_DIR, 'models', 'hwes_best_sample.pkl'))
 
     ## ---------------Step 6: Make the forecast------------------------
     # read in training model (hwes_best_train model object)
@@ -94,13 +95,9 @@ if __name__ == '__main__':
     save_csv_data(forecast_df, os.path.join(RESULTS_DIR, 'tables', 'hwes_forecast.csv'), index=True)
 
     ## -----------Step 7: Evaluate the model performance--------------
-    eval_results = eval_metrics(forecast, test).T
-    save_csv_data(eval_results, os.path.join(RESULTS_DIR, 'tables', 'hwes_eval_results.csv'))
+    eval_results = eval_metrics(forecast, test)
+    save_csv_data(eval_results, os.path.join(RESULTS_DIR, 'tables', 'hwes_eval_results.csv'), index=True)
     
 
 
 
-
-    
-    
-    

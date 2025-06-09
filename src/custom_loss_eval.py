@@ -75,4 +75,4 @@ def eval_metrics(y_pred, y_true, std_weight=1.0, de_weight=1.0,
         "rmse": rmse
     }
 
-    return pd.DataFrame([metrics]).round(4)
+    return pd.DataFrame([metrics]).T.rename(columns={0: 'value'}).round(4)
