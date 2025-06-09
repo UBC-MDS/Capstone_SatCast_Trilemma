@@ -52,7 +52,4 @@ if __name__ == "__main__":
     # Step 4 ── Training
     model, trainer = tft_train_model(tft_ds, train_dl, val_dl, loss_fn)
 
-    # Step 5 ── Load Best Model
-    best_model = tft_load_best_model(trainer, FALLBACK_CKPT)
-
     print("TFT Bitcoin fee forecasting pipeline completed.")
