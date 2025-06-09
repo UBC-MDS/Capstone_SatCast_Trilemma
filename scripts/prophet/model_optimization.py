@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 current_file = Path(__file__).resolve()
-project_root = current_file.parents[1]
+project_root = current_file.parents[2]
 src_path = project_root / "scripts" / "prophet"
 sys.path.insert(0, str(src_path))
 from data_preprocess import data_preprocess
@@ -11,6 +11,20 @@ import itertools
 import json
 
 def model_optimization(df,result):
+    """
+    Optimize to find the best hyperparameters. 
+
+    Parameters:
+    ----------
+    df : str
+        The path of training dataset.
+    result: str
+        The path to save the best model. 
+
+    Returns:
+    -------
+    Null
+    """
     df = data_preprocess(df)
     param_grid = {
         'changepoint_prior_scale': [0.01, 0.1, 0.3, 0.5],

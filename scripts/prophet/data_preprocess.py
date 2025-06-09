@@ -8,7 +8,19 @@ from preprocess_raw_parquet import preprocess_raw_parquet
 import numpy as np
 
 def data_preprocess(df):
+    """
+    Preprocess the dataset for optimizing the model. 
 
+    Parameters:
+    ----------
+    df : str
+        The path of training dataset. 
+
+    Returns:
+    -------
+    pd.DataFrame
+        Processed data.
+    """
     df_new = preprocess_raw_parquet(df)
     df_new.dropna(inplace = True)
 
