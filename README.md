@@ -100,17 +100,62 @@ Run and evaluate the following baseline models:
     - Forecasting with Facebook Prophet  
     - Multiplicative seasonal model
 
-9. `advanced_deepar.ipynb`  
-    - DeepAR Model
-    - Requires longer training time
+#### 9. DeepAR
 
-### Notes
+##### View Test Results
 
-- All notebooks are located in `analysis/`  
-- If running in a fresh environment, activate the conda env with:  
-```bash
-  conda activate satcast
-```
+To evaluate the performance of the trained TFT model:
+
+1. Open the Jupyter notebook:
+   ```bash
+   jupyter lab advanced_deepar.ipynb
+   ```
+2. Run all cells.
+3. You will see:
+   - Test predictions of the best saved model
+   - Evaluation metrics (e.g., MAE, RMSE, MAPE, custom loss)
+   - Forecast plots for visual inspection
+
+##### Train the Model
+
+To train the deepAR model using a sample dataset (or your own):
+
+1. Open your terminal
+2. Activate the project environment
+3. Run the training script:
+   ```bash
+   python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
+   ```
+   - Replace the path with your own `.parquet` file if needed.
+  
+#### 10. Temporal Fusion Transformer (TFT)
+
+##### View Test Results
+
+To evaluate the performance of the trained TFT model:
+
+1. Open the Jupyter notebook:
+   ```bash
+   jupyter lab advanced_tft.ipynb
+   ```
+2. Run all cells.
+3. You will see:
+   - Test predictions of the best saved model
+   - Evaluation metrics (e.g., MAE, RMSE, MAPE, custom loss)
+   - Forecast plots for visual inspection
+
+##### Train the Model
+
+To train the TFT model using a sample dataset (or your own):
+
+1. Open your terminal
+2. Activate the project environment
+3. Run the training script:
+   ```bash
+   python scripts/advanced_tft.py --parquet_path ./data/raw/sample_8_days.parquet
+   ```
+   - Replace the path with your own `.parquet` file if needed.
+---
 
 ## Contributing
 

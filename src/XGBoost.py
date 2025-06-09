@@ -1,18 +1,68 @@
 import pandas as pd
 import numpy as np
 import xgboost as xgb
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, mean_squared_error, make_scorer, mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 import matplotlib.pyplot as plt
-import joblib  
-from scipy.stats import uniform, randint
-from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-import seaborn as sns
 from sktime.forecasting.compose import make_reduction
-from sktime.forecasting.model_selection import temporal_train_test_split, ForecastingRandomizedSearchCV
+from sktime.forecasting.model_selection import ForecastingRandomizedSearchCV
 from sktime.forecasting.base import ForecastingHorizon
 from sktime.performance_metrics.forecasting import mean_absolute_error as mean_absolute_error_sktime
 from sktime.split import SlidingWindowSplitter,ExpandingWindowSplitter
+
+def mae_with_std_and_shape_penalty(y_true, y_pred, std_weight=1.0, de_weight=1.0, clip_weight_std=None, clip_weight_dev=None):
+    """
+    Compute custom MAE loss with additional penalties on std deviation and shape deviation.
+
+    Parameters:
+    ----------
+    y_true: np.ndarray
+        Ground truth values.
+    y_pred: np.ndarray
+        Predicted values.
+    std_weight: float
+        Weight for std penalty.
+    de_weight: float 
+        Weight for shape deviation penalty.
+    clip_weight_std: float or None
+        Optional max clip value for std penalty weight.
+    clip_weight_dev: float or None
+        Optional max clip value for shape deviation weight.
+
+    Returns:
+    --------
+        float: combined loss
+
+    Examples:
+    --------
+    >>> metrics = mae_with_std_and_shape_penalty(y_test,y_baseline)
+    """
+    # return total_loss
+    base_loss = np.abs(y_pred - y_true)
+    mae = base_loss.mean()
+
+    # Std penalty
+    pred_std = np.std(y_pred)
+    true_std = np.std(y_true)
+    std_penalty = np.abs(pred_std - true_std)
+
+    w_std = mae / (std_penalty + 1e-8)
+    if clip_weight_std is not None:
+        w_std = np.minimum(w_std, clip_weight_std)
+
+    # Deviation penalty
+    pred_mean = np.mean(y_pred)
+    true_mean = np.mean(y_true)
+    pred_dev = y_pred - pred_mean
+    true_dev = y_true - true_mean
+    dev_error = np.abs(pred_dev - true_dev)
+
+    w_dev = base_loss / (dev_error + 1e-8)
+    if clip_weight_dev is not None:
+        w_dev = np.minimum(w_dev, clip_weight_dev)
+
+    # Total loss
+    total_loss = base_loss + std_weight * w_std * std_penalty + de_weight * w_dev * dev_error
+    return total_loss.mean()
 
 def data_split(df,interval):
     """
@@ -66,6 +116,8 @@ def build_random_search(y_train, param_dist,interval,if_sliding=1):
         Parameters for random search.
     interval : int
         The time interval between data points.
+    if_sliding : int
+        Using whether sliding window or expanding window.
 
     Returns:
     -------
@@ -164,16 +216,39 @@ def create_lag_features_fast(df, target_col, lags):
     ]
     return pd.concat([df] + lagged_dfs, axis=1)
 
-def evaluate_sliding_window(df, data_split_func, build_random_search_func, param_dist, interval=15, weeks=10, fh=None, std_weight=1.0):
+def evaluate_model(df, param_dist, interval=15, weeks=10, fh=None, sliding=0):
     """
-    Evaluate model performance using sliding window over multiple weeks.
+    Evaluate model performance using sliding window or expanding window over multiple weeks.
+
+    Parameters:
+    ----------
+    df: pd.DataFrame
+        Original dataset.
+    param_dist: list
+        Combinations of hyperparameters.
+    interval: int
+        Time interval between data points.
+    weeks: int
+        Number of weeks the dataset contains. 
+    fh: ForecastingHorizon
+        Forecasting time range.
+    sliding: int
+        Whether to use sliding window or not. 
 
     Returns:
-        y_pred_sliding: dict of forecasts
-        metrics_per_week: list of dicts for each week's metrics
-        avg_metrics: dict of average metrics over all weeks
+    -------
+    dic
+        Dict of predict values. 
+    list 
+        LIST of dicts for each week's metrics.
+    dict
+        Dict of average metrics over all weeks.
+
+    Examples:
+    --------
+    >>> metrics_per_week, avg_metrics,y_test,y_pred = evaluate_model(df,param_dist,15,10,fh,0)
     """
-    y_pred_sliding = {}
+
     metrics_per_week = []
 
     avg_mae = 0
@@ -187,30 +262,33 @@ def evaluate_sliding_window(df, data_split_func, build_random_search_func, param
     base_avg_mae_std = 0
 
     for i in range(weeks):
-        print(f"Week {i + 1}")
-        df_sliding = df[i * 7 * 96 : (i + 1) * 7 * 96]
+        # print(f"Week {i + 1}")
+        df_new = pd.DataFrame()
+        if(sliding == 1):
+            df_new = df[0+i*7*96:7*96+i*7*96]
+        else:
+            df_new = df[:7*96+i*7*96]
 
-        X_train, X_test, y_train, y_test = data_split_func(df_sliding, interval)
+        X_train, X_test, y_train, y_test = data_split(df_new, interval)
 
-        random_search = build_random_search_func(y_train, param_dist, interval, 1)
+        random_search = build_random_search(y_train, param_dist, interval, sliding)
         random_search.fit(X=X_train, y=y_train, fh=fh)
         best_forecaster = random_search.best_forecaster_
 
         y_pred = best_forecaster.predict(fh=fh, X=X_test)
         y_pred.index = X_test.index
-        y_pred_sliding[i] = y_pred
 
         y_baseline = [y_train.median()] * len(y_test)
 
         mae = mean_absolute_error(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         mape = mean_absolute_percentage_error(y_test, y_pred)
-        mae_std = mae_with_std_and_shape_penalty(y_test, y_pred, std_weight)
+        mae_std = mae_with_std_and_shape_penalty(y_test, y_pred)
 
         base_mae = mean_absolute_error(y_test, y_baseline)
         base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
         base_mape = mean_absolute_percentage_error(y_test, y_baseline)
-        base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline, std_weight)
+        base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
 
         avg_mae += mae
         avg_rmse += rmse
@@ -233,10 +311,6 @@ def evaluate_sliding_window(df, data_split_func, build_random_search_func, param
             "base_mae_std": base_mae_std
         })
 
-        print(f"Baseline MAE: {base_mae:.4f}, RMSE: {base_rmse:.4f}, MAPE: {base_mape:.4f}, MAE+STD: {base_mae_std:.4f}")
-        print(f"Model    MAE: {mae:.4f}, RMSE: {rmse:.4f}, MAPE: {mape:.4f}, MAE+STD: {mae_std:.4f}")
-        print("-" * 60)
-
     avg_metrics = {
         "avg_mae": avg_mae / weeks,
         "avg_rmse": avg_rmse / weeks,
@@ -248,13 +322,164 @@ def evaluate_sliding_window(df, data_split_func, build_random_search_func, param
         "base_avg_mae_std": base_avg_mae_std / weeks
     }
 
-    print("\nAverage metrics over all weeks:")
-    for k, v in avg_metrics.items():
-        print(f"{k}: {v:.4f}")
-
-    return y_pred_sliding, metrics_per_week, avg_metrics
+    return metrics_per_week, avg_metrics,y_test,y_pred
     
+def plot_result(y_test,y_pred):
+    """
+    Plot the comparison of predicted values vs. actual values.
 
+    Parameters:
+    ----------
+    y_true
+        ground truth values
+    y_pred
+        predicted values
+
+    Returns:
+        Null
+    Examples:
+    --------
+    >>> y_test = [1,2,3]
+    >>> y_pred = [1,3,4]
+    >>> plot_result(y_test,y_pred)
+    """
+    fig,ax = plt.subplots(figsize=(14, 5))
+    # Plot actual vs. predicted values
+    ax.plot(y_test, label="Actual", color="black")
+    ax.plot(y_pred, label="Forecast", color="blue")
+
+    # Axis labels and title
+    ax.set_title(f"Forecast vs Actual", fontsize=14)
+    ax.set_xlabel("Timestamp", fontsize=12)
+    ax.set_ylabel("Transaction Fee (sats/vB)", fontsize=12)
+    # Improve appearance
+    ax.grid(True)
+    ax.legend()
+    plt.setp(ax.get_xticklabels(), rotation=30, ha="right")
+
+def evaluate_best_model(df, param_dist, interval=15, fh=None):
+    """
+    Evaluate the best model performance over the whole dataset.
+
+    Parameters:
+    ----------
+    df: pd.DataFrame
+        Original dataset.
+    param_dist: list
+        Combinations of hyperparameters.
+    interval: int
+        Time interval between data points.
+    fh: ForecastingHorizon
+        Forecasting time range.
+
+    Returns:
+    -------
+    dic
+        Dict of predict values. 
+    list 
+        LIST of dicts for each week's metrics.
+    dict
+        Dict of average metrics over all weeks.
+
+    Examples:
+    --------
+    >>> metrics_per_week, avg_metrics,y_test,y_pred = evaluate_model(df,param_dist,15,fh)
+    """
+    metrics = []
+
+    X_train, X_test, y_train, y_test = data_split(df, interval)
+
+    random_search = build_random_search(y_train, param_dist, interval, 0) # expanding window
+    random_search.fit(X=X_train, y=y_train, fh=fh)
+    best_forecaster = random_search.best_forecaster_
+
+    y_pred = best_forecaster.predict(fh=fh, X=X_test)
+    y_pred.index = X_test.index
+
+    y_baseline = [y_train.median()] * len(y_test)
+
+    mae = mean_absolute_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    mape = mean_absolute_percentage_error(y_test, y_pred)
+    mae_std = mae_with_std_and_shape_penalty(y_test, y_pred)
+
+    base_mae = mean_absolute_error(y_test, y_baseline)
+    base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
+    base_mape = mean_absolute_percentage_error(y_test, y_baseline)
+    base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
+
+    metrics.append({
+        "mae": mae,
+        "rmse": rmse,
+        "mape": mape,
+        "mae_std": mae_std,
+        "base_mae": base_mae,
+        "base_rmse": base_rmse,
+        "base_mape": base_mape,
+        "base_mae_std": base_mae_std
+    })
+
+    return metrics,y_test,y_pred, best_forecaster
+    
+def calculate_metrics(best_model,df,interval,fh):
+    """
+    Evaluate the best model performance over the whole dataset.
+
+    Parameters:
+    ----------
+    best_model : Forecast
+        The best model
+    df: pd.DataFrame
+        Original dataset.
+    interval: int
+        Time interval between data points.
+    fh: ForecastingHorizon
+        Forecasting time range.
+
+    Returns:
+    -------
+    dic
+        Dict of predict values. 
+    list 
+        LIST of dicts for each week's metrics.
+    dict
+        Dict of average metrics over all weeks.
+
+    Examples:
+    --------
+    >>> metrics_per_week, avg_metrics,y_test,y_pred = evaluate_model(df,param_dist,15,fh)
+    """
+    metrics = []
+
+    X_train, X_test, y_train, y_test = data_split(df, interval)
+
+    y_pred = best_model.predict(fh=fh, X=X_test)
+    y_pred.index = X_test.index
+
+    y_baseline = [y_train.median()] * len(y_test)
+
+    mae = mean_absolute_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    mape = mean_absolute_percentage_error(y_test, y_pred)
+    mae_std = mae_with_std_and_shape_penalty(y_test, y_pred)
+
+    base_mae = mean_absolute_error(y_test, y_baseline)
+    base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
+    base_mape = mean_absolute_percentage_error(y_test, y_baseline)
+    base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
+
+    metrics.append({
+        "mae": mae,
+        "rmse": rmse,
+        "mape": mape,
+        "mae_std": mae_std,
+        "base_mae": base_mae,
+        "base_rmse": base_rmse,
+        "base_mape": base_mape,
+        "base_mae_std": base_mae_std
+    })
+
+    return metrics,y_test,y_pred
 
 
 
