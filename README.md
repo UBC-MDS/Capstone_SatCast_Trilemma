@@ -154,11 +154,11 @@ python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
    - A state-of-the-art deep learning model for time series forecasting
    - Combines attention mechanisms with recurrent neural networks (RNNs)
 
-Run the following command to evaluate the DeepAR model:
+Run the following command to evaluate the TFT model:
 
 ```bash
-jupyter lab analysis/advanced_deepar.ipynb
-python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
+jupyter lab analysis/advanced_tft.ipynb
+python scripts/advanced_tft.py --parquet_path ./data/raw/sample_8_days.parquet
 ```
 **⚠️ Note:** Replace the path with your own `.parquet` file if needed.
 
