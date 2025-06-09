@@ -1,7 +1,7 @@
 ,value
-custom_loss,10.3076
-std_diff,7.8298
-dev_error,4.2904
-mae,3.4359
-mape,0.4858
-rmse,8.7592
+custom_loss,2.6085
+std_diff,0.5155
+dev_error,0.9369
+mae,1.1561
+mape,0.4737
+rmse,1.4438

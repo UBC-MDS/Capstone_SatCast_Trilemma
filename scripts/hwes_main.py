@@ -95,7 +95,8 @@ if __name__ == '__main__':
     save_csv_data(forecast_df, os.path.join(RESULTS_DIR, 'tables', 'hwes_forecast.csv'), index=True)
 
     ## -----------Step 7: Evaluate the model performance--------------
-    eval_results = eval_metrics(forecast, test)
+    # Evaluate for non-spike day 
+    eval_results = eval_metrics(forecast[ : DAILY], test[ : DAILY])
     save_csv_data(eval_results, os.path.join(RESULTS_DIR, 'tables', 'hwes_eval_results.csv'), index=True)
     
 
