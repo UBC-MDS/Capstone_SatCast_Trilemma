@@ -158,7 +158,7 @@ Run the following command to evaluate the DeepAR model:
 
 ```bash
 jupyter lab analysis/advanced_deepar.ipynb
-python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
+python scripts/advanced_tft.py --parquet_path ./data/raw/sample_8_days.parquet
 ```
 **⚠️ Note:** Replace the path with your own `.parquet` file if needed.
 
