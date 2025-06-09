@@ -66,7 +66,7 @@ def create_model_new():
     >>> model = create_model_new()
     """
     
-    with open("../analysis/saved_models/prophet.json", "r") as f:
+    with open("../results/saved_models/prophet.json", "r") as f:
         params = json.load(f)
         
     model = Prophet(
@@ -91,7 +91,7 @@ def create_model_new_holiday(y_train):
 
     Parameters:
     ----------
-    y_train
+    y_train : pd.DataFrame
         Targets of training data.
 
     Returns:
@@ -103,7 +103,7 @@ def create_model_new_holiday(y_train):
     --------
     >>> model = create_model_new_holiday(y_train)
     """
-    with open("../analysis/saved_models/prophet.json", "r") as f:
+    with open("../results/saved_models/prophet.json", "r") as f:
         params = json.load(f)
         
     s = y_train.reset_index()
@@ -141,42 +141,28 @@ def mae_with_std_and_shape_penalty(y_true, y_pred, std_weight=1.0, de_weight=1.0
     Compute custom MAE loss with additional penalties on std deviation and shape deviation.
 
     Parameters:
-        y_true: np.ndarray, ground truth values
-        y_pred: np.ndarray, predicted values
-        std_weight: float, weight for std penalty
-        de_weight: float, weight for shape deviation penalty
-        clip_weight_std: float or None, optional max clip value for std penalty weight
-        clip_weight_dev: float or None, optional max clip value for shape deviation weight
+    ----------
+    y_true: np.ndarray
+        Ground truth values.
+    y_pred: np.ndarray
+        Predicted values.
+    std_weight: float
+        Weight for std penalty.
+    de_weight: float 
+        Weight for shape deviation penalty.
+    clip_weight_std: float or None
+        Optional max clip value for std penalty weight.
+    clip_weight_dev: float or None
+        Optional max clip value for shape deviation weight.
 
     Returns:
+    --------
         float: combined loss
+
+    Examples:
+    --------
+    >>> metrics = mae_with_std_and_shape_penalty(y_test,y_baseline)
     """
-
-    # y_true = np.array(y_true)
-    # y_pred = np.array(y_pred)
-
-    # base_loss = np.abs(y_pred - y_true)
-    # base_mae = np.mean(base_loss)
-
-    # # ---- STD penalty ----
-    # pred_std = np.std(y_pred)
-    # true_std = np.std(y_true)
-    # std_penalty = np.abs(pred_std - true_std)
-    # w_std = base_mae / (std_penalty + 1e-8)
-    # if clip_weight_std is not None:
-    #     w_std = min(w_std, clip_weight_std)
-
-    # # ---- Shape deviation penalty ----
-    # pred_dev = y_pred - np.mean(y_pred)
-    # true_dev = y_true - np.mean(y_true)
-    # dev_error = np.abs(pred_dev - true_dev)
-    # w_dev = base_loss / (dev_error + 1e-8)
-    # if clip_weight_dev is not None:
-    #     w_dev = np.clip(w_dev, None, clip_weight_dev)
-
-    # # Final loss
-    # shape_penalty = np.mean(w_dev * dev_error)
-    # total_loss = base_mae + std_weight * w_std * std_penalty + de_weight * shape_penalty
 
     # return total_loss
     base_loss = np.abs(y_pred - y_true)
@@ -207,6 +193,29 @@ def mae_with_std_and_shape_penalty(y_true, y_pred, std_weight=1.0, de_weight=1.0
     return total_loss.mean()
 
 def get_result_new(df,y_test,y):
+    """
+    Calculate metrics and plot comparison of actual values vs. predicted values. 
+
+    Parameters:
+    ----------
+    df: pd.DataFrame
+        Original dataset.
+    y_test: np.ndarray
+        Ground truth values.
+    y: pd.DataFrame
+        Original set of target values. 
+
+    Returns:
+    -------
+        Null
+
+    Examples:
+    --------
+    >>> df = pd.DataFrame({"a":[1,2],"b":[3,4]})
+    >>> y_test = np.array([4])
+    >>> y = pd.DataFrame({"b":[3,4]})
+    >>> get_result_new(df,y_test,y)
+    """
     df.index = y.index
     y_pred = df.iloc[-96:]
     y_pred = np.expm1(y_pred["yhat"])
@@ -229,11 +238,6 @@ def get_result_new(df,y_test,y):
     print(f"Base RMSE: {base_rmse:.4f}")
     print(f"Base MAPE: {base_mape:.4f}")
     print(f"Base MAE with std and shape penalty: {base_mae_std:.4f}")
-    
-    # result_df = pd.DataFrame({
-    #     'Actual': y_test,
-    #     'Predicted': y_pred
-    # }, index=y_test.index)
 
     fig,ax = plt.subplots(figsize=(14, 5))
     # Plot actual vs. predicted values
@@ -252,12 +256,27 @@ def get_result_new(df,y_test,y):
 
 def evaluate_model(df_new, weeks=10,holiday=0):
     """
-    Evaluate model performance using sliding window over multiple weeks.
+    Evaluate model performance over multiple weeks.
+
+    Parameters:
+    ----------
+    df_new: pd.DataFrame
+        Original dataset.
+    weeks: int
+        Number of weeks the dataset contains.
+    holiday: pd.DataFrame
+        Whether to manually set holiday parameters. 
 
     Returns:
-        y_pred_sliding: dict of forecasts
-        metrics_per_week: list of dicts for each week's metrics
-        avg_metrics: dict of average metrics over all weeks
+    -------
+    list
+        list of metrics per week
+    dict 
+        dict of average values of all metrics
+
+    Examples:
+    --------
+    >>> evaluate_model(df,10,0)
     """
     metrics_per_week = []
 
@@ -330,10 +349,6 @@ def evaluate_model(df_new, weeks=10,holiday=0):
             "base_mae_std": base_mae_std
         })
 
-        # print(f"Baseline MAE: {base_mae:.4f}, RMSE: {base_rmse:.4f}, MAPE: {base_mape:.4f}, MAE+STD: {base_mae_std:.4f}")
-        # print(f"Model    MAE: {mae:.4f}, RMSE: {rmse:.4f}, MAPE: {mape:.4f}, MAE+STD: {mae_std:.4f}")
-        # print("-" * 60)
-
     avg_metrics = {
         "avg_mae": avg_mae / weeks,
         "avg_rmse": avg_rmse / weeks,
@@ -346,18 +361,28 @@ def evaluate_model(df_new, weeks=10,holiday=0):
     }
 
 
-
     return metrics_per_week, avg_metrics
 
 
 def evaluate_model_external(df_new, weeks=10):
     """
-    Evaluate model performance using sliding window over multiple weeks.
+    Evaluate model performance using external features over multiple weeks.
+
+    Parameters:
+    ----------
+    df_new: pd.DataFrame
+        Original dataset.
+    weeks: int
+        Number of weeks the dataset contains.
 
     Returns:
-        y_pred_sliding: dict of forecasts
-        metrics_per_week: list of dicts for each week's metrics
-        avg_metrics: dict of average metrics over all weeks
+    -------
+    y_pred_sliding: dict 
+        Dict of forecasts.
+    metrics_per_week: list 
+        List of dicts for each week's metrics.
+    avg_metrics: dict 
+        Dict of average metrics over all weeks.
     """
     metrics_per_week = []
 
@@ -450,10 +475,6 @@ def evaluate_model_external(df_new, weeks=10):
             "base_mae_std": base_mae_std
         })
 
-        # print(f"Baseline MAE: {base_mae:.4f}, RMSE: {base_rmse:.4f}, MAPE: {base_mape:.4f}, MAE+STD: {base_mae_std:.4f}")
-        # print(f"Model    MAE: {mae:.4f}, RMSE: {rmse:.4f}, MAPE: {mape:.4f}, MAE+STD: {mae_std:.4f}")
-        # print("-" * 60)
-
     avg_metrics = {
         "avg_mae": avg_mae / weeks,
         "avg_rmse": avg_rmse / weeks,
@@ -465,11 +486,28 @@ def evaluate_model_external(df_new, weeks=10):
         "base_avg_mae_std": base_avg_mae_std / weeks
     }
 
-
-
     return metrics_per_week, avg_metrics
 
 def evaluate_best_model(df_new):
+    """
+    Evaluate best model performance over the whole dataset.
+
+    Parameters:
+    ----------
+    df_new: pd.DataFrame
+        Original dataset.
+
+    Returns:
+    -------
+    list
+        list of metrics per week
+    dict 
+        dict of average values of all metrics
+
+    Examples:
+    --------
+    >>> evaluate_model(df,10,0)
+    """
     y = df_new["recommended_fee_fastestFee"]
     split_index = len(y) - 96
     y_train, y_test = y.iloc[:split_index], y.iloc[split_index:]
@@ -480,9 +518,6 @@ def evaluate_best_model(df_new):
     })
     df_prophet['y'] = np.log1p(df_prophet['y'])
 
-    # baseline
-    y_baseline = [y_train.median()] * len(y_test)
-
     model = create_model_new_holiday(y_train)
     model.fit(df_prophet)
     future = model.make_future_dataframe(periods=96, freq='15min')
@@ -491,27 +526,6 @@ def evaluate_best_model(df_new):
     y_pred_temp = forecast.iloc[-96:]
     y_pred_temp = np.expm1(y_pred_temp["yhat"])
     y_pred_temp.index =y_test.index
+    y_pred_temp.to_csv("prophet.csv",index=True)
 
-    mae = mean_absolute_error(y_test, y_pred_temp)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred_temp))
-    mape = mean_absolute_percentage_error(y_test, y_pred_temp)
-    mae_std = mae_with_std_and_shape_penalty(y_test, y_pred_temp)
-
-    base_mae = mean_absolute_error(y_test, y_baseline)
-    base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
-    base_mape = mean_absolute_percentage_error(y_test, y_baseline)   
-    base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
-
-
-    # metrics_per_week = {
-    #     "mae": mae,
-    #     "rmse": rmse,
-    #     "mape": mape,
-    #     "mae_std": mae_std,
-    #     "base_mae": base_mae,
-    #     "base_rmse": base_rmse,
-    #     "base_mape": base_mape,
-    #     "base_mae_std": base_mae_std
-    # }
     get_result_new(forecast,y_test,y)
-    # return metrics_per_week
