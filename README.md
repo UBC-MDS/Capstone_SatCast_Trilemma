@@ -62,24 +62,24 @@ Run `data_spec.ipynb` to explore the dataset and gain insights:
    - Performs time series analysis to examine trends, seasonality, stationarity, and other time-based patterns
 
    ````bash
-   jupyter analysis/lab data_spec.ipynb   
+   jupyter lab analysis/data_spec.ipynb   
    ````
 
 ---
 ### Step 2: Baseline Forecasting Models
 
-Run and evaluate the following baseline models:
+Baseline models include Holt-Winters, SARIMA, and XGBoost.
 
 #### Model I: Holt-Winters Exponential Smoothing (HWES) 
    - `baseline_hwes.ipynb`
    - Captures trend and seasonality
 
-    Run the following command to evaluate the HWES model:
+   Run the following command to evaluate the HWES model:
 
-    ```bash
-    jupyter lab analysis/baseline_hwes.ipynb
-    python scripts/hwes_main.py
-    ```
+   ```bash
+   jupyter lab analysis/baseline_hwes.ipynb
+   python scripts/hwes_main.py
+   ```
 
 #### Model II: SARIMA (Seasonal Autoregressive Integrated Moving Average)
    - `baseline_sarima.ipynb`  
@@ -114,7 +114,9 @@ To implement the expanding/sliding window experiments for baseline models, pleas
 ---
 ### Step 3: Advanced Models
 
-#### Model IV: Facebook Prophet
+Advanced models include Prophet, DeepAR, and Temporal Fusion Transformers (TFT).
+
+#### Model IV: Prophet
    - `advanced_prophet.ipynb`  
    - Developed by Facebook, Prophet model improves HWES and SARIMA by handling holidays and special events
    - Multiplicative seasonal model
@@ -130,8 +132,6 @@ Run the following command to evaluate the XGBoost model:
    - `advanced_deepar.ipynb`  
    - Developed by Amazon, probabilistic forecasting model using recurrent neural networks (RNNs)
    - Captures complex temporal patterns and uncertainty
-
-##### View Test Results
 
 Run the following command to evaluate the DeepAR model:
 
