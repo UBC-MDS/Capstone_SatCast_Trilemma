@@ -28,6 +28,7 @@ This project helps you learn how to:
 - Evaluate model performance under both stable and volatile conditions  
 - Create a **reproducible forecasting pipeline** using real-time mempool data
 
+---
 ## Installation & Setup
 
 1. Clone the repository
@@ -49,142 +50,111 @@ conda activate satcast
 quarto render reports/proposal_report.qmd
 ```
 
+---
 ## Guidance to Run This Project
 
-To reproduce the analysis and modeling results in this repository, follow the steps below. Each notebook is modular but follows a logical pipeline.
+To reproduce the analysis and modeling results in this repository, follow the steps below. For each model, there is a modular notebook saved under `analysis` folder accompanies with logical pipelines in `.py` format under `scripts` folder.
 
 ### Step 1: Exploratory Data Analysis (EDA)
 
-Run this to explore the dataset and gain insights:
-
-3. `data_spec.ipynb`  
+Run `data_spec.ipynb` to explore the dataset and gain insights:
    - Summarizes key feature groups, data types, and their roles  
    - Performs time series analysis to examine trends, seasonality, stationarity, and other time-based patterns
 
+   ````bash
+   jupyter analysis/lab data_spec.ipynb   
+   ````
+
+---
 ### Step 2: Baseline Forecasting Models
 
 Run and evaluate the following baseline models:
 
-4. `baseline_hwes.ipynb`  
-   - Holt-Winters Exponential Smoothing model  
+#### Model I: Holt-Winters Exponential Smoothing (HWES) 
+   - `baseline_hwes.ipynb`
    - Captures trend and seasonality
 
-5. `baseline_sarima.ipynb`  
-   - Seasonal ARIMA model  
+Run the following command to evaluate the HWES model:
+
+   ```bash
+   jupyter lab analysis/baseline_hwes.ipynb
+   python scripts/hwes_main.py
+   ```
+
+#### Model II: SARIMA (Seasonal Autoregressive Integrated Moving Average)
+   - `baseline_sarima.ipynb`  
    - Seasonal order selected via ACF/PACF analysis
 
-#### 6. SARIMA
-
-##### View Test Results
-
-To evaluate the performance of the trained SARIMA model:
-
-1. Open your terminal.
-2. Activate the project environment.
-3. Run the following command:
+Run the following command to evaluate the HWES SARIMA model:
 
     ```bash
+   jupyter lab analysis/baseline_sarima.ipynb
     python scripts/sarima_main.py
     ```
-
-4. You will see:
-    - Test predictions of the final SARIMA model on the second-to-last day (May 11)
-    - Evaluation metrics (e.g., MAE, RMSE, MAPE, custom loss)
-    - Forecast saved to `./results/tables/sarima/sarima_forecast.csv` for visualization
-
 **⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
 If you wish to inspect the model or rerun the evaluation, please run `scripts/sarima_main.py` locally.
 
-##### Train the Model (Window Experiments)
+#### Model III: XGBoost
+   - `baseline_xgboost.ipynb`  
+   - Gradient boosting tree model with lagged features and rolling statistics
 
-To run SARIMA expanding/sliding window experiments:
+Run the following command to evaluate the XGBoost model:
 
-1. Open your terminal.
-2. Activate the project environment.
-3. Run the desired training script:
+   ```bash
+   jupyter lab analysis/baseline_xgboost.ipynb
+   python scripts/xx.py
+   ```
 
-    ```bash
-    python scripts/sarima/expanding_window_weekly_train.py
-    ```
+To implement the expanding/sliding window experiments for baseline models, please go to respective model subfolders under `scripts` and run respectively. 
 
-4. Similarly, you can run:
+**⚠️ Note:** These window experiments are not included in the main scripts. Please run the corresponding scripts individually if needed.
 
-    ```bash
-    python scripts/sarima/sliding_window_weekly_train.py
-    python scripts/sarima/expanding_window_reverse_weekly_train.py
-    ```
+**❗IMPORTANT:** The running of these scripts will take a long time, as they are designed to evaluate the model performance over multiple time windows.
 
-- Results will be saved to `./results/tables/sarima/`.
-
-**⚠️ Note:** These window experiments are not included in `sarima_main.py`.  
-Please run the corresponding scripts individually if needed.
-
-7. `baseline_with_newdata.ipynb`  
-   - Reruns baseline models on an extended date range (full dataset)
-
+---
 ### Step 3: Advanced Models
 
-8. `advanced_prophet.ipynb`  
-    - Forecasting with Facebook Prophet  
-    - Multiplicative seasonal model
+#### Model IV: Facebook Prophet
+   - `advanced_prophet.ipynb`  
+   - Developed by Facebook, Prophet model improves HWES and SARIMA by handling holidays and special events
+   - Multiplicative seasonal model
 
-#### 9. DeepAR
+Run the following command to evaluate the XGBoost model:
+
+   ```bash
+   jupyter lab analysis/advanced_prophet.ipynb
+   python scripts/xx
+   ```
+
+#### Model V: DeepAR (Deep Autoregressive Model)
+   - `advanced_deepar.ipynb`  
+   - Developed by Amazon, probabilistic forecasting model using recurrent neural networks (RNNs)
+   - Captures complex temporal patterns and uncertainty
 
 ##### View Test Results
 
-To evaluate the performance of the trained TFT model:
+Run the following command to evaluate the DeepAR model:
 
-1. Open the Jupyter notebook:
-   ```bash
-   jupyter lab advanced_deepar.ipynb
-   ```
-2. Run all cells.
-3. You will see:
-   - Test predictions of the best saved model
-   - Evaluation metrics (e.g., MAE, RMSE, MAPE, custom loss)
-   - Forecast plots for visual inspection
-
-##### Train the Model
-
-To train the deepAR model using a sample dataset (or your own):
-
-1. Open your terminal
-2. Activate the project environment
-3. Run the training script:
-   ```bash
-   python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
-   ```
-   - Replace the path with your own `.parquet` file if needed.
+```bash
+jupyter lab analysis/advanced_deepar.ipynb
+python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
+```
+**⚠️ Note:** Replace the path with your own `.parquet` file if needed.
   
-#### 10. Temporal Fusion Transformer (TFT)
+#### Model VI. Temporal Fusion Transformer (TFT)
+   - `advanced_tft.ipynb`
+   - A state-of-the-art deep learning model for time series forecasting
+   - Combines attention mechanisms with recurrent neural networks (RNNs)
 
-##### View Test Results
+Run the following command to evaluate the DeepAR model:
 
-To evaluate the performance of the trained TFT model:
+```bash
+jupyter lab analysis/advanced_deepar.ipynb
+python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
+```
+**⚠️ Note:** Replace the path with your own `.parquet` file if needed.
 
-1. Open the Jupyter notebook:
-   ```bash
-   jupyter lab advanced_tft.ipynb
-   ```
-2. Run all cells.
-3. You will see:
-   - Test predictions of the best saved model
-   - Evaluation metrics (e.g., MAE, RMSE, MAPE, custom loss)
-   - Forecast plots for visual inspection
-
-##### Train the Model
-
-To train the TFT model using a sample dataset (or your own):
-
-1. Open your terminal
-2. Activate the project environment
-3. Run the training script:
-   ```bash
-   python scripts/advanced_tft.py --parquet_path ./data/raw/sample_8_days.parquet
-   ```
-   - Replace the path with your own `.parquet` file if needed.
 ---
-
 ## Contributing
 
 We’d love for you to contribute to this project! Whether it’s adding new forecasting models, improving data pipelines, or fixing bugs, your input is valuable.  
