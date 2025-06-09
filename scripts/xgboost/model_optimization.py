@@ -15,7 +15,20 @@ import numpy as np
 
 
 def optimization(data_path,result):
+    """
+    Optimize to find the best hyperparameters. 
 
+    Parameters:
+    ----------
+    data_path : str
+        The path of training dataset.
+    result: str
+        The path to save the best model. 
+
+    Returns:
+    -------
+    Null
+    """
     param_dist = {
         'estimator__n_estimators': [50, 100, 150],
         'estimator__max_depth': [1, 2, 3],
@@ -28,7 +41,7 @@ def optimization(data_path,result):
     }
     fh = ForecastingHorizon(np.arange(1, 97), is_relative=True)
     df = data_preprocess(data_path)
-    metrics,y_test,y_pred, best_forecaster = evaluate_best_model(df, param_dist, interval=15, fh=None)
+    metrics,y_test,y_pred, best_forecaster = evaluate_best_model(df, param_dist, interval=15, fh=fh)
     file_path = result+"/xgboost.pkl"
     joblib.dump(best_forecaster, file_path)
     print("Best model saved.")
