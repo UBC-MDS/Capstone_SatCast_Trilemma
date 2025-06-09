@@ -1,17 +1,24 @@
+import os
+import sys
+
 import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from itertools import product
+
 import warnings
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from src.custom_loss_eval import *
 
 def mape(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)
     mask = y_true != 0
     return np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
 
-def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, step=288, param_grid=None, scaler=None):
+def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, step=2016, param_grid=None, scaler=None):
     """
     Perform sliding window cross-validation for Holt-Winters Exponential Smoothing.
     
@@ -41,15 +48,21 @@ def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, 
     total_windows = (len(series) - window_size - horizon) // step + 1
 
     for trend, seasonal, damped in param_grid:
-        mae_scores, mape_scores, rmse_scores = [], [], []
+        mae_scores, mape_scores, rmse_scores, std_errors, dev_errors, custom_scores, = [], [], [], [], [], []
         valid = True
 
         for i in range(total_windows):
-            start = i * step
-            end = start + window_size
+            print(f"Processing window {i + 1}/{total_windows} for trend={trend}, seasonal={seasonal}, damped={damped}")
+            # start = i * step
+            # end = start + window_size
+            # test_end = end + horizon
+
+            # train = series.iloc[start:end]
+            # test = series.iloc[end:test_end]
+            end = window_size + i * step
             test_end = end + horizon
 
-            train = series.iloc[start:end]
+            train = series.iloc[:end]
             test = series.iloc[end:test_end]
 
             if scaler:
@@ -75,25 +88,35 @@ def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, 
                     mae = mean_absolute_error(test, forecast)
                     mape = mean_absolute_percentage_error(test, forecast)
                     rmse = np.sqrt(mean_squared_error(test, forecast))
+                    std_penalty = std_penalty_component(forecast, test)
+                    dev_error = dev_error_component(forecast, test)
+                    custom_score = custom_loss_eval(forecast, test)
 
                     mae_scores.append(mae)
                     mape_scores.append(mape)
                     rmse_scores.append(rmse)
+                    std_errors.append(std_penalty)
+                    dev_errors.append(dev_error)
+                    custom_scores.append(custom_score)       
+            
             except Exception:
                 valid = False
                 break
 
-        if valid and mae_scores:
+        if valid and custom_scores:
             results.append({
                 "trend": trend,
                 "seasonal": seasonal,
                 "damped": damped,
                 "avg_mae": np.mean(mae_scores),
                 "avg_mape": np.mean(mape_scores),
-                "avg_rmse": np.mean(rmse_scores)
+                "avg_rmse": np.mean(rmse_scores),
+                "avg_std_penalty": np.mean(std_errors),
+                "avg_dev_error": np.mean(dev_errors),  
+                "avg_custom_score": np.mean(custom_scores)
             })
 
-    df_results = pd.DataFrame(results).sort_values("avg_mae")
+    df_results = pd.DataFrame(results).sort_values("avg_custom_score")
     return df_results
 
 def hwes_train_test(
