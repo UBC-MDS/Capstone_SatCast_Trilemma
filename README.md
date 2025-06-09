@@ -70,16 +70,16 @@ Run `data_spec.ipynb` to explore the dataset and gain insights:
 
 Baseline models include Holt-Winters, SARIMA, and XGBoost.
 
-#### Model I: Holt-Winters Exponential Smoothing (HWES) 
-   - `baseline_hwes.ipynb`
-   - Captures trend and seasonality
-
+   #### Model I: Holt-Winters Exponential Smoothing (HWES) 
+      - `baseline_hwes.ipynb`
+      - Captures trend and seasonality
+   
    Run the following command to evaluate the HWES model:
-
-   ```bash
-   jupyter lab analysis/baseline_hwes.ipynb
-   python scripts/hwes_main.py
-   ```
+   
+      ```bash
+      jupyter lab analysis/baseline_hwes.ipynb
+      python scripts/hwes_main.py
+      ```
 
 #### Model II: SARIMA (Seasonal Autoregressive Integrated Moving Average)
    - `baseline_sarima.ipynb`  
