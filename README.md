@@ -105,7 +105,7 @@ Run the following command to evaluate the XGBoost model:
 
    ```bash
    jupyter lab analysis/baseline_xgboost.ipynb
-   python scripts/xx.py
+   python scripts/baseline_xgboost.py --data-path data/raw/mar_5_may_12.parquet --result results/models
    ```
 
 
@@ -131,8 +131,9 @@ Run the following command to evaluate the XGBoost model:
 
    ```bash
    jupyter lab analysis/advanced_prophet.ipynb
-   python scripts/xx
+   python scripts/advanced_prophet.py --df data/raw/mar_5_may_12.parquet --result results/models
    ```
+**⚠️ Note:** Replace the path with your own `.parquet` file if needed.
 
 #### Model V: DeepAR (Deep Autoregressive Model)
    - `advanced_deepar.ipynb`  
