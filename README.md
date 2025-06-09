@@ -53,21 +53,7 @@ quarto render reports/proposal_report.qmd
 
 To reproduce the analysis and modeling results in this repository, follow the steps below. Each notebook is modular but follows a logical pipeline.
 
-### Step 1: Data Collection & Preprocessing
-
-Run the following notebooks in order:
-
-1. `data_explorer.ipynb`  
-   - Performs lightweight cleaning and initial exploration  
-   - Prepares a cleaned version of the dataset for preprocessing  
-   - **Output:** `cleaned.parquet` and `clean_df.csv`
-
-2. `data_preprocess.ipynb`  
-   - Performs full preprocessing to prepare data for modeling  
-   - Saves a **separate parquet file for each model** based on required features and structure  
-   - **Output:** multiple `preprocessed_*.parquet` files in `data/processed/`
-
-### Step 2: Exploratory Data Analysis (EDA)
+### Step 1: Exploratory Data Analysis (EDA)
 
 Run this to explore the dataset and gain insights:
 
@@ -75,7 +61,7 @@ Run this to explore the dataset and gain insights:
    - Summarizes key feature groups, data types, and their roles  
    - Performs time series analysis to examine trends, seasonality, stationarity, and other time-based patterns
 
-### Step 3: Baseline Forecasting Models
+### Step 2: Baseline Forecasting Models
 
 Run and evaluate the following baseline models:
 
@@ -87,14 +73,56 @@ Run and evaluate the following baseline models:
    - Seasonal ARIMA model  
    - Seasonal order selected via ACF/PACF analysis
 
-6. `baseline_xgboost.ipynb`  
-   - Gradient boosting using lag features and congestion metrics  
-   - Includes custom feature engineering and RMSE evaluation
+#### 6. SARIMA
+
+##### View Test Results
+
+To evaluate the performance of the trained SARIMA model:
+
+1. Open your terminal.
+2. Activate the project environment.
+3. Run the following command:
+
+    ```bash
+    python scripts/sarima_main.py
+    ```
+
+4. You will see:
+    - Test predictions of the final SARIMA model on the second-to-last day (May 11)
+    - Evaluation metrics (e.g., MAE, RMSE, MAPE, custom loss)
+    - Forecast saved to `./results/tables/sarima/sarima_forecast.csv` for visualization
+
+**⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
+If you wish to inspect the model or rerun the evaluation, please run `scripts/sarima_main.py` locally.
+
+##### Train the Model (Window Experiments)
+
+To run SARIMA expanding/sliding window experiments:
+
+1. Open your terminal.
+2. Activate the project environment.
+3. Run the desired training script:
+
+    ```bash
+    python scripts/sarima/expanding_window_weekly_train.py
+    ```
+
+4. Similarly, you can run:
+
+    ```bash
+    python scripts/sarima/sliding_window_weekly_train.py
+    python scripts/sarima/expanding_window_reverse_weekly_train.py
+    ```
+
+- Results will be saved to `./results/tables/sarima/`.
+
+**⚠️ Note:** These window experiments are not included in `sarima_main.py`.  
+Please run the corresponding scripts individually if needed.
 
 7. `baseline_with_newdata.ipynb`  
    - Reruns baseline models on an extended date range (full dataset)
 
-### Step 4: Advanced Models
+### Step 3: Advanced Models
 
 8. `advanced_prophet.ipynb`  
     - Forecasting with Facebook Prophet  
