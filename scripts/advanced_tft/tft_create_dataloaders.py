@@ -89,7 +89,7 @@ def tft_make_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_size):
     val_ds = TimeSeriesDataSet.from_dataset(tft_ds, df_valid, predict=True, stop_randomization=True)
 
     num_workers = min(4, os.cpu_count())
-    train_dl = tft_ds.to_dataloader(train=True, batch_size=batch_size, shuffle=False, num_workers=num_workers)
-    val_dl = val_ds.to_dataloader(train=False, batch_size=batch_size * 10, shuffle=False, num_workers=num_workers)
+    train_dl = tft_ds.to_dataloader(train=True, batch_size=batch_size, shuffle=False, num_workers=num_workers, persistent_workers=True)
+    val_dl = val_ds.to_dataloader(train=False, batch_size=batch_size * 10, shuffle=False, num_workers=num_workers, persistent_workers=True)
 
     return tft_ds, train_dl, val_dl

@@ -7,13 +7,24 @@ optimizer configuration, training, and checkpointing for the TFT model.
 
 import lightning.pytorch as pl
 from lightning.pytorch import Trainer
-from lightning.pytorch.callbacks import EarlyStopping, LearningRateMonitor, ModelCheckpoint
+from lightning.pytorch.callbacks import (
+    EarlyStopping,
+    LearningRateMonitor,
+    ModelCheckpoint,
+)
 from lightning.pytorch.tuner import Tuner
 from pytorch_forecasting import TemporalFusionTransformer
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pathlib import Path
 import torch
+
+if torch.backends.mps.is_available():
+    device = "mps"
+elif torch.cuda.is_available():
+    device = "cuda"
+else:
+    device = "cpu"
 
 
 def tft_configure_custom_optimizers(self, lr):
@@ -98,9 +109,9 @@ def tft_train_model(tft_ds, train_dl, val_dl, loss_fn):
 
     # Step 2: Create a minimal trainer for LR tuning
     tuner_trainer = Trainer(
-        accelerator="gpu",        # Use GPU if available
+        accelerator=device,  # Use GPU if available
         devices=1,
-        gradient_clip_val=0.1,    # Prevent exploding gradients
+        gradient_clip_val=0.1,  # Prevent exploding gradients
         enable_progress_bar=True,
     )
 
@@ -111,7 +122,7 @@ def tft_train_model(tft_ds, train_dl, val_dl, loss_fn):
         val_dataloaders=val_dl,
         min_lr=1e-6,
         max_lr=10.0,
-        num_training=300
+        num_training=300,
     )
     suggested_lr = res.suggestion()
     print(f"Suggested learning rate: {suggested_lr:.2e}")
@@ -132,7 +143,9 @@ def tft_train_model(tft_ds, train_dl, val_dl, loss_fn):
     )
 
     # Inject custom optimizer logic into the model
-    tft.configure_optimizers = lambda: tft_configure_custom_optimizers(tft, suggested_lr)
+    tft.configure_optimizers = lambda: tft_configure_custom_optimizers(
+        tft, suggested_lr
+    )
 
     # Step 5: Set up callbacks for early stopping, LR monitoring, and checkpointing
     project_root = Path(__file__).resolve().parents[2]
@@ -140,32 +153,28 @@ def tft_train_model(tft_ds, train_dl, val_dl, loss_fn):
 
     callbacks = [
         EarlyStopping(  # Stop training early if val_loss doesn't improve
-            monitor="val_loss",
-            patience=15,
-            min_delta=0.003,
-            mode="min",
-            verbose=True
+            monitor="val_loss", patience=15, min_delta=0.003, mode="min", verbose=True
         ),
-        LearningRateMonitor(logging_interval='step'),  # Log LR every step
+        LearningRateMonitor(logging_interval="step"),  # Log LR every step
         ModelCheckpoint(  # Save the best and latest model checkpoints
             dirpath=str(model_save_dir),
             filename="best-model-{epoch}-{val_loss:.4f}",
             monitor="val_loss",
             save_top_k=1,
             mode="min",
-            verbose=True
+            verbose=True,
         ),
     ]
-
+    precision = "bf16-mixed" if device == "cuda" else 32
     # Step 6: Initialize final trainer for model training
     trainer = Trainer(
-        max_epochs=1,                    # You can change this
-        accelerator="gpu",              # Use GPU
+        max_epochs=1,  # You can change this
+        accelerator=device,  # Use GPU
         devices=1,
-        precision="bf16-mixed",         # Use bfloat16 mixed precision (AMP)
-        gradient_clip_val=0.5,          # Clip gradients
-        callbacks=callbacks,            # Attach defined callbacks
-        val_check_interval=0.5,         # Validate halfway through each epoch
+        precision=precision,  # Use bfloat16 mixed precision (AMP) or float32
+        gradient_clip_val=0.5,  # Clip gradients
+        callbacks=callbacks,  # Attach defined callbacks
+        val_check_interval=0.5,  # Validate halfway through each epoch
         accumulate_grad_batches=1,
         deterministic=False,
         enable_progress_bar=True,
@@ -178,7 +187,9 @@ def tft_train_model(tft_ds, train_dl, val_dl, loss_fn):
     best_model_path = trainer.checkpoint_callback.best_model_path
     print(f"Best model checkpoint saved at: {best_model_path}")
 
-    best_tft = TemporalFusionTransformer.load_from_checkpoint(best_model_path, map_location="cpu")
+    best_tft = TemporalFusionTransformer.load_from_checkpoint(
+        best_model_path, map_location="cpu"
+    )
 
     # Step 9: Save full model object (useful for inference across devices)
     torch.save(best_tft, model_save_dir / "best-model-tft-full.pt")
