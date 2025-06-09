@@ -1,6 +1,3 @@
-import os
-import sys
-
 import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
@@ -53,16 +50,11 @@ def hwes_cross_val(series, seasonal_periods=288, horizon=288, window_size=2016, 
 
         for i in range(total_windows):
             print(f"Processing window {i + 1}/{total_windows} for trend={trend}, seasonal={seasonal}, damped={damped}")
-            # start = i * step
-            # end = start + window_size
-            # test_end = end + horizon
-
-            # train = series.iloc[start:end]
-            # test = series.iloc[end:test_end]
-            end = window_size + i * step
+            start = i * step
+            end = start + window_size
             test_end = end + horizon
 
-            train = series.iloc[:end]
+            train = series.iloc[start:end]
             test = series.iloc[end:test_end]
 
             if scaler:
