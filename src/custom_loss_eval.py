@@ -19,29 +19,29 @@ def dev_error_component(y_pred, y_true):
     true_dev = y_true - np.mean(y_true)
     return np.abs(pred_dev - true_dev)
 
-def custom_loss_eval(y_pred, y_true, std_weight=1.0, 
-                     de_weight=1.0, clip_weight_std=None, clip_weight_dev=None):
+def custom_loss_eval(y_pred, y_true, std_weight=None, 
+                     de_weight=None):
     base_loss = np.abs(y_pred - y_true)
     mae = base_loss.mean()
 
     # Std penalty
     std_penalty = std_diff(y_pred, y_true)
     w_std = mae / (std_penalty + 1e-8)
-    if clip_weight_std is not None:
-        w_std = np.minimum(w_std, clip_weight_std)
+    if std_weight is not None:
+        w_std = std_weight
 
     # Deviation penalty
     dev_error = dev_error_component(y_pred, y_true)
     w_dev = base_loss / (dev_error + 1e-8)
-    if clip_weight_dev is not None:
-        w_dev = np.minimum(w_dev, clip_weight_dev)
+    if de_weight is not None:
+        # w_dev = np.minimum(w_dev, clip_weight_dev)
+        w_dev = de_weight
 
     # Total weighted loss
     total_loss = base_loss + std_weight * w_std * std_penalty + de_weight * w_dev * dev_error
     return total_loss.mean()
 
-def eval_metrics(y_pred, y_true, std_weight=1.0, de_weight=1.0, 
-                               clip_weight_std=None, clip_weight_dev=None):
+def eval_metrics(y_pred, y_true, std_weight=1.0, de_weight=1.0):
     """
     Computes evaluation metrics for a forecast and returns as a DataFrame.
 
@@ -64,7 +64,7 @@ def eval_metrics(y_pred, y_true, std_weight=1.0, de_weight=1.0,
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
     std_penalty_value = std_diff(y_pred, y_true)
     dev_error = dev_error_component(y_pred, y_true).mean()
-    custom_loss = custom_loss_eval(y_pred, y_true, std_weight, de_weight, clip_weight_std, clip_weight_dev)
+    custom_loss = custom_loss_eval(y_pred, y_true, std_weight, de_weight)
 
     metrics = {
         "custom_loss": custom_loss,

@@ -43,22 +43,22 @@ if __name__ == '__main__':
     save_csv_data(train, os.path.join(DATA_DIR, 'train.csv'), index=True)
     save_csv_data(test, os.path.join(DATA_DIR, 'test.csv'), index=True)
 
-    ## -----Step 3: Hyperparameter optimization through Grid Search----
-    # Set the scaler to prevent numerical instability during grid search
-    scaler = MinMaxScaler(feature_range=(1, 2)) 
+    # ## -----Step 3: Hyperparameter optimization through Grid Search----
+    # # Set the scaler to prevent numerical instability during grid search
+    # scaler = MinMaxScaler(feature_range=(1, 2)) 
 
-    cv_results = cv_optimization(
-        series=train,
-        seasonal_periods=DAILY,
-        horizon=DAILY,
-        window_size=WINDOWS,  
-        step=STEPS,
-        scaler=scaler
-    )
+    # cv_results = cv_optimization(
+    #     series=train,
+    #     seasonal_periods=DAILY,
+    #     horizon=DAILY,
+    #     window_size=WINDOWS,  
+    #     step=STEPS,
+    #     scaler=scaler
+    # )
 
-    # Save the results to a CSV file
-    os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
-    cv_results.to_csv(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
+    # # Save the results to a CSV file
+    # os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
+    # cv_results.to_csv(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
 
     ## -------------Step 4: Save the best parameters-------------------
     hyperparam_matrix = read_csv_data(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
@@ -95,7 +95,8 @@ if __name__ == '__main__':
     save_csv_data(forecast_df, os.path.join(RESULTS_DIR, 'tables', 'hwes_forecast.csv'), index=True)
 
     ## -----------Step 7: Evaluate the model performance--------------
-    eval_results = eval_metrics(forecast, test)
+    # Evaluate for non-spike day 
+    eval_results = eval_metrics(forecast[ : DAILY], test[ : DAILY])
     save_csv_data(eval_results, os.path.join(RESULTS_DIR, 'tables', 'hwes_eval_results.csv'), index=True)
     
 
