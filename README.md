@@ -74,12 +74,12 @@ Run and evaluate the following baseline models:
    - `baseline_hwes.ipynb`
    - Captures trend and seasonality
 
-Run the following command to evaluate the HWES model:
+   Run the following command to evaluate the HWES model:
 
-   ```bash
-   jupyter lab analysis/baseline_hwes.ipynb
-   python scripts/hwes_main.py
-   ```
+      ```bash
+      jupyter lab analysis/baseline_hwes.ipynb
+      python scripts/hwes_main.py
+      ```
 
 #### Model II: SARIMA (Seasonal Autoregressive Integrated Moving Average)
    - `baseline_sarima.ipynb`  
@@ -87,12 +87,12 @@ Run the following command to evaluate the HWES model:
 
 Run the following command to evaluate the HWES SARIMA model:
 
-    ```bash
+   ```bash
    jupyter lab analysis/baseline_sarima.ipynb
-    python scripts/sarima_main.py
-    ```
-**⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
-If you wish to inspect the model or rerun the evaluation, please run `scripts/sarima_main.py` locally.
+   python scripts/sarima_main.py
+   ```
+   **⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
+   If you wish to inspect the model or rerun the evaluation, please run `scripts/sarima_main.py` locally.
 
 #### Model III: XGBoost
    - `baseline_xgboost.ipynb`  
