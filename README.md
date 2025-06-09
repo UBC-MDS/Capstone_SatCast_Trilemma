@@ -74,7 +74,7 @@ Baseline models include Holt-Winters, SARIMA, and XGBoost.
    - `baseline_hwes.ipynb`
    - Captures trend and seasonality
 
-> Run the following command to evaluate the HWES model:
+Run the following command to evaluate the HWES model:
 
    ```bash
    jupyter lab analysis/baseline_hwes.ipynb
@@ -85,13 +85,13 @@ Baseline models include Holt-Winters, SARIMA, and XGBoost.
    - `baseline_sarima.ipynb`  
    - Seasonal order selected via ACF/PACF analysis
 
-> Run the following command to evaluate the HWES SARIMA model:
+Run the following command to evaluate the HWES SARIMA model:
 
    ```bash
    jupyter lab analysis/baseline_sarima.ipynb
    python scripts/sarima_main.py
    ```
-   > **⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
+   **⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
    If you wish to inspect the model or rerun the evaluation, please run `scripts/sarima_main.py` locally.
 
 #### Model III: XGBoost
