@@ -74,12 +74,12 @@ Run and evaluate the following baseline models:
    - `baseline_hwes.ipynb`
    - Captures trend and seasonality
 
-   > Run the following command to evaluate the HWES model:
+    Run the following command to evaluate the HWES model:
 
-   ```bash
-   jupyter lab analysis/baseline_hwes.ipynb
-   python scripts/hwes_main.py
-   ```
+    ```bash
+    jupyter lab analysis/baseline_hwes.ipynb
+    python scripts/hwes_main.py
+    ```
 
 #### Model II: SARIMA (Seasonal Autoregressive Integrated Moving Average)
    - `baseline_sarima.ipynb`  
