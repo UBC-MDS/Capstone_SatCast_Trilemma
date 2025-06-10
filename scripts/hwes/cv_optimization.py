@@ -65,7 +65,7 @@ def cv_optimization(series, seasonal_periods=96, horizon=96, window_size=672, st
                         train,
                         trend=trend,
                         seasonal=seasonal,
-                        seasonal_periods=seasonal_periods if seasonal else None,
+                        seasonal_periods=seasonal_periods if seasonal is not None else None,
                         damped_trend=damped
                     )
                     

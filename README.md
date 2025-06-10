@@ -55,7 +55,7 @@ quarto render reports/proposal_report.qmd
 
 To reproduce the analysis and modeling results in this repository, follow the steps below. For each model, there is a modular notebook saved under `analysis` folder accompanies with logical pipelines in `.py` format under `scripts` folder.
 
-### Step 1: Exploratory Data Analysis (EDA)
+p### Step 1: Exploratory Data Analysis (EDA)
 
 Run `data_spec.ipynb` to explore the dataset and gain insights:
    - Summarizes key feature groups, data types, and their roles  
