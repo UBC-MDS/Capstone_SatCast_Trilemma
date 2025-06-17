@@ -7,6 +7,10 @@ import seaborn as sns
 from prophet.diagnostics import cross_validation, performance_metrics
 import itertools
 import json
+import sys
+from pathlib import Path
+current_file = Path(__file__).resolve()
+project_path = str(current_file.parents[1])
 
 def model_optimization(df,all_params):
     """
@@ -103,7 +107,7 @@ def create_model_new_holiday(y_train):
     --------
     >>> model = create_model_new_holiday(y_train)
     """
-    with open("../results/models/prophet.json", "r") as f:
+    with open(project_path+"/results/models/prophet.json", "r") as f:
         params = json.load(f)
         
     s = y_train.reset_index()
