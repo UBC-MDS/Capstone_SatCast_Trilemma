@@ -1,15 +1,15 @@
 import sys
-from prophet import Prophet
-import pickle
-
 from pathlib import Path
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
+src_path = project_root / "scripts" / "prophet"
+sys.path.insert(0, str(src_path))
+from data_preprocess import data_preprocess
 src_path = project_root / "src" 
 from prophet_utils import model_optimization as optimization,create_model_new_holiday
 import itertools
 import json
-import joblib
+from prophet.serialize import model_to_json, model_from_json
 
 def model_optimization(df,result):
     """
@@ -42,14 +42,7 @@ def model_optimization(df,result):
         json.dump(best_params[0], f, indent=4)
     best_model = create_model_new_holiday(y_train)
     best_model.fit(df)
-    model_path = result+"/prophet.pkl"
-    joblib.dump(best_model, model_path)
+    model_path = result+"/prophet_model.json"
+    with open(model_path, 'w') as fout:
+        fout.write(model_to_json(best_model))  # Save model
     print(f"Best params：{best_params[0]}\nRMSE：{best_params[1]:.4f}")
-    final_model = Prophet(**best_params[0])
-    final_model.fit(df)
-
-    # Save the fitted model
-    with open(result + "/prophet_model.pkl", "wb") as f:
-        pickle.dump(final_model, f)
-
-
