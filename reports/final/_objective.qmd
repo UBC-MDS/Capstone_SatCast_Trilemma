@@ -1,1 +1,11 @@
-## Subsection (Use Two Hashes)
+## Target Objectives & Data Motivation
+
+To make this problem computationally tractable, we refined the initial partner question—“How can we forecast Bitcoin transaction fees?”—into tangible scientific objectives that could be addressed using data science techniques. Through exploratory analysis and iterative scoping, we ultimately framed the task as a short-term time series forecasting problem, with a primary emphasis on detecting periods of high volatility and sudden fee spikes.
+
+Our first objective was to identify the timing of upcoming fee volatility within a 24-hour window. From the partner’s perspective, the ability to foresee periods of elevated transaction cost—regardless of precise magnitude—provides actionable value. For users, it can inform decisions on whether to delay a transaction; for wallets and exchanges, it can guide cost optimization and fee recommendation strategies. Thus, this volatility-awareness framing aligns more closely with real-world needs than a pure regression approach.
+
+A secondary objective was to forecast the magnitude of the fastest fee during volatile periods. While precise fee prediction remains challenging due to the irregular and event-driven nature of spikes, estimating directional movement or high-fee ranges can still help downstream systems adapt proactively. This reflects the broader challenge in forecasting highly volatile series, where traditional models often fall short in capturing non-repeating patterns triggered by external events [@taylor2018prophet].
+
+To support these objectives, we used a dataset consisting of 5-minute snapshots from the Bitcoin mempool, covering a two-month period in early 2025. Each snapshot captures a rich set of features—including mempool congestion, block metrics, mining difficulty, and BTC price signals—yielding over 60 time-varying variables that reflect real-time network dynamics. Prior work has shown that mempool congestion and transaction characteristics are key determinants of Bitcoin transaction fees [@fan2020bitcoin]. Based on the exploratory data analysis, these features exhibited strong short-term dependencies, daily cycles, and non-repeatable spike events—further justifying the choice to focus on volatility modeling.
+
+Overall, these refined objectives reflect a compromise between practical forecasting needs and technical feasibility, allowing us to frame a modeling strategy that is both scientifically meaningful and impactful to the capstone partner’s use case.
