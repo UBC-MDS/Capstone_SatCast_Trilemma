@@ -43,4 +43,4 @@ def data_preprocess(df):
     })
     df_prophet_new['y'] = np.log1p(df_prophet_new['y'])
     
-    return df_prophet_new
+    return df_prophet_new,y_train_new

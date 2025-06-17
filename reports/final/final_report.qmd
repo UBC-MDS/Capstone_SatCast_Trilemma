@@ -37,7 +37,6 @@ execute:
 
 # Data Product and Results
 
-{{< include _results.qmd >}}
 {{< include _product.qmd >}}
 
 # Conclusion and Recommendations

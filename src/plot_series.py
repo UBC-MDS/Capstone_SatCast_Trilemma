@@ -7,7 +7,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def plot_series(df_eval: pd.DataFrame, sid, ax=None):
+def plot_series(df_eval: pd.DataFrame, sid = "recommended_fee_fastestFee", ax=None):
     """
     Plot actual vs. predicted values for a specific time series.
 

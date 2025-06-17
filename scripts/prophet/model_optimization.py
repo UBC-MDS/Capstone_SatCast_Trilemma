@@ -6,9 +6,10 @@ src_path = project_root / "scripts" / "prophet"
 sys.path.insert(0, str(src_path))
 from data_preprocess import data_preprocess
 src_path = project_root / "src" 
-from prophet_utils import model_optimization as optimization
+from prophet_utils import model_optimization as optimization,create_model_new_holiday
 import itertools
 import json
+from prophet.serialize import model_to_json, model_from_json
 
 def model_optimization(df,result):
     """
@@ -25,7 +26,7 @@ def model_optimization(df,result):
     -------
     Null
     """
-    df = data_preprocess(df)
+    df,y_train = data_preprocess(df)
     param_grid = {
         'changepoint_prior_scale': [0.01, 0.1, 0.3, 0.5],
         'seasonality_prior_scale': [5.0, 10.0, 20.0],
@@ -39,5 +40,9 @@ def model_optimization(df,result):
     file_path = result+"/prophet.json"
     with open(file_path, "w") as f:
         json.dump(best_params[0], f, indent=4)
+    best_model = create_model_new_holiday(y_train)
+    best_model.fit(df)
+    model_path = result+"/prophet_model.json"
+    with open(model_path, 'w') as fout:
+        fout.write(model_to_json(best_model))  # Save model
     print(f"Best params：{best_params[0]}\nRMSE：{best_params[1]:.4f}")
-
