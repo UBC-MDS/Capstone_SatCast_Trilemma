@@ -1,0 +1,53 @@
+---
+title: "Final Report: Forecasting Bitcoin Transaction Fees"
+subtitle: "Partner: Trilemma Foundation"
+author: "Jenny (Yuci) Zhang, Tengwei Wang, Ximin Xu, Yajing Liu"
+date: "June 25, 2025"
+jupyter: python3
+format:
+    pdf:
+        toc: true
+        toc-depth: 2
+        fig-pos: "H"
+        tbl-pos: "H"
+        tbl-cap-location: bottom
+number-sections: true
+bibliography: references.bib
+execute:
+  echo: false
+  warning: false
+---
+
+\newpage
+# Executive Summary
+
+{{< include _summary.qmd >}}
+
+# Introduction
+
+{{< include _background.qmd >}}
+{{< include _objective.qmd >}}
+
+# Data Science Techniques
+
+{{< include _data.qmd >}}
+{{< include _preprocessing.qmd >}}
+{{< include _models.qmd >}}
+{{< include _metrics.qmd >}}
+
+# Data Product and Results
+
+{{< include _results.qmd >}}
+{{< include _product.qmd >}}
+
+# Conclusion and Recommendations
+
+{{< include _conclusion.qmd >}}
+{{< include _recommendations.qmd >}}
+
+\newpage
+# Appendix
+
+{{< include _appendix.qmd >}}
+
+# References
