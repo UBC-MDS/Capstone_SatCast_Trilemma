@@ -27,6 +27,7 @@ execute:
 
 {{< include _background.qmd >}}
 {{< include _objective.qmd >}}
+{{< include _achievements.qmd >}}
 
 # Data Science Techniques
 
