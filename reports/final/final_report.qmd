@@ -17,9 +17,15 @@ execute:
   echo: false
   warning: false
 ---
+```{python}
+#| label: setup-analysis
+#| echo: false     # hide the code
+#| include: false  # hide any output
+%run ../../scripts/analysis.py
+```
 
 \newpage
-# Executive Summary
+# Executive Summary  
 
 {{< include _summary.qmd >}}
 

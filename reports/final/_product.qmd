@@ -1,5 +1,94 @@
+
 ## Overview of the Data Product
 This data product directly supports Trilemma Capital’s mission of serving industry talent and advancing Bitcoin infrastructure through data science, both educational and technical. Its design intentionally tailors to three core audiences. General users and institutions can rely on the 24-hour forecasts to plan transactions and reduce fee costs. Learners and educators receive a transparent, step-by-step walkthrough of Bitcoin-fee forecasting and time-series methodology. Industry experts and partners see infrastructure-grade modeling practice embodied in a modular pipeline and well-documented repository. 
 The product is purposefully modular. Jupyter notebooks guide users through EDA, modeling decisions, and final TFT results. Python scripts implement a structured pipeline for reproducible experiments and easy re-training on new data. Finally, the open-source GitHub repository—with clear documentation—enables collaboration, scalability, and long-term extensibility.
 
 ## Results
+Model comparison tables and the forecast plots illustrate how predictive fidelity improves as we progress from classical statistics to deep learning.
+Baselines such as HWES and SARIMA track the day-level seasonal drift but miss the sharp dips and spikes that dominate the fee landscape, as shown in @fig-hwes-sarima.
+```{python}
+project_root = Path().resolve().parent.parent  # or adjust as needed
+src_path = project_root / "src"
+sys.path.append(str(src_path))
+
+from plot_forecast_comparison import plot_forecast_comparison
+```
+```{python}
+#| label: fig-hwes-sarima
+#| fig-cap: "HWES and SARIMA forecasts vs actual fee (test set)"
+#| fig-align: "center"
+#| dpi: 150
+
+fig, ax = plot_forecast_comparison(
+    forecasts["HWES"], "Forecast (HWES)",
+    forecasts["SARIMA"], "Forecast (SARIMA)"
+)
+plt.show()
+```
+
+Prophet, with its flexible trend and built-in seasonality terms, improves the global fit but still smooths over most intraday spikes, 
+yielding a custom loss of about `{python} f"{metrics_df.loc['custom_loss', 'Prophet']:.2f}"` 
+ and an RMSE just about `{python} f"{metrics_df.loc['rmse', 'Prophet']:.2f}"`. XGBoost, which ingests engineered lags and mempool signals, 
+pushes average error lower than any of the purely statistical models. 
+This model yields an RMSE of `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`, but continues to understate high-frequency volatility,
+as shown in @fig-prophet-xgboost. The custom loss of XGBoost is `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"`, indicating that while the model captures general trends, it still struggles to fully account for the sharp fee spikes and intraday volatility present in the data.
+```{python}
+#| label: fig-prophet-xgboost
+#| fig-cap: "Prophet and XGBoost forecasts vs actual fee (test set)"
+#| fig-align: "center"
+#| dpi: 150
+
+fig, ax = plot_forecast_comparison(
+    forecasts["Prophet"], "Forecast (Prophet)",
+    forecasts["XGBoost"], "Forecast (XGBoost)",
+    color1="orange", color2="purple"
+)
+plt.show()
+
+```
+
+The neural models represent a meaningful shift in modeling capacity.
+While DeepAR introduces sequential awareness through recurrence, it falls short of Prophet and XGBoost in short-term fee tracking, with a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'DeepAR']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'DeepAR']:.2f}"`.
+It is the TFT that best synchronises with both the amplitude and timing of sudden fee surges (darkcyan versus black traces in @fig-deepar-tft). 
+
+```{python}
+#| label: fig-deepar-tft
+#| fig-cap: "DeepAR and TFT forecasts vs actual fee (test set)"
+#| fig-align: "center"
+#| dpi: 150
+
+fig, ax = plot_forecast_comparison(
+    forecasts["DeepAR"], "Forecast (DeepAR)",
+    forecasts["TFT"], "Forecast (TFT)",
+    color1="crimson",     # DeepAR
+    color2="darkcyan"     # TFT
+)
+plt.show()
+```
+Quantitatively, TFT reduces the bespoke volatility-aware loss from about `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"`, the lowest among the baselines, to `{python} f"{metrics_df.loc['custom_loss', 'TFT']:.2f}"`,
+representing a `{python} f"{100 * (metrics_df.loc['custom_loss', 'XGBoost'] - metrics_df.loc['custom_loss', 'TFT']) / metrics_df.loc['custom_loss', 'XGBoost']:.0f}%"` improvement.
+It also brings RMSE down from the `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`–`{python} f"{metrics_df.loc['rmse', 'HWES']:.2f}"` range to `{python} f"{metrics_df.loc['rmse', 'TFT']:.2f}"`,
+a relative gain of `{python} f"{100 * (min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]) - metrics_df.loc['rmse', 'TFT']) / min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]):.0f}%"`.
+MAE, MAPE, and distribution-shape penalties follow the same pattern, confirming that TFT strikes the strongest balance between overall accuracy and sensitivity to congestion-driven shocks.
+
+## Strength and Competitive Edge
+The product’s chief strength is that it predicts rather than reacts. Where mainstream tools like 
+[estimatesmartfee](https://developer.bitcoin.org/reference/rpc/estimatesmartfee.html) or [Mempool.space](https://mempool.space/) publish heuristics for the next few blocks, this project delivers reproducible code that extends the horizon to an entire day and outputs tiered curves—fastest, half-hour, hourly, economy, and minimum—so users can weigh urgency against cost.
+The product is fully transparent: every notebook, script, and utility function is openly shared on GitHub and documented with detailed inline comments. This openness allows peers to audit modeling assumptions, reproduce plots, and validate performance metrics with ease. Its modular design further reinforces this transparency.
+Developers can experiment freely—by changing the loss function, introducing new input features, or retraining a specific model—without disrupting the broader pipeline.
+The educational structure of the notebooks sets this product apart. It not only walks newcomers through key time-series modeling concepts and trade-offs but also provides experienced users with a clear path to automated, command-line execution.
+Together, these qualities establish Trilemma not as a provider of short-term heuristics, but as a builder of forward-looking, evidence-based infrastructure for the Bitcoin ecosystem.
+
+## Limitations
+Despite its strengths, the product faces several limitations.
+First, the models do not yet incorporate real-time external signals, such as exchange outflows or policy announcements. This is making them less responsive to abrupt market events that drive sudden fee spikes.
+Second, The loss function uses fixed weights, which limits its ability to adapt dynamically to changing market regimes.
+Third, predictive intervals are not yet implemented, which may reduce confidence for risk-sensitive users.
+Fourth, the deep learning models, particularly transformers, require GPU acceleration or cloud infrastructure, which can raise the barrier for experimentation and increase the cost of continuous deployment. Forecast performance will also degrade over time unless models are periodically retrained to reflect evolving network conditions.
+Lastly, while the notebooks are well-documented and educational, the absence of a live dashboard or public API limits accessibility for non-technical users, who would need to develop a custom interface to integrate the forecasts into practical workflows.
+
+## Future Directions
+These limitations above, however, reflect intentional trade-offs made to balance flexibility, transparency, and cost.
+Keeping each model in a separate script makes training costs transparent and allows teams to execute only the components they need. This modular design supports flexible development but comes at the expense of centralized orchestration, such as a unified Makefile.
+Looking ahead, enhancements like adaptive loss weighting, uncertainty quantification, and real-time signal ingestion could improve resilience to edge cases. However, each would introduce added computational cost and complexity.
+While a real-time API remains an appealing long-term goal, the high cost of hosting transformer models continuously makes it impractical today. In the meantime, scheduled batch forecasts offer a pragmatic balance between accuracy, interpretability, and operational efficiency.
