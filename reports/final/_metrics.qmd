@@ -1,8 +1,21 @@
 ## Evaluation Metrics
 
-We used multiple metrics to evaluate the forecasting models, selected based on both standard practice and alignment with stakeholder needs. The Mean Absolute Percentage Error (MAPE) served as the primary metric due to its interpretability and widespread use in forecasting tasks. In addition, we used Root Mean Squared Error (RMSE) to assess each model's ability to capture spikes, as RMSE places greater weight on large errors—particularly relevant for volatile fee data.
+We used multiple metrics to evaluate the forecasting models, selected based on both standard practice and alignment with stakeholder needs. The Mean Absolute Percentage Error (MAPE) served as the primary metric due to its interpretability and widespread use in forecasting tasks. In addition, we used Root Mean Squared Error (RMSE) to assess each model's ability to capture spikes, since RMSE penalizes large errors more heavily—an important consideration for volatile fee behavior.
 
-Beyond standard metrics, we implemented a custom composite loss function during model training. This loss combines Mean Absolute Error (MAE), volatility loss (standard deviation-based), and deviation error to better align with our project's key business need: detecting sudden fee spikes and preserving the shape of the series. Traditional pointwise metrics like MAE or MSE often fail to penalize overly smooth forecasts, but our custom loss places greater emphasis on the dynamics of volatility and timing—factors most relevant to our target users. This approach draws inspiration from volatility-sensitive training regimes proposed in recent literature on interpretable deep time series models, such as the Temporal Fusion Transformer [@lim2019temporal].
+To better capture the characteristics of Bitcoin fee spikes, we designed a custom composite loss function for model training. This loss combines three components: base error (MAE), volatility mismatch (standard deviation loss), and spike timing error (deviation error), which is calculated as: Total Loss = Base Loss + Std Loss + Deviation Error. While traditional losses like MAE or MSE tend to smooth over volatility, our formulation explicitly rewards models that preserve sharp changes and dynamic patterns. A breakdown of each term is shown in Table @tbl-custom-loss.
+
+::: {.table #tbl-custom-loss}
+
+Table: Breakdown of custom loss function components.
+
+| **Component**     | **Base Loss**            | **Std Loss**                | **Deviation Error**                                  |
+|-------------------|--------------------------|-----------------------------|------------------------------------------------------|
+| **Calculation**   | `y_pred − y_true`        | `std_pred − std_true`       | `(y_pred − ȳ_pred) − (y_true − ȳ_true)`             |
+| **Captures**   | Raw error                | Overall volatility mismatch | Dynamic (pointwise) pattern mismatch                 |
+| **Relevance to Spikes** | Underweights spikes | Penalizes smoothing         | Captures spike timing                                |
+:::
+
+This design was inspired by volatility-sensitive training regimes used in interpretable deep time series models such as the Temporal Fusion Transformer [@lim2019temporal].
 
 ## Stakeholder Impact & Potential Ethical Concerns / Limitations
 

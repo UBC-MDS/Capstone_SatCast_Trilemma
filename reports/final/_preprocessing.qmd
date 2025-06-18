@@ -1,6 +1,4 @@
-## Dataset Overview & Feature Preprocessing
-
-We worked with a dataset of 5-minute snapshots from the Bitcoin mempool (March–May 2025), each containing 61 features describing real-time network conditions such as mempool congestion, transaction volume, block creation, mining difficulty, and BTC price. These features captured the main drivers of fee dynamics.
+## Feature Preprocessing
 
 To prepare the data, we conducted exploratory correlation analysis between features and the target variable fastestFee, which confirmed that several predictors contained useful signals. This was not used for formal feature selection, but helped validate feature relevance.
 
