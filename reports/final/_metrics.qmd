@@ -1,8 +1,10 @@
 ## Evaluation Metrics
 
-We used multiple metrics to evaluate the forecasting models, selected based on both standard practice and alignment with stakeholder needs. The Mean Absolute Percentage Error (MAPE) served as the primary metric due to its interpretability and widespread use in forecasting tasks. In addition, we used Root Mean Squared Error (RMSE) to assess each model's ability to capture spikes, since RMSE penalizes large errors more heavily—an important consideration for volatile fee behavior.
+We used multiple metrics to evaluate model performance, selected to balance interpretability and relevance to fee volatility. MAPE was chosen for its intuitive, percentage-based output, helping stakeholders assess relative accuracy across fee levels. RMSE complemented this by penalizing large errors more heavily, making it better suited for detecting and differentiating sharp fee spikes—crucial for users aiming to avoid overpayment during congestion.
 
-To better capture the characteristics of Bitcoin fee spikes, we designed a custom composite loss function for model training. This loss combines three components: base error (MAE), volatility mismatch (standard deviation loss), and spike timing error (deviation error), which is calculated as: Total Loss = Base Loss + Std Loss + Deviation Error. While traditional losses like MAE or MSE tend to smooth over volatility, our formulation explicitly rewards models that preserve sharp changes and dynamic patterns. A breakdown of each term is shown in Table @tbl-custom-loss.
+To address the limitations of standard loss functions in modeling Bitcoin fee spikes, we developed a custom composite loss tailored to the problem’s volatility-first nature. Traditional losses such as MAE tend to reward average accuracy while under-penalizing models that miss high-volatility patterns or smooth out sudden transitions. Recent literature underscores the need for shape- and time-aware loss formulations in forecasting tasks. Le Guen & Thome introduce a distortion-based loss that aligns predictions with observed temporal patterns [@leguen2019dilate], Wang et al. demonstrate that custom loss functions enhance spike detection in extreme-value settings [@wang2024custom], and Lopez highlights the importance of aligning evaluation with volatility-specific business objectives [@lopez2001evaluating].
+
+ Inspired by these, we crafted a loss that combines three components: base error (MAE), volatility mismatch (standard deviation loss), and spike timing deviation (difference in normalized series structure). This formulation explicitly encourages models to preserve both the timing and magnitude of fee surges—crucial in the context of event-driven Bitcoin congestion. A breakdown of the loss components is shown in @tbl-custom-loss.
 
 ::: {.table #tbl-custom-loss}
 
@@ -15,12 +17,6 @@ Table: Breakdown of custom loss function components.
 | **Relevance to Spikes** | Underweights spikes | Penalizes smoothing         | Captures spike timing                                |
 :::
 
-This design was inspired by volatility-sensitive training regimes used in interpretable deep time series models such as the Temporal Fusion Transformer [@lim2019temporal].
+## Stakeholder Impact & Ethical Considerations
 
-## Stakeholder Impact & Potential Ethical Concerns / Limitations
-
-Our evaluation metrics and modeling choices were designed to align with stakeholder priorities. For end users, forecasting the timing of high-fee periods is more valuable than precise predictions, as it enables them to avoid costly transaction windows. Wallet developers use these forecasts to provide timely fee suggestions, while miners may use them to optimize revenue.
-
-However, deploying such tools raises ethical concerns. Users may over-rely on forecasts, mistaking them for guarantees. To address this, outputs should communicate uncertainty and limitations. There is also a risk of manipulation—public forecasts could be exploited to game mempool behavior. In addition, unequal access to forecasting tools may reinforce disparities. Promoting transparency and open access helps mitigate these risks.
-
-Some broader concerns remain unaddressed, including fairness across user groups, potential shifts in miner incentives, and susceptibility to coordinated manipulation. Future work should consider these dimensions through equity-aware metrics and policy-informed design.
+By prioritizing volatility and spike timing, our evaluation metrics better reflect the needs of key stakeholders. End users want to avoid high-fee periods, wallet providers need timely and interpretable forecasts, and miners may optimize revenue through better visibility. However, ethical risks exist: users may over-rely on predictions, forecasts may be exploited, and unequal access could widen fee disparities. We mitigate these risks through open access, transparent design, and clear communication of model limitations. Broader concerns like fairness, miner incentives, and malicious mempool behavior remain outside our current scope and merit future attention.
