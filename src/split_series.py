@@ -1,28 +1,36 @@
-# split_series.py
-# Author: Ximin
-# Date: 2025-06-07
-# Description: Split time series data into training and validation sets.
+"""
+split_series.py
 
+Splits a time-indexed DataFrame into training and validation sets for forecasting.
+"""
 import pandas as pd
 
 def split_series(df: pd.DataFrame, PRED_STEPS: int):
     """
-    Splits the DataFrame into training and validation sets based on prediction steps.
+    Split a time-indexed DataFrame into training and validation sets using prediction window size.
+
+    The validation set includes the most recent `PRED_STEPS` data points,
+    while the training set includes everything before that.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Input time-indexed dataframe containing a 'time_idx' column.
+        Input DataFrame with a 'time_idx' column indicating temporal order.
     PRED_STEPS : int
-        Number of steps to forecast (e.g., 96 for 24 hours of hourly data).
+        Number of time steps to forecast into the future (e.g., 96 for 1-day horizon).
 
     Returns
     -------
     df_train : pd.DataFrame
-        DataFrame from the beginning to two prediction windows before the end.
+        DataFrame containing historical data up to (max_idx - PRED_STEPS).
     df_valid : pd.DataFrame
-        DataFrame from the beginning to one prediction window before the end.
+        DataFrame containing data up to max_idx (includes future targets).
+    
+    Example
+    -------
+    >>> df_train, df_valid = split_series(df, PRED_STEPS=96)
     """
+
     last_idx = df.time_idx.max()
     training_cutoff = last_idx - PRED_STEPS
 

@@ -1,8 +1,23 @@
 """
 advanced_tft.py
 
-Main orchestration script to run full TFT forecasting pipeline.
+Main orchestration script to run the full Temporal Fusion Transformer (TFT) forecasting pipeline
+for Bitcoin transaction fee prediction.
+
+This script performs the following steps:
+1. Loads and preprocesses raw fee data from a Parquet file.
+2. Constructs training and validation datasets and corresponding dataloaders.
+3. Defines a custom loss function that penalizes both MAE and prediction instability (std/dev).
+4. Trains a TFT model using the specified configuration and logs progress.
+
+Usage:
+    python advanced_tft.py --parquet_path <optional_path_to_parquet_file>
+
+Dependencies:
+    - The script expects supporting modules in scripts/advanced_tft/
+    - Requires the Lightning-based training loop, loss functions, and dataloader constructors.
 """
+
 
 import sys
 import os
@@ -12,7 +27,7 @@ from pathlib import Path
 # Setup project root and import paths
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[1]
-src_path = project_root / "scripts" / "advanced_tft"
+src_path = project_root / "scripts" / "tft"
 sys.path.insert(0, str(src_path))
 
 # Custom module imports

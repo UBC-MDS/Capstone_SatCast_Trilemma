@@ -1,8 +1,22 @@
 """
 advanced_tft.py
 
-Main orchestration script to run full TFT forecasting pipeline.
+Main orchestration script to run the full DeepAR forecasting pipeline for Bitcoin fee prediction.
+
+This script performs the following steps:
+1. Loads and preprocesses historical fee data from a Parquet file.
+2. Constructs and scales datasets for training and validation.
+3. Creates PyTorch dataloaders with appropriate encoder/decoder structure.
+4. Trains a DeepAR model on the training dataset.
+
+Usage:
+    python advanced_tft.py --parquet_path <optional_path_to_parquet_file>
+
+Dependencies:
+    - The script expects supporting modules in scripts/deepar/
+    - Requires the Lightning-based training loop, loss functions, and dataloader constructors.
 """
+
 
 import sys
 import os

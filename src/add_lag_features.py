@@ -1,3 +1,9 @@
+"""
+add_lag_features.py
+
+Adds lagged features to time series data for use in forecasting models.
+"""
+
 import pandas as pd
 
 def add_lag_features(df: pd.DataFrame, column: str, lag_step: int) -> pd.DataFrame:

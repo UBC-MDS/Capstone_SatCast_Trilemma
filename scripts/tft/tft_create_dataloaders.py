@@ -1,8 +1,32 @@
 """
 tft_create_dataloaders.py
 
-Builds TimeSeriesDataSet objects and DataLoaders for training and validation.
+Builds TimeSeriesDataSet objects and PyTorch DataLoaders for use with the Temporal Fusion Transformer (TFT) model.
+
+Responsibilities:
+-----------------
+1. Constructs a training `TimeSeriesDataSet` from the preprocessed and lag-augmented training DataFrame.
+2. Applies consistent configuration to generate a validation dataset using `.from_dataset()`.
+3. Automatically identifies known and unknown real-valued covariates based on naming conventions.
+4. Returns DataLoaders with proper batching and multiprocessing setup for training and evaluation.
+
+Key Features:
+-------------
+- Uses GroupNormalizer for per-series normalization.
+- Adds relative time index, target scales, and encoder length to improve learning.
+- Handles multi-series setup using `series_id`.
+
+Typical Usage:
+--------------
+Used in a TFT training pipeline after data preparation and before model initialization.
+
+Returns:
+--------
+- `TimeSeriesDataSet` object (train config)
+- `DataLoader` for training
+- `DataLoader` for validation
 """
+
 
 import os
 from pytorch_forecasting import TimeSeriesDataSet

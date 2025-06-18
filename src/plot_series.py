@@ -1,8 +1,8 @@
-# plot_series.py
-# Author: Ximin 
-# Date: 2025-06-04
-# Description:  visualizes the performance of a forecasting model by plotting the actual values (`y_true`) 
-# and predicted values (`y_pred`) over time for a given `series_id`
+"""
+plot_series.py
+
+Utility for visualizing actual vs. predicted time series data for a specific series ID.
+"""
 
 import matplotlib.pyplot as plt
 import pandas as pd
