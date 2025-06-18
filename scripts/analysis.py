@@ -22,6 +22,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
+import pickle
 
 # Setup paths
 project_root = Path(__file__).resolve().parent.parent
@@ -92,6 +93,9 @@ metrics_df.columns = metrics.keys()
 metrics_df = metrics_df.round(4)
 metrics_df.to_csv(TABLE_DIR / "all_model_metrics.csv")
 
+
+with open(TABLE_DIR / "all_forecasts.pkl", "wb") as f:
+    pickle.dump(forecasts, f)
 # Summary
 print("Forecasts and metrics saved.")
 print(metrics_df)
