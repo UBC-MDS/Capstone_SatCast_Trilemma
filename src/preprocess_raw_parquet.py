@@ -1,40 +1,47 @@
-# preprocess_raw_parquet.py
+"""
+preprocess_raw_parquet.py
 
-# This module handles:
-# - Loading raw Bitcoin fee and mempool histogram data from a Parquet file
-# - Dropping uninformative columns
-# - Converting timestamps and setting the time index
-# - Resampling to a fixed interval
-# - Basic linear interpolation
-
-# Author: Ximin Xu
-# Date: 2025-06-04
-
+Loads and cleans raw Bitcoin mempool and fee data from a Parquet file for forecasting use.
+"""
 import os
 import pandas as pd
 
 
 def preprocess_raw_parquet(parquet_path: str) -> pd.DataFrame:
     """
-    Load and clean raw Bitcoin fee + mempool data for further preprocessing.
+    Load and preprocess raw Bitcoin mempool and fee data from a Parquet file.
+
+    This function performs the following steps:
+    - Loads the Parquet file and validates structure.
+    - Removes high-fee histogram bins (above 300 sats/vB).
+    - Converts UNIX timestamps to datetime and sets it as index.
+    - Drops non-USD price columns.
+    - Resamples the data to a uniform 15-minute frequency.
+    - Fills missing values via linear interpolation.
 
     Parameters
     ----------
     parquet_path : str
-        Path to the raw Parquet file.
+        File path to the raw Parquet file.
 
     Returns
     -------
     pd.DataFrame
-        Cleaned DataFrame with 15-minute uniform resampling and interpolated values.
+        A cleaned and regularly resampled DataFrame, indexed by timestamp.
 
     Raises
     ------
     FileNotFoundError
-        If the given Parquet file does not exist.
+        If the file does not exist at the specified path.
     ValueError
-        If required columns like 'timestamp' are missing or timestamp conversion fails.
+        If required columns are missing or timestamp conversion/resampling fails.
+
+    Example
+    -------
+    >>> df = preprocess_raw_parquet("data/raw/fees.parquet")
+    >>> df.head()
     """
+
 
     # Check if the file exists
     if not os.path.isfile(parquet_path):
