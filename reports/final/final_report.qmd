@@ -21,7 +21,15 @@ execute:
 #| label: setup-analysis
 #| echo: false     # hide the code
 #| include: false  # hide any output
-%run ../../scripts/analysis.py
+import pickle
+import sys
+import pandas as pd
+# %run ../../scripts/analysis.py 
+# The two files below are created via the analysis.py file. For reproducibility you can run this magic command above before moving forward. However, remember the SARIMA model is not in the github repo, you will have to fit a full SARIMA model before running this magic command as it is required in analysis.py. Go to Readme.md for instruction on how to train an SARIMA model on your local machine
+with open("../../results/tables/all_forecasts.pkl", "rb") as f:
+    forecasts = pickle.load(f)
+
+metrics_df = pd.read_csv("../../results/tables/all_model_metrics.csv", index_col=0)
 ```
 
 \newpage
@@ -37,7 +45,6 @@ execute:
 
 # Data Science Techniques
 
-{{< include _data.qmd >}}
 {{< include _preprocessing.qmd >}}
 {{< include _models.qmd >}}
 {{< include _metrics.qmd >}}
