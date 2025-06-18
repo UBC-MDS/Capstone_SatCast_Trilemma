@@ -27,8 +27,8 @@ plt.show()
 ```
 
 Prophet, with its flexible trend and built-in seasonality terms, improves the global fit but still smooths over most intraday spikes, 
-yielding a custom loss of about `{python} f"{metrics_df.loc['custom_loss', 'Prophet']:.2f}"` 
- and an RMSE just about `{python} f"{metrics_df.loc['rmse', 'Prophet']:.2f}"`. XGBoost, which ingests engineered lags and mempool signals, 
+yielding a custom loss of about `{python} f"{metrics_df.loc['custom_loss', 'Prophet']:.2f}"`
+and an RMSE just about `{python} f"{metrics_df.loc['rmse', 'Prophet']:.2f}"`. XGBoost, which ingests engineered lags and mempool signals, 
 pushes average error lower than any of the purely statistical models. 
 This model yields an RMSE of `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`, but continues to understate high-frequency volatility,
 as shown in @fig-prophet-xgboost. The custom loss of XGBoost is `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"`, indicating that while the model captures general trends, it still struggles to fully account for the sharp fee spikes and intraday volatility present in the data.
@@ -69,7 +69,17 @@ Quantitatively, TFT reduces the bespoke volatility-aware loss from about `{pytho
 representing a `{python} f"{100 * (metrics_df.loc['custom_loss', 'XGBoost'] - metrics_df.loc['custom_loss', 'TFT']) / metrics_df.loc['custom_loss', 'XGBoost']:.0f}%"` improvement.
 It also brings RMSE down from the `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`–`{python} f"{metrics_df.loc['rmse', 'HWES']:.2f}"` range to `{python} f"{metrics_df.loc['rmse', 'TFT']:.2f}"`,
 a relative gain of `{python} f"{100 * (min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]) - metrics_df.loc['rmse', 'TFT']) / min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]):.0f}%"`.
-MAE, MAPE, and distribution-shape penalties follow the same pattern, confirming that TFT strikes the strongest balance between overall accuracy and sensitivity to congestion-driven shocks.
+MAE, MAPE, and distribution-shape penalties follow the same pattern, confirming that TFT strikes the strongest balance between overall accuracy and sensitivity to congestion-driven shocks, as shown in the comprehensive comparison in @tbl-metrics.
+
+```{python}
+#| label: tbl-metrics
+#| tbl-cap: Model performance on test data.
+from IPython.display import Markdown 
+core_metrics = metrics_df.loc[["custom_loss", "rmse", "mae", "mape"]].round(2)
+sorted_cols = core_metrics.loc["custom_loss"].sort_values().index
+core_metrics_sorted = core_metrics[sorted_cols]
+Markdown(core_metrics_sorted.round(2).to_markdown(index=True))
+```
 
 ## Strength and Competitive Edge
 The product’s chief strength is that it predicts rather than reacts. Where mainstream tools like 
