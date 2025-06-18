@@ -1,1 +1,13 @@
-## Subsection (Use Two Hashes)
+## Evaluation Metrics
+
+We used multiple metrics to evaluate the forecasting models, selected based on both standard practice and alignment with stakeholder needs. The Mean Absolute Percentage Error (MAPE) served as the primary metric due to its interpretability and widespread use in forecasting tasks. In addition, we used Root Mean Squared Error (RMSE) to assess each model's ability to capture spikes, as RMSE places greater weight on large errors—particularly relevant for volatile fee data.
+
+Beyond standard metrics, we implemented a custom composite loss function during model training. This loss combines Mean Absolute Error (MAE), volatility loss (standard deviation-based), and deviation error to better align with our project's key business need: detecting sudden fee spikes and preserving the shape of the series. Traditional pointwise metrics like MAE or MSE often fail to penalize overly smooth forecasts, but our custom loss places greater emphasis on the dynamics of volatility and timing—factors most relevant to our target users. This approach draws inspiration from volatility-sensitive training regimes proposed in recent literature on interpretable deep time series models, such as the Temporal Fusion Transformer [@lim2019temporal].
+
+## Stakeholder Impact & Potential Ethical Concerns / Limitations
+
+Our evaluation metrics and modeling choices were designed to align with stakeholder priorities. For end users, forecasting the timing of high-fee periods is more valuable than precise predictions, as it enables them to avoid costly transaction windows. Wallet developers use these forecasts to provide timely fee suggestions, while miners may use them to optimize revenue.
+
+However, deploying such tools raises ethical concerns. Users may over-rely on forecasts, mistaking them for guarantees. To address this, outputs should communicate uncertainty and limitations. There is also a risk of manipulation—public forecasts could be exploited to game mempool behavior. In addition, unequal access to forecasting tools may reinforce disparities. Promoting transparency and open access helps mitigate these risks.
+
+Some broader concerns remain unaddressed, including fairness across user groups, potential shifts in miner incentives, and susceptibility to coordinated manipulation. Future work should consider these dimensions through equity-aware metrics and policy-informed design.

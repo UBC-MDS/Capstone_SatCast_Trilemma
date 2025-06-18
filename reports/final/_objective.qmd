@@ -1,1 +1,9 @@
-## Subsection (Use Two Hashes)
+## Target Objectives & Data Motivation
+
+To make the forecasting problem tractable, we refined the partner’s original question into concrete data science objectives. Rather than predicting exact fee values, we framed the task as a short-term time series forecasting problem, with a focus on identifying periods of high volatility and fee spikes.
+
+Our primary objective was to detect upcoming windows of elevated transaction fees within a 24-hour horizon. For end users, wallets, and exchanges, this information enables better timing decisions and cost optimization—aligning more closely with real-world needs than pure point prediction. A secondary goal was to estimate fee magnitudes within those volatile windows, recognizing that even approximate directional forecasts are valuable in practice. This framing also reflects the broader challenge of modeling volatile series, where standard methods often fail to capture irregular, event-driven spikes [@taylor2018prophet].
+
+We used high-frequency snapshots of the Bitcoin mempool collected over two months in early 2025. This dataset reflects real-time network activity and captures key signals related to congestion, mining, and market conditions. Prior work highlights network congestion and transaction complexity as critical drivers of transaction fees [@fan2020bitcoin]. Our exploratory analysis revealed patterns such as daily cycles, short-term dependencies, and sudden spikes—reinforcing our focus on volatility-aware forecasting.
+
+Ultimately, these refined objectives balance technical feasibility with stakeholder value, enabling a meaningful and targeted modeling strategy.
