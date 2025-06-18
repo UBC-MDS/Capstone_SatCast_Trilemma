@@ -1,13 +1,17 @@
+# xgboost_model_optimization.py
+# author: Tengwei Wang
+# date: 2025-06-18
+
+# Optimize xgboost model. 
+
 import sys
 from pathlib import Path
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
-src_path = project_root / "src" 
-sys.path.insert(0, str(src_path))
-from XGBoost import evaluate_best_model
 src_path = project_root / "scripts" /"xgboost"
 sys.path.insert(0, str(src_path))
-from data_preprocess import data_preprocess
+from xgboost_data_preprocess import data_preprocess
+from xgboost_utils import evaluate_best_model
 import joblib
 from sktime.forecasting.base import ForecastingHorizon
 import numpy as np
