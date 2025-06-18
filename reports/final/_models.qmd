@@ -4,70 +4,42 @@ To understand and anticipate Bitcoin transaction fee rate dynamics, we implement
 
 ### Dummy Model (Global Median)
 
-We began with a simple dummy model shown in @fig-global-median that always predicted the global median transaction fee rate. Although it had no predictive power, it served as a baseline to measure improvements from more sophisticated approaches. This model completely ignored any temporal or external structure in the data, but offered a useful starting point to quantify how difficult the prediction task really was.
-
-
-![Global median vs actual values](../../results/plots/global_median.png){#fig-global-median width=100%}
+We began with a simple dummy model. From @fig-fastestfee-distribution, it could be illustrated that over 92.5% of observed fee rates fell within a narrow band of 2–3 satoshis/byte, so the median itself was already a strong first guess. Thus, our dummy model always predicted the global median transaction fee rate.  Although it had no predictive power, it served as a baseline to measure improvements from more sophisticated approaches. This model completely ignored any temporal or external structure in the data, but offered a useful starting point to quantify how difficult the prediction task really was.
 
 ### Holt-Winters Exponential Smoothing (HWES)
 
-Given the presence of regular daily cycles in the data, Holt-Winters Exponential Smoothing was a natural next step. As it was shown in @fig-hwes-forecast, it captured seasonality fairly well and improved upon the dummy model. However, analysis of the residuals revealed persistent autocorrelation, suggesting that the model failed to account for important lag effects or hidden patterns beyond periodic behavior.
+Given clear seasonality observed in our decomposition analysis @fig-decomp, Holt-Winters Exponential Smoothing was a natural next step. It captured seasonality fairly well and improved upon the dummy model. However, analysis of the residuals in @fig-acf revealed persistent autocorrelation, suggesting that the model failed to account for important lag effects or hidden patterns beyond periodic behavior.
 
-![Forecasting results of HWES vs actual values](../../results/plots/forecast_hwes.png){#fig-hwes-forecast width=100%}
+![Multiplicative decomposition of recommended fastest fee rate](../../img/decomposition_multiplicative.png){#fig-decomp width=100%}
 
 ### SARIMA
 
-To address the temporal dependencies missed by HWES, we adopted SARIMA, which supported autoregressive and seasonal differencing components. The results were shown in @fig-sarima-forecast. Because of its capacity to learn from prior values, SARIMA produced a better short-term fit. However, its univariate nature prevented us from including important exogenous features like transaction count, mempool congestion, or size distributions. That limited its practical usefulness in a multi-variable environment.
+To address the temporal dependencies missed by HWES, we adopted SARIMA, which supported autoregressive and seasonal differencing components. Because of its capacity to learn from prior values, SARIMA produced a better short-term fit. However, its univariate nature prevented us from including important exogenous features like transaction count, mempool congestion, or size distributions. That limited its practical usefulness in a multi-variable environment.
 
-![Forecasting results of SARIMA vs actual values](../../results/plots/forecast_sarima.png){#fig-sarima-forecast width=100%}
+![ACF and PACF](../../img/acf_pacf_plot.png){#fig-acf width=100%}
 
 ### XGBoost
 
-We then turned to XGBoost, a powerful tree-based model capable of incorporating a broad array of features. Through @fig-xgboost-forecast, this model significantly expanded our input space and enabled non-linear interactions among variables. While its numerical performance improved, especially on average error metrics like MAPE, the model still struggled with volatility. It produced smooth and flat outputs that failed to capture sudden fee spikes. However, those spikes were precisely the events most critical for users.
+To move beyond univariate models, we adopted XGBoost, which allowed us to leverage the full multivariate feature set. Correlation analysis in @fig-spearman-heat showed that recommended fastest fee rate was significantly influenced by several concurrent indicators. XGBoost is a powerful tree-based model capable of incorporating a broad array of features. It significantly expanded our input space and enabled non-linear interactions among variables. While its numerical performance improved, especially on average error metrics like MAPE, the model still struggled with volatility. It produced smooth and flat outputs that failed to capture sudden fee spikes. However, those spikes were precisely the events most critical for users.
 
-![Forecasting results of XGBoost vs actual values](../../results/plots/forecast_xgboost.png){#fig-xgboost-forecast width=100%}
+![Spearman correlation heatmap](../../img/spearman_correlation.png){#fig-spearman-heat width=100%}
 
 ### Prophet
 
-We explored Facebook's Prophet model to take advantage of its flexibility in modeling seasonality, changepoints, and custom events. Prophet brought in useful priors for time series with irregular behavior and offered a simple interface for integrating domain knowledge. Unfortunately, as the results shown in @fig-prophet-forecast, it still smoothed over the spikes and underperformed in capturing real-time fee volatility. Its strength in trend estimation did not translate well to our highly reactive use case.
-
-![Forecasting results of Prophet vs actual values](../../results/plots/forecast_prophet.png){#fig-prophet-forecast width=100%}
+We explored Facebook's Prophet model to take advantage of its flexibility in modeling seasonality, changepoints, and custom events. Prophet brought in useful priors for time series with irregular behavior and offered a simple interface for integrating domain knowledge. Unfortunately, it still smoothed over the spikes and underperformed in capturing real-time fee volatility. Its strength in trend estimation did not translate well to our highly reactive use case.
 
 ### DeepAR
 
-To try more dynamic modeling, we implemented DeepAR, which was an LSTM-based autoregressive forecasting model. In theory, DeepAR should have leveraged temporal context more effectively and handled sequential data better. However, the outputs in @fig-deepar-forecast were unstable and noisy. The results often failed to align with real-world fee movements. The model demonstrated limited generalizability, and its probabilistic forecasts often appeared more random than informative.
+To try more dynamic modeling, we implemented DeepAR, which was an LSTM-based autoregressive forecasting model. In theory, DeepAR should have leveraged temporal context more effectively and handled sequential data better. However, the outputs were unstable and noisy. The results often failed to align with real-world fee movements. The model demonstrated limited generalizability, and its probabilistic forecasts often appeared more random than informative.
 
-![Forecasting results of DeepAR vs actual values](../../results/plots/forecast_deepar.png){#fig-deepar-forecast width=100%}
 
 ### Temporal Fusion Transformer (TFT)
 
-Our final and most advanced model was the Temporal Fusion Transformer(TFT). TFT was designed to integrate static covariates, time-varying features, attention mechanisms, and variable selection into a unified deep learning architecture. Among all models, TFT came closest to capturing both overall volatility and individual spike events. In @fig-tft-forecast, it successfully learned temporal dependencies, responded to feature relevance dynamically, and produced the most realistic forecasts. While computationally expensive and complex to tune, its performance and interpretability made it the strongest candidate for this forecasting task.
+Our final and most advanced model was the Temporal Fusion Transformer(TFT). TFT was designed to integrate static covariates, time-varying features, attention mechanisms, and variable selection into a unified deep learning architecture. Among all models, TFT came closest to capturing both overall volatility and individual spike events. It successfully learned temporal dependencies, responded to feature relevance dynamically, and produced the most realistic forecasts. While computationally expensive and complex to tune, its performance and interpretability made it the strongest candidate for this forecasting task.
 
-![Forecasting results of TFT vs actual values](../../results/plots/forecast_tft.png){#fig-tft-forecast width=100%}
 
-### What Might Have Worked Better
+### Considered Alternatives and Limitations
 
-#### Current Limitation
-Most models react to spikes after they happen due to:
+A major limitation of our approach is the reliance on lagged exogenous features (e.g., mempool stats), which limits the model’s ability to anticipate fee spikes. One potential improvement is a two-stage setup: first, forecast future values of key features; then, feed those predictions into the fee model for better forward-looking performance.
 
-- Lagged exogenous features.
-
-- Absence of true leading indicators.
-
-- Volatile, abrupt, and irregular nature of spikes.
-
-#### Potential Improvement
-A more forward-looking architecture could be created via multi-stage forecasting, e.g.:
-
-- Train models to predict key exogenous signals (e.g., mempool congestion, pending transaction counts).
-
-- Use their predicted values as inputs into the main fee prediction model.
-
-#### Why Not Implemented
-- Partner’s feedback during mid-project phase discouraged premature inclusion of predicted external signals.
-
-- Additional models would introduce forecast compounding errors.
-
-- Partner had tried social sentiment modeling in previous work (e.g., scraping tweets, news) but results were unsatisfactory.
-
-- Team chose to focus on maximizing what could be done within the current data window and feature scope.
+We did not pursue this path due to both practical and strategic reasons. The partner emphasized focusing on existing features before adding external signals and noted prior attempts at using sentiment data (e.g., scraped news, tweets) yielded poor results. Multi-stage forecasting also risks compounding errors, and with limited time, we prioritized evaluating diverse model architectures over expanding feature pipelines.

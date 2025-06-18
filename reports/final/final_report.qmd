@@ -41,10 +41,10 @@ metrics_df = pd.read_csv("../../results/tables/all_model_metrics.csv", index_col
 
 {{< include _background.qmd >}}
 {{< include _objective.qmd >}}
-{{< include _achievements.qmd >}}
 
 # Data Science Techniques
 
+{{< include _data.qmd >}}
 {{< include _preprocessing.qmd >}}
 {{< include _models.qmd >}}
 {{< include _metrics.qmd >}}

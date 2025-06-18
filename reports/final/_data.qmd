@@ -1,0 +1,25 @@
+This section outlines the core techniques used in our analysis, including data preprocessing, model development, and evaluation strategies that guided our approach to fee forecasting.
+
+## Dataset Overview
+
+We worked with a time series dataset constructed from 5-minute snapshots of the Bitcoin mempool ([mempool.space](https://mempool.space/), @fig-mempool-gif), captured between March 5 and May 2025. The mempool is a real-time queue of unconfirmed transactions waiting to be included in a block, which serves as proof that the transactions have been validated and recorded on the blockchain. Each snapshot captures the network state at a given point in time and includes 61 features such as mempool congestion, transaction volume, block production, mining difficulty, and BTC price. These snapshots collectively form a time series that reflects both blockchain-level activity and evolving market demand conditions—capturing the key drivers of transaction fee dynamics.
+
+```{python}
+#| label: fig-mempool-gif
+#| fig-cap: "Visual illustration of Bitcoin mempool.space activity."
+#| fig-align: "center"
+#| dpi: 150
+
+from pathlib import Path
+from PIL import Image
+import matplotlib.pyplot as plt
+
+gif_path = Path().resolve().parent.parent / "img" / "mempool.gif"
+img = Image.open(gif_path)
+
+plt.figure(figsize=(8, 5))
+plt.imshow(img)
+plt.axis("off")
+plt.tight_layout()
+plt.show()
+```

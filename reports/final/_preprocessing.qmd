@@ -1,6 +1,4 @@
-## Dataset Overview & Feature Preprocessing
-
-We worked with a dataset of 5-minute snapshots from the Bitcoin mempool (March–May 2025), each containing 61 features describing real-time network conditions such as mempool congestion, transaction volume, block creation, mining difficulty, and BTC price. These features captured the main drivers of fee dynamics.
+## Feature Preprocessing
 
 To prepare the data, we conducted exploratory correlation analysis between features and the target variable fastestFee, which confirmed that several predictors contained useful signals. This was not used for formal feature selection, but helped validate feature relevance.
 
@@ -15,6 +13,7 @@ We also applied several feature engineering steps. We first examined the distrib
 #| dpi: 150
 
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 
@@ -23,10 +22,9 @@ df = pd.read_parquet(Path().resolve().parent.parent / "data" / "raw" / "mar_5_ma
 # Drop 0 or missing values
 df = df[df['recommended_fee_fastestFee'].notna() & (df['recommended_fee_fastestFee'] > 0)]
 
-plt.figure(figsize=(7, 4))
-plt.hist(df['recommended_fee_fastestFee'], bins=50, color='steelblue', edgecolor='black')
-plt.title("Original Distribution of fastestFee")
-plt.xlabel("Fee (sats/vByte)")
+sns.histplot(df['recommended_fee_fastestFee'], bins=50, kde=True, color='steelblue', edgecolor='black', linewidth=0.5)
+plt.title("Distribution of Recommended Fee (Fastest)")
+plt.xlabel("Fastest Fee (satoshis)")
 plt.ylabel("Frequency")
 plt.tight_layout()
 plt.show()
