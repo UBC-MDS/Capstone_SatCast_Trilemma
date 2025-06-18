@@ -37,7 +37,6 @@ execute:
 
 # Data Science Techniques
 
-{{< include _data.qmd >}}
 {{< include _preprocessing.qmd >}}
 {{< include _models.qmd >}}
 {{< include _metrics.qmd >}}
