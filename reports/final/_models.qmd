@@ -4,10 +4,7 @@ To understand and anticipate Bitcoin transaction fee rate dynamics, we implement
 
 ### Dummy Model (Global Median)
 
-We began with a simple dummy model. From @fig-fastest-dist, it could be illustrated that over 92.5% of observed fee rates fell within a narrow band of 2–3 satoshis/byte, so the median itself was already a strong first guess. Thus, our dummy model always predicted the global median transaction fee rate.  Although it had no predictive power, it served as a baseline to measure improvements from more sophisticated approaches. This model completely ignored any temporal or external structure in the data, but offered a useful starting point to quantify how difficult the prediction task really was.
-
-
-![Distribution of recommended fastest fee rates](../../img/fastest_fee_distribution.png){#fig-fastest-dist width=100%}
+We began with a simple dummy model. From @fig-fastestfee-distribution, it could be illustrated that over 92.5% of observed fee rates fell within a narrow band of 2–3 satoshis/byte, so the median itself was already a strong first guess. Thus, our dummy model always predicted the global median transaction fee rate.  Although it had no predictive power, it served as a baseline to measure improvements from more sophisticated approaches. This model completely ignored any temporal or external structure in the data, but offered a useful starting point to quantify how difficult the prediction task really was.
 
 ### Holt-Winters Exponential Smoothing (HWES)
 

@@ -47,7 +47,8 @@ conda activate satcast
 3. (Optional) Open the terminal and run the following commands to render the report
 
 ``` bash
-quarto render reports/proposal_report.qmd
+quarto render reports/proposal/proposal_report.qmd
+quarto render reports/final/final_report.qmd
 ```
 
 ---

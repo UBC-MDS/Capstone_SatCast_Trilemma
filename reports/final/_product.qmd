@@ -67,16 +67,20 @@ representing a `{python} f"{100 * (metrics_df.loc['custom_loss', 'XGBoost'] - me
 It also brings RMSE down from the `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`–`{python} f"{metrics_df.loc['rmse', 'HWES']:.2f}"` range to `{python} f"{metrics_df.loc['rmse', 'TFT']:.2f}"`,
 a relative gain of `{python} f"{100 * (min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]) - metrics_df.loc['rmse', 'TFT']) / min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]):.0f}%"`.
 MAE, MAPE, and distribution-shape penalties follow the same pattern, confirming that TFT strikes the strongest balance between overall accuracy and sensitivity to congestion-driven shocks, as shown in the comprehensive comparison in @tbl-metrics.
+```{python}
+from IPython.display import Markdown, display
+core_metrics = metrics_df.loc[["custom_loss", "rmse", "mae", "mape"]].round(2)
+sorted_cols = core_metrics.loc["custom_loss"].sort_values().index
+core_metrics_sorted = core_metrics[sorted_cols]
+```
 
 ```{python}
 #| label: tbl-metrics
 #| tbl-cap: Model performance on test data.
-from IPython.display import Markdown 
-core_metrics = metrics_df.loc[["custom_loss", "rmse", "mae", "mape"]].round(2)
-sorted_cols = core_metrics.loc["custom_loss"].sort_values().index
-core_metrics_sorted = core_metrics[sorted_cols]
-Markdown(core_metrics_sorted.round(2).to_markdown(index=True))
+from tabulate import tabulate
+display(Markdown(core_metrics_sorted.round(2).to_markdown(index=True)))
 ```
+
 
 ## Data Product Overview
 
