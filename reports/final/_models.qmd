@@ -23,9 +23,7 @@ To address the temporal dependencies missed by HWES, we adopted SARIMA, which su
 
 ### XGBoost
 
-To move beyond univariate models, we adopted XGBoost, which allowed us to leverage the full multivariate feature set. Correlation analysis in @fig-pearson-heat and @fig-spearman-heat showed that recommended fastest fee rate was significantly influenced by several concurrent indicators. XGBoost is a powerful tree-based model capable of incorporating a broad array of features. It significantly expanded our input space and enabled non-linear interactions among variables. While its numerical performance improved, especially on average error metrics like MAPE, the model still struggled with volatility. It produced smooth and flat outputs that failed to capture sudden fee spikes. However, those spikes were precisely the events most critical for users.
-
-![Pearson correlation heatmap](../../img/pearson_correlation.png){#fig-pearson-heat width=100%}
+To move beyond univariate models, we adopted XGBoost, which allowed us to leverage the full multivariate feature set. Correlation analysis in @fig-spearman-heat showed that recommended fastest fee rate was significantly influenced by several concurrent indicators. XGBoost is a powerful tree-based model capable of incorporating a broad array of features. It significantly expanded our input space and enabled non-linear interactions among variables. While its numerical performance improved, especially on average error metrics like MAPE, the model still struggled with volatility. It produced smooth and flat outputs that failed to capture sudden fee spikes. However, those spikes were precisely the events most critical for users.
 
 ![Spearman correlation heatmap](../../img/spearman_correlation.png){#fig-spearman-heat width=100%}
 
@@ -43,13 +41,8 @@ To try more dynamic modeling, we implemented DeepAR, which was an LSTM-based aut
 Our final and most advanced model was the Temporal Fusion Transformer(TFT). TFT was designed to integrate static covariates, time-varying features, attention mechanisms, and variable selection into a unified deep learning architecture. Among all models, TFT came closest to capturing both overall volatility and individual spike events. It successfully learned temporal dependencies, responded to feature relevance dynamically, and produced the most realistic forecasts. While computationally expensive and complex to tune, its performance and interpretability made it the strongest candidate for this forecasting task.
 
 
-### What Might Have Worked Better
+### Considered Alternatives and Limitations
 
-#### Current Limitation
-One key limitation was that most exogenous features available to the model were lagged. As a result, the models could only react to changes in mempool congestion, transaction volume, or block size once they had already occurred. This lag reduced the models' ability to anticipate future spikes. Furthermore, our dataset lacked strong leading indicators. Without predictive signals of future fee pressure, the models had no way of forecasting sudden changes in transaction costs. Compounding this challenge was the inherent nature of spikes themselves. These events were volatile, abrupt, and highly irregular, making them difficult to learn from historical data and nearly impossible to generalize across different time periods.
+A major limitation of our approach is the reliance on lagged exogenous features (e.g., mempool stats), which limits the model’s ability to anticipate fee spikes. One potential improvement is a two-stage setup: first, forecast future values of key features; then, feed those predictions into the fee model for better forward-looking performance.
 
-#### Potential Improvement
-To address these issues, a more forward-looking architecture could potentially improve performance. One such direction is multi-stage forecasting. In this setup, we would first build separate models to predict future values of critical exogenous variables, such as mempool congestion or the number of unconfirmed transactions. The outputs of these auxiliary models could then serve as inputs into the primary model responsible for predicting fee rates. This approach would transform the problem from a reactive forecast to a more anticipatory one.
-
-#### Why Not Implemented
-However, this methodology was not implemented for several reasons. During the check-in with our partner, it was made clear that they preferred us to fully explore the performance of the existing features before expanding into predicted or synthetic indicators. Moreover, the accuracy of these predicted exogenous signals would be uncertain, and there was a risk of introducing compounding forecast errors across the two stages. Our partner also shared that they had previously attempted to use social sentiment analysis based on scraped news and tweets, but the signals generated were too noisy and ultimately unhelpful. Given these constraints and the limited time available, the team decided to focus on maximizing what could be learned from the current dataset through careful model selection and tuning.
+We did not pursue this path due to both practical and strategic reasons. The partner emphasized focusing on existing features before adding external signals and noted prior attempts at using sentiment data (e.g., scraped news, tweets) yielded poor results. Multi-stage forecasting also risks compounding errors, and with limited time, we prioritized evaluating diverse model architectures over expanding feature pipelines.

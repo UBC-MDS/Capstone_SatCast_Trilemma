@@ -1,9 +1,6 @@
+This section presents results from our analysis, including model performance comparisons and forecast visualizations, followed by a discussion of the final data product—its intended users, applications, and extensibility.
 
-## Overview of the Data Product
-This data product directly supports Trilemma Capital’s mission of serving industry talent and advancing Bitcoin infrastructure through data science, both educational and technical. Its design intentionally tailors to three core audiences. General users and institutions can rely on the 24-hour forecasts to plan transactions and reduce fee costs. Learners and educators receive a transparent, step-by-step walkthrough of Bitcoin-fee forecasting and time-series methodology. Industry experts and partners see infrastructure-grade modeling practice embodied in a modular pipeline and well-documented repository. 
-The product is purposefully modular. Jupyter notebooks guide users through EDA, modeling decisions, and final TFT results. Python scripts implement a structured pipeline for reproducible experiments and easy re-training on new data. Finally, the open-source GitHub repository—with clear documentation—enables collaboration, scalability, and long-term extensibility.
-
-## Results
+## Results: Model Performance and Forecast Visualization
 Model comparison tables and the forecast plots illustrate how predictive fidelity improves as we progress from classical statistics to deep learning.
 Baselines such as HWES and SARIMA track the day-level seasonal drift but miss the sharp dips and spikes that dominate the fee landscape, as shown in @fig-hwes-sarima.
 ```{python}
@@ -81,24 +78,22 @@ core_metrics_sorted = core_metrics[sorted_cols]
 Markdown(core_metrics_sorted.round(2).to_markdown(index=True))
 ```
 
-## Strength and Competitive Edge
-The product’s chief strength is that it predicts rather than reacts. Where mainstream tools like 
-[estimatesmartfee](https://developer.bitcoin.org/reference/rpc/estimatesmartfee.html) or [Mempool.space](https://mempool.space/) publish heuristics for the next few blocks, this project delivers reproducible code that extends the horizon to an entire day and outputs tiered curves—fastest, half-hour, hourly, economy, and minimum—so users can weigh urgency against cost.
-The product is fully transparent: every notebook, script, and utility function is openly shared on GitHub and documented with detailed inline comments. This openness allows peers to audit modeling assumptions, reproduce plots, and validate performance metrics with ease. Its modular design further reinforces this transparency.
-Developers can experiment freely—by changing the loss function, introducing new input features, or retraining a specific model—without disrupting the broader pipeline.
-The educational structure of the notebooks sets this product apart. It not only walks newcomers through key time-series modeling concepts and trade-offs but also provides experienced users with a clear path to automated, command-line execution.
-Together, these qualities establish Trilemma not as a provider of short-term heuristics, but as a builder of forward-looking, evidence-based infrastructure for the Bitcoin ecosystem.
+## Data Product Overview
 
-## Limitations
-Despite its strengths, the product faces several limitations.
-First, the models do not yet incorporate real-time external signals, such as exchange outflows or policy announcements. This is making them less responsive to abrupt market events that drive sudden fee spikes.
-Second, The loss function uses fixed weights, which limits its ability to adapt dynamically to changing market regimes.
-Third, predictive intervals are not yet implemented, which may reduce confidence for risk-sensitive users.
-Fourth, the deep learning models, particularly transformers, require GPU acceleration or cloud infrastructure, which can raise the barrier for experimentation and increase the cost of continuous deployment. Forecast performance will also degrade over time unless models are periodically retrained to reflect evolving network conditions.
-Lastly, while the notebooks are well-documented and educational, the absence of a live dashboard or public API limits accessibility for non-technical users, who would need to develop a custom interface to integrate the forecasts into practical workflows.
+The data product directly supports Trilemma Capital’s mission of serving industry talent and advancing Bitcoin infrastructure through data science, both educational and technical. Its design intentionally tailors to three core audiences. General users and institutions can rely on the 24-hour forecasts to plan transactions and reduce fee costs. Learners and educators receive a transparent, step-by-step walkthrough of Bitcoin-fee forecasting and time-series methodology. Industry experts and partners see infrastructure-grade modeling practice embodied in a modular pipeline and well-documented repository. 
 
-## Future Directions
-These limitations above, however, reflect intentional trade-offs made to balance flexibility, transparency, and cost.
-Keeping each model in a separate script makes training costs transparent and allows teams to execute only the components they need. This modular design supports flexible development but comes at the expense of centralized orchestration, such as a unified Makefile.
-Looking ahead, enhancements like adaptive loss weighting, uncertainty quantification, and real-time signal ingestion could improve resilience to edge cases. However, each would introduce added computational cost and complexity.
-While a real-time API remains an appealing long-term goal, the high cost of hosting transformer models continuously makes it impractical today. In the meantime, scheduled batch forecasts offer a pragmatic balance between accuracy, interpretability, and operational efficiency.
+The product is purposefully modular. Jupyter notebooks guide users through EDA, modeling decisions, and final TFT results. Python scripts implement a structured pipeline for reproducible experiments and easy re-training on new data. Finally, the open-source GitHub repository—with clear documentation—enables collaboration, scalability, and long-term extensibility.
+
+## Value Proposition and Justification
+
+Our product addresses the key limitation of current Bitcoin fee tools, which are reactive, opaque, and confined to short-term horizons. Tools like estimatesmartfee and Mempool.space forecast fees only 10 - 60 minutes ahead, offering single-rate suggestions without transparency into volatility drivers or user-specific needs. In contrast, our system produces 24-hour forecasts across multiple urgency tiers, helping users align timing with cost tolerance. We chose Jupyter notebooks to explain modeling decisions and trade-offs in an accessible format. Modular pipeline scripts offer reproducibility and extensibility for advanced users, while an open-source GitHub repository invites transparency and community contribution—aligned with our partner’s infrastructure mission.
+
+## Product Strengths and Limitations
+
+The product balances analytical depth with real-world usability. It offers tiered, volatility-aware forecasts that are actionable for users ranging from individuals to technical infrastructure teams. Tiered fee outputs (fastest, economy, minimum) accommodate different urgency and cost preferences, offering flexibility not found in existing one-size-fits-all tools. On the development side, its modular structure promotes extensibility—developers can swap models, tune hyperparameters, or introduce new features without disrupting the pipeline. Full transparency also enables peers to audit modeling assumptions, reproduce visualizations, and verify performance results. The inclusion of a custom loss function aligns model behavior with real-world fee dynamics, supporting better planning around cost and urgency trade-offs.
+
+Nonetheless, the system has limitations that affect both performance and accessibility. From a usability standpoint, deep learning models like TFT demand significant compute resources and are not easily accessible to users without GPUs. More critically, model performance will degrade over time unless retrained regularly to adapt to shifting network dynamics. On the input side, models currently rely on lagging indicators and do not incorporate real-time external signals—such as exchange outflows or policy announcements—making them less responsive to abrupt market events that trigger sudden fee spikes. Additionally, the absence of uncertainty estimates may limit users’ confidence in edge cases, and the lack of a real-time dashboard or API could restrict adoption by users expecting more interactive or integrated experiences.
+
+## Design Trade-Offs
+
+We made design choices that prioritize flexibility over complexity. For example, we avoided creating a Makefile to run all models at once due to compute constraints. Probabilistic outputs were also omitted, as current magnitude forecasts are too noisy to support reliable uncertainty estimates. Likewise, real-time API deployment was ruled out due to cost and performance constraints of transformer-based models. Instead, the product supports batch forecasts and modular experimentation as a foundation for future enhancements, such as adaptive loss tuning, hybrid model pipelines, or more scalable delivery formats.
