@@ -1,0 +1,25 @@
+## Dataset Overview
+
+We used data collected from [mempool.space](https://mempool.space/) via their public API, capturing snapshots of the Bitcoin mempool every 5 minutes between March and May 2025. Each snapshot represents the network state at a given moment and includes metrics such as mempool congestion, transaction volume, block production, mining difficulty, and BTC price. These snapshots form a time series dataset that reflects both blockchain-level activity and market demand conditions.
+
+The mempool serves as a waiting room for unconfirmed Bitcoin transactions. Users compete to have their transactions included in upcoming blocks by attaching fees, and when congestion rises, miners prioritize higher-fee transactions. This dynamic makes mempool data a strong signal for fee forecasting.
+
+```{python}
+#| label: fig-mempool-gif
+#| fig-cap: "Visual illustration of Bitcoin mempool congestion over time (source: mempool.space)."
+#| fig-align: "center"
+#| dpi: 150
+
+from pathlib import Path
+from PIL import Image
+import matplotlib.pyplot as plt
+
+gif_path = Path().resolve().parent.parent / "img" / "mempool.gif"
+img = Image.open(gif_path)
+
+plt.figure(figsize=(8, 5))
+plt.imshow(img)
+plt.axis("off")
+plt.tight_layout()
+plt.show()
+```
