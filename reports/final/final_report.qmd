@@ -10,7 +10,6 @@ format:
         toc-depth: 2
         fig-pos: "H"
         tbl-pos: "H"
-        tbl-cap-location: bottom
 number-sections: true
 bibliography: references.bib
 execute:
