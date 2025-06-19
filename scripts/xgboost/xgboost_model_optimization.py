@@ -2,7 +2,27 @@
 # author: Tengwei Wang
 # date: 2025-06-18
 
-# Optimize xgboost model. 
+"""
+xgboost_model_optimization.py
+
+Sets up and returns a randomized hyperparameter search for XGBoost time series forecasting.
+
+Responsibilities:
+-----------------
+1. Splits preprocessed data into train/test sets.
+2. Defines the hyperparameter grid for the XGBoost regressor.
+3. Constructs a `RandomizedSearchCV` wrapper using sktime.
+
+Key Features:
+-------------
+- Customizable forecasting interval for multi-step prediction.
+- Returns an untrained search object, ready to be fit externally.
+- Decouples search setup from model training.
+
+Typical Usage:
+--------------
+Called during the optimization phase to generate the model search space and train/test inputs.
+"""
 
 import sys
 from pathlib import Path
@@ -11,14 +31,13 @@ project_root = current_file.parents[2]
 src_path = project_root / "scripts" /"xgboost"
 sys.path.insert(0, str(src_path))
 from xgboost_data_preprocess import data_preprocess
-from xgboost_utils import evaluate_best_model
+from xgboost_utils import data_split, build_random_search
 import joblib
-from sktime.forecasting.base import ForecastingHorizon
 import numpy as np
 
 
 
-def optimization(data_path,result):
+def optimization(df,result, interval=15):
     """
     Optimize to find the best hyperparameters. 
 
@@ -33,6 +52,7 @@ def optimization(data_path,result):
     -------
     Null
     """
+    X_train, X_test, y_train, y_test = data_split(df, interval)
     param_dist = {
         'estimator__n_estimators': [50, 100, 150],
         'estimator__max_depth': [1, 2, 3],
@@ -43,9 +63,5 @@ def optimization(data_path,result):
         'estimator__reg_lambda': [5, 10, 20],
         'estimator__reg_alpha': [5, 10, 20]
     }
-    fh = ForecastingHorizon(np.arange(1, 97), is_relative=True)
-    df = data_preprocess(data_path)
-    metrics,y_test,y_pred, best_forecaster = evaluate_best_model(df, param_dist, interval=15, fh=fh)
-    file_path = result+"/xgboost.pkl"
-    joblib.dump(best_forecaster, file_path)
-    print("Best model saved.")
+    random_search = build_random_search(y_train, param_dist, interval, 0) 
+    return random_search, X_train, y_train

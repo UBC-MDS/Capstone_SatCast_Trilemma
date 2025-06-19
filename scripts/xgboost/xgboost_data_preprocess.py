@@ -2,7 +2,27 @@
 # author: Tengwei Wang
 # date: 2025-06-18
 
-# Preprocess data for xgboost model. 
+"""
+xgboost_data_preprocess.py
+
+Preprocesses raw Bitcoin fee data for use with XGBoost time series forecasting.
+
+Responsibilities:
+-----------------
+1. Loads a parquet file and performs feature engineering.
+2. Generates lag features and encodes time-based variables.
+3. Returns a fully prepared DataFrame with predictors and target.
+
+Key Features:
+-------------
+- Adds lag-based and rolling statistical features.
+- Handles proper timestamp alignment for forecasting tasks.
+- Returns DataFrame ready for model training or evaluation.
+
+Typical Usage:
+--------------
+Run once after raw data ingestion to prepare for model training.
+"""
 
 import sys
 from pathlib import Path

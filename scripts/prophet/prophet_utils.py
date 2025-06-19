@@ -4,8 +4,6 @@
 
 # Functions for prophet model training, evaluating and optimizing. 
 
-
-
 import pandas as pd
 from prophet import Prophet
 import matplotlib.pyplot as plt
