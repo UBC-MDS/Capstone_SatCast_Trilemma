@@ -34,19 +34,6 @@ def deepar_create_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_siz
     """
     last_idx = df_valid.time_idx.max()  
     training_cutoff = last_idx - pred_steps
-
-    # Lagged covariates are "known" because they reference past values
-    known_lagged_covs = [
-        c for c in df_train.columns
-        if (
-            "_lag_" in c and (
-                c.startswith("mempool_") or
-                c.startswith("difficulty_") or
-                c.startswith("price_") or
-                c.startswith("target")
-            )
-        )
-    ]
     TimeSeriesDataSet.verbose = True
 
     # Create training dataset
@@ -70,7 +57,7 @@ def deepar_create_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_siz
             "month_cos",
             "minute_sin",
             "minute_cos",
-        ] + known_lagged_covs,
+        ],
         # Real-valued covariates not known at prediction time (only target because deepar do not accept unmatched encoder and decoder)
         time_varying_unknown_reals=["target"] ,
         # Normalize target separately per series
