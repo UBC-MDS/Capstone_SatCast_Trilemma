@@ -1,15 +1,20 @@
+# prophet_model_optimization.py
+# author: Tengwei Wang
+# date: 2025-06-18
+
+# Optimize prophet model. 
+
 import sys
 from pathlib import Path
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
 src_path = project_root / "scripts" / "prophet"
 sys.path.insert(0, str(src_path))
-from data_preprocess import data_preprocess
-src_path = project_root / "src" 
+from prophet_data_preprocess import data_preprocess
 from prophet_utils import model_optimization as optimization,create_model_new_holiday
 import itertools
 import json
-from prophet.serialize import model_to_json, model_from_json
+from prophet.serialize import model_to_json
 
 def model_optimization(df,result):
     """

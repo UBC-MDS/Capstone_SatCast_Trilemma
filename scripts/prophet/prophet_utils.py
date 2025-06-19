@@ -1,16 +1,28 @@
+# prophet_utils.py
+# author: Tengwei Wang
+# date: 2025-06-18
+
+# Functions for prophet model training, evaluating and optimizing. 
+
+
+
 import pandas as pd
 from prophet import Prophet
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 import numpy as np
-import seaborn as sns
 from prophet.diagnostics import cross_validation, performance_metrics
-import itertools
 import json
 import sys
 from pathlib import Path
 current_file = Path(__file__).resolve()
-project_path = str(current_file.parents[1])
+project_root = current_file.parents[2]
+src_path = project_root / "src" 
+sys.path.insert(0, str(src_path))
+from mae_with_std_penalty_np import mae_with_std_penalty_np
+model_path = str(project_root) + "/results" + "/models"
+
+
 
 def model_optimization(df,all_params):
     """
@@ -70,7 +82,7 @@ def create_model_new():
     >>> model = create_model_new()
     """
     
-    with open("../results/models/prophet.json", "r") as f:
+    with open(model_path+"/prophet.json", "r") as f:
         params = json.load(f)
         
     model = Prophet(
@@ -107,7 +119,7 @@ def create_model_new_holiday(y_train):
     --------
     >>> model = create_model_new_holiday(y_train)
     """
-    with open(project_path+"/results/models/prophet.json", "r") as f:
+    with open(model_path+"/prophet.json", "r") as f:
         params = json.load(f)
         
     s = y_train.reset_index()
@@ -138,63 +150,6 @@ def create_model_new_holiday(y_train):
     model.add_seasonality(name='weekly', period=24, fourier_order=5) 
 
     return model
-
-
-def mae_with_std_and_shape_penalty(y_true, y_pred, std_weight=1.0, de_weight=1.0, clip_weight_std=None, clip_weight_dev=None):
-    """
-    Compute custom MAE loss with additional penalties on std deviation and shape deviation.
-
-    Parameters:
-    ----------
-    y_true: np.ndarray
-        Ground truth values.
-    y_pred: np.ndarray
-        Predicted values.
-    std_weight: float
-        Weight for std penalty.
-    de_weight: float 
-        Weight for shape deviation penalty.
-    clip_weight_std: float or None
-        Optional max clip value for std penalty weight.
-    clip_weight_dev: float or None
-        Optional max clip value for shape deviation weight.
-
-    Returns:
-    --------
-        float: combined loss
-
-    Examples:
-    --------
-    >>> metrics = mae_with_std_and_shape_penalty(y_test,y_baseline)
-    """
-
-    # return total_loss
-    base_loss = np.abs(y_pred - y_true)
-    mae = base_loss.mean()
-
-    # Std penalty
-    pred_std = np.std(y_pred)
-    true_std = np.std(y_true)
-    std_penalty = np.abs(pred_std - true_std)
-
-    w_std = mae / (std_penalty + 1e-8)
-    if clip_weight_std is not None:
-        w_std = np.minimum(w_std, clip_weight_std)
-
-    # Deviation penalty
-    pred_mean = np.mean(y_pred)
-    true_mean = np.mean(y_true)
-    pred_dev = y_pred - pred_mean
-    true_dev = y_true - true_mean
-    dev_error = np.abs(pred_dev - true_dev)
-
-    w_dev = base_loss / (dev_error + 1e-8)
-    if clip_weight_dev is not None:
-        w_dev = np.minimum(w_dev, clip_weight_dev)
-
-    # Total loss
-    total_loss = base_loss + std_weight * w_std * std_penalty + de_weight * w_dev * dev_error
-    return total_loss.mean()
 
 def get_result_new(df,y_test,y):
     """
@@ -229,11 +184,11 @@ def get_result_new(df,y_test,y):
     mae = mean_absolute_error(y_test, y_pred)
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     mape = mean_absolute_percentage_error(y_test, y_pred)
-    mae_std = mae_with_std_and_shape_penalty(y_test, y_pred)
+    mae_std = mae_with_std_penalty_np(y_pred,y_test)
     base_mae = mean_absolute_error(y_test, y_baseline)
     base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
     base_mape = mean_absolute_percentage_error(y_test, y_baseline)   
-    base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
+    base_mae_std = mae_with_std_penalty_np(y_baseline,y_test)
     print(f"MAE: {mae:.4f}")
     print(f"RMSE: {rmse:.4f}")
     print(f"MAPE: {mape:.4f}")
@@ -325,12 +280,12 @@ def evaluate_model(df_new, weeks=10,holiday=0):
         mae = mean_absolute_error(y_test, y_pred_temp)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred_temp))
         mape = mean_absolute_percentage_error(y_test, y_pred_temp)
-        mae_std = mae_with_std_and_shape_penalty(y_test, y_pred_temp)
+        mae_std = mae_with_std_penalty_np(y_pred_temp,y_test)
 
         base_mae = mean_absolute_error(y_test, y_baseline)
         base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
         base_mape = mean_absolute_percentage_error(y_test, y_baseline)   
-        base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
+        base_mae_std = mae_with_std_penalty_np(y_baseline,y_test)
 
         avg_mae += mae
         avg_rmse += rmse
@@ -451,12 +406,12 @@ def evaluate_model_external(df_new, weeks=10):
         mae = mean_absolute_error(y_test, y_pred_temp)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred_temp))
         mape = mean_absolute_percentage_error(y_test, y_pred_temp)
-        mae_std = mae_with_std_and_shape_penalty(y_test, y_pred_temp)
+        mae_std = mae_with_std_penalty_np(y_pred_temp,y_test)
 
         base_mae = mean_absolute_error(y_test, y_baseline)
         base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
         base_mape = mean_absolute_percentage_error(y_test, y_baseline)   
-        base_mae_std = mae_with_std_and_shape_penalty(y_test, y_baseline)
+        base_mae_std = mae_with_std_penalty_np(y_baseline,y_test)
 
         avg_mae += mae
         avg_rmse += rmse
