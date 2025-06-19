@@ -75,6 +75,8 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 from src.custom_loss_eval import eval_metrics
 
+FORECAST = 96
+WEEKLY = 96 * 7
 
 def get_folds(y, mode):
     """
@@ -92,22 +94,23 @@ def get_folds(y, mode):
     folds : list of (train_idx, test_idx)
         Each fold is a tuple of index lists for training and testing.
     """
-    fh = list(range(1, 97))  # 1-day horizon
+    
+    fh = list(range(1, FORECAST + 1))  # 1-day horizon
     if mode == "reverse":
         # Fixed test: final day
         test_end = len(y)
-        test_start = test_end - 96
+        test_start = test_end - FORECAST
         train_end = test_start
-        n_folds = train_end // (96 * 7)
+        n_folds = train_end // (WEEKLY)
         folds = []
         for i in range(1, n_folds + 1):
-            train_start = max(0, train_end - i * 96 * 7)
+            train_start = max(0, train_end - i * WEEKLY)
             folds.append((list(range(train_start, train_end)), list(range(test_start, test_end))))
         return folds
     elif mode == "expanding":
-        splitter = ExpandingWindowSplitter(initial_window=96 * 7, step_length=96 * 7, fh=fh)
+        splitter = ExpandingWindowSplitter(initial_window=WEEKLY, step_length=WEEKLY, fh=fh)
     elif mode == "sliding":
-        splitter = SlidingWindowSplitter(window_length=96 * 7, step_length=96 * 7, fh=fh)
+        splitter = SlidingWindowSplitter(window_length=WEEKLY, step_length=WEEKLY, fh=fh)
     else:
         raise ValueError("Invalid mode. Choose from reverse, expanding, sliding.")
     return list(splitter.split(y))
@@ -135,7 +138,7 @@ def run_sarima_cv(y, folds, results_path, mode):
     -------
     - A CSV file saved to `results_path` containing per-fold metrics such as MAE, RMSE, etc.
     """
-    fh = list(range(1, 97))
+    fh = list(range(1, FORECAST + 1))
     all_results = []
 
     for i, (train_idx, test_idx) in enumerate(folds):
