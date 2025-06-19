@@ -21,7 +21,11 @@ current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
 src_path = project_root / "src" 
 sys.path.insert(0, str(src_path))
+<<<<<<< HEAD
 from custom_loss_eval import custom_loss_eval as mae_with_std_penalty_np
+=======
+from mae_with_std_penalty_np import mae_with_std_penalty_np
+>>>>>>> origin/main
 
 def data_split(df,interval):
     """

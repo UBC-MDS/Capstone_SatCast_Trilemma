@@ -1,20 +1,28 @@
-# final_train_save_model.py
-# author: Yajing Liu
-# date: 2025-06-08
-
 """
 final_train_save_model.py
 
-Trains the SARIMA model on the full historical dataset (excluding the last day),
-applies log1p transformation, fits the model, and saves the trained model as a pickle.
+Trains a final SARIMA model on the full historical dataset (excluding the last spike day),
+and saves the trained model for downstream inference or notebook analysis.
 
-This script does NOT perform evaluation or visualization — it only prepares the 
-final SARIMA model for inference and further analysis in notebooks.
+Workflow:
+---------
+1. Loads preprocessed 15-minute interval time series data.
+2. Drops the final day to avoid spike contamination.
+3. Applies log1p transformation to stabilize variance.
+4. Fits a SARIMA model with defined seasonal order.
+5. Saves the trained model object to a pickle file.
 
-Usage:
-    python scripts/sarima/final_train_save_model.py \
-        --data="./data/processed/sarima/preprocessed_sarima_15min.parquet" \
-        --model="./results/models/sarima_final_model.pkl"
+Key Features:
+-------------
+- No train-test splitting or cross-validation.
+- No evaluation or plots — designed purely for final model preservation.
+- Saved model can be used in downstream notebooks or deployment.
+
+Typical Usage:
+--------------
+$ python scripts/sarima/final_train_save_model.py \
+    --data="./data/processed/sarima/preprocessed_sarima_15min.parquet" \
+    --model="./results/models/sarima_final_model.pkl"
 """
 
 
@@ -29,7 +37,6 @@ from sktime.forecasting.arima import ARIMA
 
 # Add src to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from src.utils import mae_with_std_penalty, mae_with_std_dev_penalty_np
 from src.save_model import save_model
 
 @click.command()

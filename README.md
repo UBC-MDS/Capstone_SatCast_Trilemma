@@ -133,7 +133,7 @@ Advanced models include Prophet, DeepAR, and Temporal Fusion Transformers (TFT).
    - Developed by Facebook, Prophet model improves HWES and SARIMA by handling holidays and special events
    - Multiplicative seasonal model
 
-Run the following command to evaluate the XGBoost model:
+Run the following command to evaluate the Prophet model:
 
    ```bash
    jupyter lab analysis/advanced_prophet.ipynb
