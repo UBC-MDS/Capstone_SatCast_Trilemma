@@ -1,28 +1,57 @@
+"""
+plot_forecast_comparison.py
+
+Visualizes and compares forecasts from two models against actual values for a given series.
+"""
 import matplotlib.pyplot as plt
 
 def plot_forecast_comparison(df1, label1, df2, label2, sid="recommended_fee_fastestFee", color1="blue", color2="green"):
     """
-    Plot two forecast models and actual values for a given series_id.
+    Plot two forecast model outputs alongside actual values for a specific time series.
+
+    This function compares the predicted values from two different models against
+    the true target values for a given `series_id`.
 
     Parameters
     ----------
     df1 : pd.DataFrame
-        First forecast result DataFrame containing 'series_id', 'timestamp', 'y_true', 'y_pred'.
+        First forecast result DataFrame. Must include columns:
+        ['series_id', 'timestamp', 'y_true', 'y_pred'].
     label1 : str
-        Label to assign to the forecast line from df1 (e.g. "Forecast (HWES)").
+        Label for the forecast line from df1 (e.g., "Forecast (HWES)").
     df2 : pd.DataFrame
-        Second forecast result DataFrame containing 'series_id', 'timestamp', 'y_true', 'y_pred'.
+        Second forecast result DataFrame. Must include the same columns as df1.
     label2 : str
-        Label to assign to the forecast line from df2 (e.g. "Forecast (SARIMA)").
+        Label for the forecast line from df2 (e.g., "Forecast (SARIMA)").
     sid : str, optional
-        The series_id to plot. Default is "recommended_fee_fastestFee".
+        The series_id to filter and plot. Default is "recommended_fee_fastestFee".
+    color1 : str, optional
+        Line color for df1's forecast. Default is "blue".
+    color2 : str, optional
+        Line color for df2's forecast. Default is "green".
 
     Returns
     -------
     fig : matplotlib.figure.Figure
-        The matplotlib Figure object.
+        The matplotlib Figure object containing the plot.
     ax : matplotlib.axes.Axes
-        The matplotlib Axes object with the plot.
+        The matplotlib Axes object with the plotted content.
+
+    Raises
+    ------
+    ValueError
+        If the specified `series_id` is missing in one or both DataFrames.
+
+    Example
+    -------
+    >>> fig, ax = plot_forecast_comparison(
+    ...     df1=forecast_df_hwes,
+    ...     label1="HWES",
+    ...     df2=forecast_df_sarima,
+    ...     label2="SARIMA",
+    ...     sid="recommended_fee_fastestFee"
+    ... )
+    >>> plt.show()
     """
     # Subset both DataFrames by series_id
     subset1 = df1[df1["series_id"] == sid]
@@ -43,7 +72,7 @@ def plot_forecast_comparison(df1, label1, df2, label2, sid="recommended_fee_fast
     ax.plot(subset2["timestamp"], subset2["y_pred"], label=label2, color=color2)
 
     # Final formatting
-    ax.set_title(f"{label1} and {label2} vs actual", fontsize=14)
+    ax.set_title(f"{label1} and {label2} vs Actual", fontsize=14)
     ax.set_xlabel("Timestamp", fontsize=12)
     ax.set_ylabel("Transaction Fee (sats/vB)", fontsize=12)
     ax.grid(True)

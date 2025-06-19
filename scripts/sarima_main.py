@@ -2,8 +2,21 @@
 # author: Yajing Liu
 # date: 2025-06-09
 
-# Usage:
-# python scripts/sarima_main.py
+"""
+sarima_main.py
+
+This script performs the full SARIMA pipeline including:
+1. Loading and preprocessing raw mempool data
+2. Training/testing data split
+3. Model training with SARIMA (using log-transformed values)
+4. Forecasting and inverse transformation
+5. Saving predictions and evaluation metrics
+
+The trained model is saved as a pickle file, and all intermediate results are written to CSV.
+
+Usage:
+    python scripts/sarima_main.py
+"""
 
 import os
 import sys

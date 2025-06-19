@@ -1,31 +1,41 @@
-# scale_series.py
-# Author: Ximin
-# Date: 2025-06-07
-# Description: Apply Z-score normalization to selected real-valued features.
+"""
+scale_series.py
 
+Applies standard scaling to real-valued features in training and validation datasets.
+"""
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 def scale_series(df_train: pd.DataFrame, df_valid: pd.DataFrame):
     """
-    Applies standard scaling to selected real-valued features.
+    Apply Z-score normalization (standard scaling) to selected numeric features.
+
+    This function:
+    - Excludes timestamp, calendar encodings, ID fields, and histogram bins.
+    - Applies scaling only to float64 columns that are not explicitly excluded.
+    - Uses the training set to fit the scaler, then applies it to both sets.
 
     Parameters
     ----------
     df_train : pd.DataFrame
-        Training set to fit the scaler.
+        Training DataFrame to fit the scaler on.
     df_valid : pd.DataFrame
-        Validation set to transform using the fitted scaler.
+        Validation DataFrame to transform using the fitted scaler.
 
     Returns
     -------
     df_train_scaled : pd.DataFrame
-        Scaled training set.
+        Scaled training DataFrame (in-place modified).
     df_valid_scaled : pd.DataFrame
-        Scaled validation set.
+        Scaled validation DataFrame (in-place modified).
     scaler : sklearn.preprocessing.StandardScaler
-        Fitted scaler object.
+        The fitted StandardScaler object (can be reused on test data).
+
+    Example
+    -------
+    >>> df_train_scaled, df_valid_scaled, scaler = scale_series(df_train, df_valid)
     """
+
     EXCLUDE = [
         "target", "time_idx", "hour", "minute", "day_of_week", "month",
         "series_id", "timestamp", "price_USD",

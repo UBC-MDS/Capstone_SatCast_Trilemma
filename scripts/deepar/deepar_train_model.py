@@ -1,9 +1,29 @@
 """
 deepar_train_model.py
 
-Trains a DeepAR model using PyTorch Forecasting.
-Includes learning rate tuning, early stopping, and model saving.
+Trains a DeepAR model using PyTorch Forecasting for probabilistic time series forecasting.
+
+Workflow:
+---------
+1. Initializes a DeepAR model with placeholder learning rate and basic config.
+2. Tunes the learning rate using PyTorch Lightning's `Tuner.lr_find()`.
+3. Reinstantiates the model with the suggested learning rate.
+4. Applies early stopping and checkpointing callbacks.
+5. Trains the model using the final Trainer instance.
+6. Saves the best-performing model checkpoint to disk.
+
+Key Features:
+-------------
+- Uses MultivariateNormalDistributionLoss with rank=30.
+- Supports early stopping and learning rate scheduling out of the box.
+- Compatible with CPU only (DeepAR is not stable on MPS as of now).
+- Saves best model to `results/models/best-deepar-full.ckpt`.
+
+Typical Usage:
+--------------
+Called from a training orchestration script after data preparation and dataloader creation.
 """
+
 
 import torch
 from lightning.pytorch import Trainer
