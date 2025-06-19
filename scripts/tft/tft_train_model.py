@@ -1,9 +1,30 @@
 """
 tft_train_model.py
 
-Handles model initialization, learning rate tuning using Tuner(trainer),
-optimizer configuration, training, and checkpointing for the TFT model.
+Trains the Temporal Fusion Transformer (TFT) model on preprocessed and batched Bitcoin fee forecasting data.
+
+Responsibilities:
+-----------------
+1. Loads training and validation DataLoaders.
+2. Initializes the TFT model with specified architecture and loss function.
+3. Trains the model using PyTorch Lightning with early stopping and checkpointing.
+
+Key Features:
+-------------
+- Supports GPU acceleration and learning rate tuning.
+- Integrates with custom loss functions for volatility-aware training.
+- Saves trained checkpoints and logs model performance.
+
+Typical Usage:
+--------------
+Executed after dataloader creation to train a TFT model using custom training loop or Lightning CLI integration.
+
+Returns:
+--------
+- Trained TFT model (checkpoint saved to disk).
+- Optionally, training and validation loss metrics.
 """
+
 
 import lightning.pytorch as pl
 from lightning.pytorch import Trainer

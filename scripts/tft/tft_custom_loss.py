@@ -1,7 +1,27 @@
 """
 tft_custom_loss.py
 
-Defines a custom loss function combining MAE, std penalty, and shape deviation penalty.
+Defines a custom loss function for the Temporal Fusion Transformer (TFT) model that augments MAE with distribution-aware penalties.
+
+Responsibilities:
+-----------------
+1. Computes a custom multi-horizon loss that combines MAE with penalties on prediction standard deviation and shape deviation.
+2. Supports weighting and optional clipping for each penalty component.
+3. Designed for volatility-sensitive applications like Bitcoin fee forecasting.
+
+Key Features:
+-------------
+- Penalizes over-smoothed predictions and under-represented variance.
+- Fully compatible with PyTorch Forecasting training workflows.
+- Offers tunable loss component weights via constructor arguments.
+
+Typical Usage:
+--------------
+Used during TFT model initialization to enhance sensitivity to temporal variability and shape fidelity.
+
+Returns:
+--------
+- A custom `MultiHorizonMetric` loss object ready to be passed into `TemporalFusionTransformer`.
 """
 
 import torch

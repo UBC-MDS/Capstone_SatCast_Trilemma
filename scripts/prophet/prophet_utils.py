@@ -82,7 +82,7 @@ def create_model_new():
     >>> model = create_model_new()
     """
     
-    with open(model_path+"/prophet.json", "r") as f:
+    with open(model_path+"/prophet_hyperparameter.json", "r") as f:
         params = json.load(f)
         
     model = Prophet(
@@ -119,7 +119,7 @@ def create_model_new_holiday(y_train):
     --------
     >>> model = create_model_new_holiday(y_train)
     """
-    with open(model_path+"/prophet.json", "r") as f:
+    with open(model_path+"/prophet_hyperparameter.json", "r") as f:
         params = json.load(f)
         
     s = y_train.reset_index()

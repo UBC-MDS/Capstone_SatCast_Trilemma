@@ -2,7 +2,33 @@
 # author: Tengwei Wang
 # date: 2025-06-18
 
-# Preprocess data for prophet model. 
+"""
+prophet_data_preprocess.py
+
+Prepares Bitcoin fee data for Prophet model training.
+
+Responsibilities:
+-----------------
+1. Loads and filters relevant columns for Prophet’s input format.
+2. Converts timestamp to 'ds', fee target to 'y', and ensures proper types.
+3. Splits into Prophet-ready training data and original target for holiday model logic.
+
+Key Features:
+-------------
+- Standardizes data format required by Prophet.
+- Supports selection of forecasting targets (e.g., fastestFee).
+- Compatible with downstream optimization and training scripts.
+
+Typical Usage:
+--------------
+Called by Prophet training or tuning pipelines to produce clean input for forecasting.
+
+Returns:
+--------
+- `df` : Cleaned DataFrame with 'ds' and 'y' columns.
+- `y_train` : Original untransformed target series.
+"""
+
  
 import sys
 from pathlib import Path
@@ -15,18 +41,34 @@ import numpy as np
 
 def data_preprocess(df):
     """
-    Preprocess the dataset for optimizing the model. 
+    Preprocess the dataset for optimizing the Prophet model.
 
-    Parameters:
+    This function:
+    - Loads a DataFrame from the given path.
+    - Renames columns to Prophet-required format (`ds`, `y`).
+    - Returns both the processed DataFrame and the original target values.
+
+    Parameters
     ----------
     df : str
-        The path of training dataset. 
+        Path to the training dataset in Parquet format.
 
-    Returns:
+    Returns
     -------
     pd.DataFrame
-        Processed data.
+        Prophet-ready DataFrame with 'ds' and 'y' columns.
+    pd.Series
+        Original untransformed target values (for use in holiday configuration).
+
+    Example
+    -------
+    >>> df, y_train = data_preprocess("data/processed/fee_data.parquet")
+    >>> df.head()
+          ds     y
+    0 2024-06-01  21.3
+    1 2024-06-01  23.0
     """
+
     df_new = preprocess_raw_parquet(df)
     df_new.dropna(inplace = True)
 

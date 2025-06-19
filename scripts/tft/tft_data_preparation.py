@@ -1,9 +1,29 @@
 """
 tft_data_preparation.py
 
-Utility functions for loading, preprocessing, and scaling Bitcoin mempool & fee data 
-for use with the Temporal Fusion Transformer (TFT) model.
+Handles preprocessing and feature engineering for Temporal Fusion Transformer (TFT) input data.
+
+Responsibilities:
+-----------------
+1. Applies log transformations and target normalization.
+2. Adds lag-based and rolling features to capture temporal dependencies.
+3. Encodes time-based covariates and prepares final training-ready DataFrame.
+
+Key Features:
+-------------
+- Includes fee rate smoothing and statistical aggregations.
+- Automatically selects and constructs time-varying and static covariates.
+- Ensures all required columns for TFT input format are generated.
+
+Typical Usage:
+--------------
+Called before dataloader construction, this script transforms raw or pre-parqueted input data into the finalized DataFrame.
+
+Returns:
+--------
+- Processed DataFrame ready for `TimeSeriesDataSet`.
 """
+
 import sys
 import os
 import argparse
