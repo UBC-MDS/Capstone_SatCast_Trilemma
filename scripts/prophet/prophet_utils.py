@@ -19,7 +19,7 @@ current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
 src_path = project_root / "src" 
 sys.path.insert(0, str(src_path))
-from mae_with_std_penalty_np import mae_with_std_penalty_np
+from custom_loss_eval import custom_loss_eval as mae_with_std_penalty_np
 model_path = str(project_root) + "/results" + "/models"
 
 
