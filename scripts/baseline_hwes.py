@@ -1,3 +1,27 @@
+"""
+baseline_hwes.py
+
+Main orchestration script to run the full Holt-Winters Exponential Smoothing (HWES) pipeline
+for Bitcoin transaction fee forecasting.
+
+This script performs the following steps:
+1. Loads, cleans, and resamples raw fee data from a Parquet file.
+2. Extracts and splits the target series into training and testing datasets.
+3. Performs grid search with cross-validation to optimize HWES hyperparameters.
+4. Trains the final HWES model using the best-found parameters.
+5. Forecasts future fee values over a 48-hour horizon (192 time steps).
+6. Evaluates the forecast against the test set using custom evaluation metrics.
+7. Saves all intermediate and final results including forecast, evaluation, and model file.
+
+Usage:
+    Run directly as a script from the command line:
+        python scripts/baseline_hwes.py
+
+Dependencies:
+    - Expects supporting modules in src/ and scripts/hwes/
+    - Requires pre-defined utility functions for preprocessing, saving/loading, and evaluation.
+"""
+
 import os
 import sys  
 
@@ -21,6 +45,7 @@ from scripts.hwes.cv_optimization import cv_optimization
 # Configuration
 FORECAST = 192  # 48 hours * (60 / 15 mins)
 DAILY = 96  # 24 hours * (60 / 15 mins)
+# The WINDOWS and STEPS are set to create 5 fold cross-validation windows
 WINDOWS = 672 * 5  # 5 weeks
 STEPS = 672  # 1 week
 
@@ -79,7 +104,6 @@ if __name__ == '__main__':
     # Save the final training results using save_model
     os.makedirs(os.path.join(RESULTS_DIR, 'models'), exist_ok=True)
     save_model(final_fit, os.path.join(RESULTS_DIR, 'models', 'hwes_best_train.pkl'))
-    # save_model(final_fit, os.path.join(RESULTS_DIR, 'models', 'hwes_best_sample.pkl'))
 
     ## ---------------Step 6: Make the forecast------------------------
     # read in training model (hwes_best_train model object)
