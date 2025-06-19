@@ -1,3 +1,9 @@
+# prophet_data_preprocess.py
+# author: Tengwei Wang
+# date: 2025-06-18
+
+# Preprocess data for prophet model. 
+ 
 import sys
 from pathlib import Path
 current_file = Path(__file__).resolve()

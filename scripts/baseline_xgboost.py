@@ -1,10 +1,16 @@
+# baseline_xgboost.py
+# author: Tengwei Wang
+# date: 2025-06-18
+
+# Create optimized xgboost model and save it in desired path. 
+
 import sys
 from pathlib import Path
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[1]
 src_path = project_root / "scripts" / "xgboost"
 sys.path.insert(0, str(src_path))
-from model_optimization import optimization
+from xgboost_model_optimization import optimization
 import click
 
 @click.command()

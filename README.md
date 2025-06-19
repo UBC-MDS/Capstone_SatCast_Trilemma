@@ -108,6 +108,11 @@ Run the following command to evaluate the XGBoost model:
    jupyter lab analysis/baseline_xgboost.ipynb
    python scripts/baseline_xgboost.py --data-path data/raw/mar_5_may_12.parquet --result results/models
    ```
+(Optional) Run the following command to compare performance of sliding window and expanding window:
+
+   ```bash
+   python scripts/experimentation/xgboost_window.py --data-path data/raw/mar_5_may_12.parquet --result results/tables/xgboost
+   ```
 
 
 To implement the expanding/sliding window experiments for baseline models, please go to respective model subfolders under `scripts` and run respectively. 
@@ -128,7 +133,7 @@ Advanced models include Prophet, DeepAR, and Temporal Fusion Transformers (TFT).
    - Developed by Facebook, Prophet model improves HWES and SARIMA by handling holidays and special events
    - Multiplicative seasonal model
 
-Run the following command to evaluate the XGBoost model:
+Run the following command to evaluate the Prophet model:
 
    ```bash
    jupyter lab analysis/advanced_prophet.ipynb

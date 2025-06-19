@@ -1,3 +1,9 @@
+# xgboost_data_preprocess.py
+# author: Tengwei Wang
+# date: 2025-06-18
+
+# Preprocess data for xgboost model. 
+
 import sys
 from pathlib import Path
 current_file = Path(__file__).resolve()
@@ -5,8 +11,9 @@ project_root = current_file.parents[2]
 src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 from preprocess_raw_parquet import preprocess_raw_parquet
-from XGBoost import create_lag_features_fast
-import numpy as np
+src_path = project_root / "scripts" / "xgboost"
+sys.path.insert(0, str(src_path))
+from xgboost_utils import create_lag_features_fast
 
 def data_preprocess(data_path):
     """
