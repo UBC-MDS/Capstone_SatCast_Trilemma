@@ -1,8 +1,8 @@
 """
-Script: plot_decay_ratio.py
-Location: scripts/EDA/
-Description: Computes PACF decay ratios for various resampling intervals
-             and generates a bar plot to visualize short-term signal strength.
+Script: EDA.py
+Location: scripts/
+Description: Generates exploratory data analysis (EDA) plots.
+             All visual outputs are saved to the img/ directory for downstream reporting.
 
 Output: img/optimal_interval.png (relative to project root)
 """
@@ -13,7 +13,7 @@ from statsmodels.tsa.stattools import pacf
 from pathlib import Path
 
 # Set paths relative to script location
-project_root = Path(__file__).resolve().parent.parent.parent
+project_root = Path(__file__).resolve().parent.parent
 data_path = project_root / "data" / "raw" / "mar_5_may_12.parquet"
 output_path = project_root / "img" / "optimal_interval.png"
 
