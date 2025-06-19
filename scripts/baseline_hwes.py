@@ -39,8 +39,8 @@ from src.read_csv_data import read_csv_data
 from src.save_csv_data import save_csv_data
 from src.save_model import save_model
 from src.custom_loss_eval import *
-from scripts.hwes.extract_split import extract_split
-from scripts.hwes.cv_optimization import cv_optimization
+from scripts.hwes.hwes_extract_split import hwes_extract_split
+from scripts.hwes.hwes_cv_optimization import hwes_cv_optimization
 
 # Configuration
 FORECAST = 192  # 48 hours * (60 / 15 mins)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     df = preprocess_raw_parquet(INPUT_DATA)
 
     ## ---------Step 2: Extract and split the target series------------
-    fee_series, train, test = extract_split(df, forecast_horizon=FORECAST)
+    fee_series, train, test = hwes_extract_split(df, forecast_horizon=FORECAST)
 
     # Save the processed and split data as CSV files
     save_csv_data(fee_series, os.path.join(DATA_DIR, 'fee_series.csv'), index=True)
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     # Set the scaler to prevent numerical instability during grid search
     scaler = MinMaxScaler(feature_range=(1, 2)) 
 
-    cv_results = cv_optimization(
+    cv_results = hwes_cv_optimization(
         series=train,
         seasonal_periods=DAILY,
         horizon=DAILY,
@@ -81,11 +81,10 @@ if __name__ == '__main__':
         scaler=scaler
     )
 
-    # Save the results to a CSV file
+    ## ---------Step 4: Save and read the best parameters--------------
     os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
     cv_results.to_csv(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
 
-    ## -------------Step 4: Save the best parameters-------------------
     hyperparam_matrix = read_csv_data(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
     best_trend, best_seasonal, best_damped = hyperparam_matrix.iloc[0][['trend', 'seasonal', 'damped']]
     print(f"Best HWES parameters: trend={best_trend}, seasonal={best_seasonal}, damped={best_damped}")
