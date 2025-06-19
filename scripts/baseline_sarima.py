@@ -23,7 +23,6 @@ import warnings
 
 from sktime.forecasting.model_selection import temporal_train_test_split
 from sktime.forecasting.arima import ARIMA
-from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_absolute_percentage_error
 
 # Setup
 warnings.filterwarnings("ignore")
@@ -31,9 +30,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Import project utilities
 from src.preprocess_raw_parquet import preprocess_raw_parquet
-from src.save_csv_data import save_csv_data
-from src.read_csv_data import read_csv_data
-from src.save_model import save_model
 from src.custom_loss_eval import *
 
 # Configurations
@@ -51,16 +47,18 @@ if __name__ == '__main__':
     # Extract target series
     y = df['recommended_fee_fastestFee']
     y = y.astype(float)
-    y = y.iloc[:-96]  # remove spike day
+    y = y.iloc[:-FORECAST]  # remove spike day
 
     ## ---------Step 2: Train/test split---------
     y_train, y_test = temporal_train_test_split(y, test_size=FORECAST)
 
     # Save the processed and split data
     os.makedirs(DATA_DIR, exist_ok=True)
-    save_csv_data(y.to_frame(name='recommended_fee_fastestFee'), os.path.join(DATA_DIR, 'full_series.csv'), index=True)
-    save_csv_data(y_train.to_frame(name='train'), os.path.join(DATA_DIR, 'train.csv'), index=True)
-    save_csv_data(y_test.to_frame(name='test'), os.path.join(DATA_DIR, 'test.csv'), index=True)
+
+    y.to_frame(name='recommended_fee_fastestFee').to_csv(os.path.join(DATA_DIR, 'full_series.csv'), index=True)
+    y_train.to_frame(name='train').to_csv(os.path.join(DATA_DIR, 'train.csv'), index=True)
+    y_test.to_frame(name='test').to_csv(os.path.join(DATA_DIR, 'test.csv'), index=True)
+
 
     ## ---------Step 3: Train SARIMA model---------
     y_train_log = np.log1p(y_train)
@@ -70,7 +68,8 @@ if __name__ == '__main__':
     # Save the final trained model
     os.makedirs(os.path.join(RESULTS_DIR, 'models'), exist_ok=True)
 
-    save_model(forecaster, MODEL_FROM)
+    with open(MODEL_FROM, 'wb') as f:
+        pickle.dump(forecaster, f)
     print(f"✅ SARIMA model saved to {MODEL_FROM}")
 
     ## ---------Step 4: Forecast---------
@@ -81,13 +80,13 @@ if __name__ == '__main__':
     y_pred = np.expm1(y_pred_log)
 
     forecast_df = pd.DataFrame({'timestamp': y_test.index, 'forecast': y_pred.values})
-
-    save_csv_data(forecast_df, os.path.join(RESULTS_DIR, 'tables', 'sarima_forecast.csv'), index=True)
+    os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
+    forecast_df.to_csv(os.path.join(RESULTS_DIR, 'tables', 'sarima_forecast.csv'), index=True)
     print(f"✅ SARIMA forecast saved to sarima_forecast.csv")
-
 
 
     ## ---------Step 5: Evaluate---------
     eval_results = eval_metrics(y_pred, y_test)
-    save_csv_data(eval_results, os.path.join(RESULTS_DIR, 'tables', 'sarima_eval_results.csv'), index=True)
+    os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
+    eval_results.to_csv(os.path.join(RESULTS_DIR, 'tables', 'sarima_eval_results.csv'), index=True)
     print(f"✅ SARIMA evaluation saved to sarima_eval_results.csv")
