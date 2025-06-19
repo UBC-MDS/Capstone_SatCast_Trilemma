@@ -60,23 +60,6 @@ def tft_make_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_size):
     # All real covariates based on prefix
     real_covs = [c for c in df_train.columns if c.startswith(("mempool", "difficulty", "price"))]
 
-    # Lagged covariates are "known" because they reference past values
-    known_lagged_covs = [
-        c for c in df_train.columns
-        if (
-            "_lag_" in c and (
-                c.startswith("mempool_") or
-                c.startswith("difficulty_") or
-                c.startswith("price_") or
-                c.startswith("target")
-            )
-        )
-    ]
-
-
-    # Unlagged covariates from same sources are "unknown" at prediction time
-    unknown_real_covs = [c for c in real_covs if c not in known_lagged_covs]
-
     # Create training dataset
     tft_ds = TimeSeriesDataSet(
         df_train,
@@ -99,9 +82,9 @@ def tft_make_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_size):
             "month_cos",
             "minute_sin",
             "minute_cos",
-        ] + known_lagged_covs,
+        ] ,
         # Real-valued covariates not known at prediction time (e.g., mempool load)
-        time_varying_unknown_reals=["target"] + unknown_real_covs,
+        time_varying_unknown_reals=["target"] + real_covs,
         # Normalize target separately per series
         target_normalizer=GroupNormalizer(groups=["series_id"]),
         # Augmented features
