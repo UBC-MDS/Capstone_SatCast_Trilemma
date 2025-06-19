@@ -1,5 +1,6 @@
 import os
 import sys  
+
 import pickle
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -7,7 +8,6 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 import warnings
 warnings.filterwarnings("ignore")
-
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.preprocess_raw_parquet import preprocess_raw_parquet

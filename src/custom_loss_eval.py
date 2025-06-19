@@ -19,8 +19,8 @@ def dev_error_component(y_pred, y_true):
     true_dev = y_true - np.mean(y_true)
     return np.abs(pred_dev - true_dev)
 
-def custom_loss_eval(y_pred, y_true, std_weight=None, 
-                     de_weight=None):
+def custom_loss_eval(y_pred, y_true, std_weight=1.0, 
+                     de_weight=1.0):
     base_loss = np.abs(y_pred - y_true)
     mae = base_loss.mean()
 
