@@ -1,6 +1,9 @@
-# test_compute_metrics_per_series.py
-# author: Tengwei Wang
-# date: 2025-06-18
+"""
+test_compute_metrics_per_series.py
+
+Unit tests for compute_metrics_per_series.py
+"""
+
 
 import numpy as np
 import pandas as pd

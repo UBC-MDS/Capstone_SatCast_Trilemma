@@ -1,6 +1,8 @@
-# test_custom_loss_eval.py
-# author: Tengwei Wang
-# date: 2025-06-18
+"""
+test_custom_loss_eval.py
+
+Unit tests for custom_loss_eval.py
+"""
 
 import numpy as np
 import pandas as pd

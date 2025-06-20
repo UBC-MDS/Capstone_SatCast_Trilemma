@@ -1,3 +1,8 @@
+"""
+test_split_series.py
+
+Unit tests for split_series.py
+"""
 
 import numpy as np
 import pandas as pd

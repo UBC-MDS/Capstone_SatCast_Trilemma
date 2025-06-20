@@ -1,3 +1,9 @@
+"""
+test_plot_series.py
+
+Unit tests for plot_series.py
+"""
+
 import numpy as np
 import pandas as pd
 
