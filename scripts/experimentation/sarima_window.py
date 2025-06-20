@@ -182,7 +182,7 @@ def main(data, mode):
     mode : {'reverse', 'expanding', 'sliding'}
         Type of windowing strategy to use for cross-validation.
     """
-    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'].astype(float).asfreq("15min")
+    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'].iloc[:-96].astype(float).asfreq("15min")
     folds = get_folds(y, mode)
 
     # Auto filename based on mode

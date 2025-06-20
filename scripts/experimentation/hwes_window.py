@@ -112,19 +112,21 @@ def get_folds(y, mode):
         return folds
 
     elif mode == "expanding":
-        # Train grows weekly, test always the next day
+        # Train grows weekly, test always the next day (96 steps)
         folds = []
-        for i in range(1, (len(y) - WEEK - DAILY) // WEEK + 1):
-            train_end = WEEK + (i - 1) * WEEK
-            train_idx = list(range(train_end))
-            test_idx = list(range(train_end, train_end + DAILY))
-            folds.append((train_idx, test_idx))
+        for i in range(1, (len(y) - DAILY) // WEEK + 1):  # +1 ensures last test window is included
+            train_end = i * WEEK
+            test_start = train_end
+            test_end = test_start + DAILY
+            if test_end <= len(y):  # extra safety check
+                folds.append((list(range(train_end)), list(range(test_start, test_end))))
         return folds
+
 
     elif mode == "sliding":
         # Fixed window slides 1 week forward each fold
         folds = []
-        for i in range(0, (len(y) - WEEK - DAILY) // WEEK):
+        for i in range(0, (len(y) - WEEK - DAILY) // WEEK + 1):
             train_start = i * WEEK
             train_end = train_start + WEEK
             test_start = train_end
@@ -208,7 +210,7 @@ def main(data, mode):
     mode : str - windowing strategy
     """
     # Load and reindex time series
-    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'].astype(float).asfreq("15min")
+    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'][:-96].astype(float).asfreq("15min")
 
     # Load best HWES parameters from prior random search
     cv_result_path = RESULTS_DIR / "tables" / "hwes" / "hwes_cv_results.csv"

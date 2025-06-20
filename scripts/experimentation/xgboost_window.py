@@ -194,7 +194,7 @@ def main(data, mode):
     """
     # Preprocess and get folds
     df = data_preprocess(data)
-    y = df["recommended_fee_fastestFee"]
+    y = df["recommended_fee_fastestFee"][:-96]
     folds = get_folds(y, mode)
 
     # Choose output filename by mode
