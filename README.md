@@ -147,7 +147,7 @@ python scripts/experimentation/hwes_window.py
 
 > ⚠️ These scripts may take longer to run as they iterate across multiple time slices.
 
-### (Optional) Step 4: Tests
+### Tests (Optional)
 
 To run the function tests, enter the following in the root of the repository: 
 
