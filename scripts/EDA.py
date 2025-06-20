@@ -15,6 +15,9 @@ This script performs the following steps:
 4. Explores resampling frequencies to quantify decay ratios in
    autocorrelation.
 5. Saves all figures and CSV summaries to ``results/eda``.
+
+Usage: 
+    python scripts/EDA.py
 """
 
 # === Imports ===
@@ -83,6 +86,25 @@ print(f"Saving to {output_path}")
 plt.savefig(output_path, dpi=300, bbox_inches="tight")
 plt.close()
 
+# === Distribution Plot of Fastest Fee ===
+print("Plotting distribution of recommended_fee_fastestFee...")
+output_path = project_root / "results"/ "plots"/ "fee_distribution.png"
+
+# Drop zero or missing values
+fee_series = df["recommended_fee_fastestFee"]
+fee_series = fee_series[fee_series > 0].dropna()
+
+plt.figure(figsize=(8, 5))
+sns.histplot(fee_series, bins=50, kde=True, color='steelblue', edgecolor='black', linewidth=0.5)
+plt.title("Distribution of Recommended Fee (Fastest)")
+plt.xlabel("Fastest Fee (satoshis)")
+plt.ylabel("Frequency")
+plt.tight_layout()
+
+print(f"Saving to {output_path}")
+plt.savefig(output_path, dpi=300, bbox_inches="tight")
+plt.close()
+
 # === Seasonal Decomposition Plot ===
 print("Performing multiplicative decomposition...")
 output_path = project_root / "results"/ "plots"/ "decomposition_multiplicative.png"
@@ -104,6 +126,34 @@ fig.suptitle("Fastest Fee (sats/vByte) — Multiplicative Decomposition (5-min)"
 plt.tight_layout()
 print(f"Saving to {output_path}")
 plt.savefig(output_path, dpi=300, bbox_inches="tight")
+
+# === Peak Detection with Summary Lines ===
+print("Plotting time series with peak stats and thresholds...")
+output_path = project_root / "results"/ "plots"/ "fee_peaks_summary.png"
+
+s = df['recommended_fee_fastestFee'].dropna()
+mean_val = s.mean()
+median_val = s.median()
+upper99 = s.quantile(0.99)
+
+plt.figure(figsize=(12, 6))
+plt.plot(s.index, s, color='dimgray', linewidth=1, label='fastestFee')
+
+# Add summary lines
+plt.axhline(mean_val, color='blue', linestyle='--', alpha=0.6, label=f'Mean ({mean_val:.1f})')
+plt.axhline(median_val, color='green', linestyle='--', alpha=0.6, label=f'Median ({median_val:.1f})')
+plt.axhline(upper99, color='red', linestyle='--', alpha=0.6, label=f'99th Percentile ({upper99:.1f})')
+
+# Final formatting
+plt.title('FastestFee Time Series with Mean, Median, and 99th Percentile')
+plt.xlabel('Date')
+plt.ylabel('Fee (sats/vByte)')
+plt.legend(loc='upper left')
+plt.tight_layout()
+
+print(f"Saving to {output_path}")
+plt.savefig(output_path, dpi=300, bbox_inches="tight")
+plt.close()
 
 # === ACF and PACF Plot ===
 print("Plotting ACF and PACF...")
