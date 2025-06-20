@@ -52,123 +52,111 @@ quarto render reports/final/final_report.qmd
 ```
 
 ---
+
 ## Guidance to Run This Project
 
-To reproduce the analysis and modeling results in this repository, follow the steps below. For each model, there is a modular notebook saved under `analysis` folder accompanies with logical pipelines in `.py` format under `scripts` folder.
+This repository provides forecasting pipelines to predict Bitcoin transaction fees using six different models, including classical time series, gradient boosting, and deep learning methods.  
+Users can either **view the results** directly in our summary notebook or **run the scripts** to reproduce and extend the work.
 
-### Step 1: Exploratory Data Analysis (EDA)
+### How to Use This Repository
 
-Run `data_spec.ipynb` to explore the dataset and gain insights:
-   - Summarizes key feature groups, data types, and their roles  
-   - Performs time series analysis to examine trends, seasonality, stationarity, and other time-based patterns
+You have three options to explore this project:
 
-   ````bash
-   jupyter lab analysis/data_spec.ipynb   
-   ````
+### Option 1: Quick Overview
 
----
-### Step 2: Baseline Forecasting Models
+To get a summary of all models, results, and visualizations:
 
-Baseline models include Holt-Winters, SARIMA, and XGBoost.
-
-
-#### Model I: Holt-Winters Exponential Smoothing (HWES) 
-   - `baseline_hwes.ipynb`
-   - Captures trend and seasonality
-
-Run the following command to evaluate the HWES model:
-
-   ```bash
-   jupyter lab analysis/baseline_hwes.ipynb
-   python scripts/hwes_main.py
-   ```
-
-
-#### Model II: SARIMA (Seasonal Autoregressive Integrated Moving Average)
-   - `baseline_sarima.ipynb`  
-   - Seasonal order selected via ACF/PACF analysis
-
-Run the following command to evaluate the HWES SARIMA model:
-
-   ```bash
-   jupyter lab analysis/baseline_sarima.ipynb
-   python scripts/sarima_main.py
-   ```
-   **⚠️ Note:** The trained SARIMA model (`sarima_final_model.pkl`) is too large to be included in the repository.  
-   If you wish to inspect the model or rerun the evaluation, please run `scripts/sarima_main.py` locally.
-
-
-#### Model III: XGBoost
-   - `baseline_xgboost.ipynb`  
-   - Gradient boosting tree model with lagged features and rolling statistics
-
-Run the following command to evaluate the XGBoost model:
-
-   ```bash
-   jupyter lab analysis/baseline_xgboost.ipynb
-   python scripts/baseline_xgboost.py --data-path data/raw/mar_5_may_12.parquet --result results/models
-   ```
-(Optional) Run the following command to compare performance of sliding window and expanding window:
-
-   ```bash
-   python scripts/experimentation/xgboost_window.py --data-path data/raw/mar_5_may_12.parquet --result results/tables/xgboost
-   ```
-
-
-To implement the expanding/sliding window experiments for baseline models, please go to respective model subfolders under `scripts` and run respectively. 
-
-**⚠️ Note:** These window experiments are not included in the main scripts. Please run the corresponding scripts individually if needed.
-
-**❗IMPORTANT:** The running of these scripts will take a long time, as they are designed to evaluate the model performance over multiple time windows.
-
-
----
-### Step 3: Advanced Models
-
-Advanced models include Prophet, DeepAR, and Temporal Fusion Transformers (TFT).
-
-
-#### Model IV: Prophet
-   - `advanced_prophet.ipynb`  
-   - Developed by Facebook, Prophet model improves HWES and SARIMA by handling holidays and special events
-   - Multiplicative seasonal model
-
-Run the following command to evaluate the Prophet model:
-
-   ```bash
-   jupyter lab analysis/advanced_prophet.ipynb
-   python scripts/advanced_prophet.py --df data/raw/mar_5_may_12.parquet --result results/models
-   ```
-**⚠️ Note:** Replace the path with your own `.parquet` file if needed.
-
-#### Model V: DeepAR (Deep Autoregressive Model)
-   - `advanced_deepar.ipynb`  
-   - Developed by Amazon, probabilistic forecasting model using recurrent neural networks (RNNs)
-   - Captures complex temporal patterns and uncertainty
-
-Run the following command to evaluate the DeepAR model:
+**Run:**
 
 ```bash
-jupyter lab analysis/advanced_deepar.ipynb
-python scripts/deepar.py --parquet_path ./data/raw/sample_8_days.parquet
+jupyter lab analysis/model_overview.ipynb
 ```
-**⚠️ Note:** Replace the path with your own `.parquet` file if needed.
 
+This notebook compares all models in a unified view and links to individual model notebooks.  
+If you wish to re-run this notebook **end-to-end**, you must first generate the SARIMA model file.
 
-#### Model VI. Temporal Fusion Transformer (TFT)
-   - `advanced_tft.ipynb`
-   - A state-of-the-art deep learning model for time series forecasting
-   - Combines attention mechanisms with recurrent neural networks (RNNs)
-
-Run the following command to evaluate the TFT model:
+> ⚠️ **Note**: The SARIMA model (`sarima_final_model.pkl`) is too large for GitHub.  
+> To regenerate it, run:
 
 ```bash
-jupyter lab analysis/advanced_tft.ipynb
-python scripts/advanced_tft.py --parquet_path ./data/raw/sample_8_days.parquet
+python scripts/baseline_sarima.py
 ```
-**⚠️ Note:** Replace the path with your own `.parquet` file if needed.
+
+### Option 2: Re-run All Models via One Script
+
+To reproduce results fully with one script, run the full forecasting pipeline with one command:
+
+```bash
+python scripts/analysis.py
+```
+
+This will:
+
+- Load and preprocess the dataset
+- Run all six models: HWES, SARIMA, XGBoost, Prophet, DeepAR, TFT
+- Save forecasts and metrics to `results/models/`, `results/tables/`, and `results/plots/`
+
+### Option 3: Run Individual Models
+
+Each model has its own Jupyter notebook and corresponding main script.
+
+| Model   | Notebook                          | Script File                   |
+| ------- | --------------------------------- | ----------------------------- |
+| HWES    | `analysis/baseline_hwes.ipynb`    | `scripts/baseline_hwes.py`    |
+| SARIMA  | `analysis/baseline_sarima.ipynb`  | `scripts/baseline_sarima.py`  |
+| XGBoost | `analysis/baseline_xgboost.ipynb` | `scripts/baseline_xgboost.py` |
+| Prophet | `analysis/advanced_prophet.ipynb` | `scripts/advanced_prophet.py` |
+| DeepAR  | `analysis/advanced_deepar.ipynb`  | `scripts/advanced_deepar.py`  |
+| TFT     | `analysis/advanced_tft.ipynb`     | `scripts/advanced_tft.py`     |
+
+Example:
+
+- Run each script like this:
+
+```bash
+python python scripts/<model>.py --parquet-path ./data/raw/sample_8_days.parquet
+```
+
+> Open the script to view its command-line arguments and customize inputs or outputs.
+>
+> `scripts/<model_name>/`: Contains each model’s helper scripts and training/inference logic.
+
+- Run each notebook like this:
+
+```bash
+jupyter lab analysis/<model>.ipynb
+```
+
+### Window-Based Evaluation (Optional)
+
+To run time-based window evaluations (e.g., expanding, sliding windows), check scripts under:
+
+```bash
+scripts/experimentation/
+```
+
+These contain additional experiments for HWES, SARIMA and XGBoost window performance.  
+They are **not required** to reproduce the main results but provide deeper insights.
+Usage are shown in each script.
+
+Example:
+
+```bash
+python scripts/experimentation/hwes_window.py
+```
+
+> ⚠️ These scripts may take longer to run as they iterate across multiple time slices.
+
+### Tests (Optional)
+
+To run the function tests, enter the following in the root of the repository: 
+
+``` bash
+pytest
+```
 
 ---
+
 ## Contributing
 
 We’d love for you to contribute to this project! Whether it’s adding new forecasting models, improving data pipelines, or fixing bugs, your input is valuable.  
