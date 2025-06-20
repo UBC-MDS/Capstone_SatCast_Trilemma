@@ -2,7 +2,28 @@
 # author: Tengwei Wang
 # date: 2025-06-18
 
-# Preprocess data for xgboost model. 
+"""
+xgboost_data_preprocess.py
+
+Script to preprocess raw Bitcoin fee data for XGBoost-based time series forecasting.
+
+This script performs the following steps:
+1. Loads a raw Parquet dataset and applies initial preprocessing logic.
+2. Adds 48 hours (192 steps) of lagged features for the target variable.
+3. Drops NA values and ensures proper alignment between features and forecast horizon.
+4. Outputs a cleaned DataFrame ready for model training or optimization.
+
+Usage:
+    Called from XGBoost training and tuning scripts to provide model-ready inputs.
+
+Dependencies:
+    - preprocess_raw_parquet (for raw ingestion)
+    - create_lag_features_fast (from xgboost_utils)
+
+Returns:
+    pd.DataFrame: Fully processed dataset with lag features and aligned timestamps.
+"""
+
 
 import sys
 from pathlib import Path
@@ -33,4 +54,5 @@ def data_preprocess(data_path):
     df.dropna(inplace = True)
     lags = range(1, 193)  # 48 hours of 15-minute intervals
     df = create_lag_features_fast(df, 'recommended_fee_fastestFee', lags)
+    df = df[:-96]
     return df

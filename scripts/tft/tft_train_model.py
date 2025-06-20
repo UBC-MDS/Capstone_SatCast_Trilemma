@@ -1,8 +1,26 @@
-"""
-tft_train_model.py
+# tft_train_model.py
+# author: Ximin Xu
+# date: 2025-06-18
 
-Handles model initialization, learning rate tuning using Tuner(trainer),
-optimizer configuration, training, and checkpointing for the TFT model.
+"""
+Script to train a Temporal Fusion Transformer (TFT) model for Bitcoin fee forecasting 
+using PyTorch Lightning and custom volatility-aware loss.
+
+This script performs the following steps:
+1. Loads prepared dataloaders for training and validation.
+2. Initializes a provisional TFT model and uses PyTorch Lightning’s `lr_find`
+   to determine the optimal learning rate.
+3. Rebuilds the TFT model with the suggested learning rate and a custom optimizer.
+4. Sets up training callbacks: early stopping, learning rate monitoring, and checkpointing.
+5. Trains the model using mixed precision and saves the best-performing checkpoint to disk.
+6. Loads and returns the best model for downstream inference.
+
+Usage:
+    Called from a training pipeline after dataloader construction.
+
+Dependencies:
+    - PyTorch Lightning, PyTorch Forecasting, torch, lightning.pytorch
+    - Custom loss function passed in during training
 """
 
 import lightning.pytorch as pl
@@ -191,8 +209,4 @@ def tft_train_model(tft_ds, train_dl, val_dl, loss_fn):
         best_model_path, map_location="cpu"
     )
 
-    # Step 9: Save full model object (useful for inference across devices)
-    torch.save(best_tft, model_save_dir / "best-model-tft-full.pt")
-    print(f"Full model saved at: {model_save_dir / 'best-model-tft-full.pt'}")
-
-    return tft, trainer
+    return best_tft, trainer

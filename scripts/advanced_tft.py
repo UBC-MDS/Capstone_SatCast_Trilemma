@@ -1,28 +1,32 @@
+# advanced_tft.py
+# author: Ximin Xu
+# date: 2025-06-18
+
 """
 advanced_tft.py
 
-Main orchestration script to run the full Temporal Fusion Transformer (TFT) forecasting pipeline
-for Bitcoin transaction fee prediction.
+Script to train a Temporal Fusion Transformer (TFT) for
+multi-horizon Bitcoin fee forecasting.
 
 This script performs the following steps:
-1. Loads and preprocesses raw fee data from a Parquet file.
-2. Constructs training and validation datasets and corresponding dataloaders.
-3. Defines a custom loss function that penalizes both MAE and prediction instability (std/dev).
-4. Trains a TFT model using the specified configuration and logs progress.
+1. Converts raw fee data plus exogenous features into a
+   PyTorch-friendly dataset and persists the splits.
+2. Builds dataloaders with the specified encoder length,
+   prediction horizon, and batch size.
+3. Defines a custom MAE + volatility penalty loss.
+4. Trains the TFT model with early stopping and learning-rate
+   scheduling.
+5. Saves the final model checkpoint to ``results/models``.
 
 Usage:
-    python advanced_tft.py --parquet_path <optional_path_to_parquet_file>
-
-Dependencies:
-    - The script expects supporting modules in scripts/advanced_tft/
-    - Requires the Lightning-based training loop, loss functions, and dataloader constructors.
+    python advanced_tft.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 
 import sys
-import os
-import argparse
 from pathlib import Path
+import torch
+import click
 
 # Setup project root and import paths
 current_file = Path(__file__).resolve()
@@ -36,34 +40,52 @@ from tft_create_dataloaders import tft_make_dataloaders
 from tft_custom_loss import MAEWithStdPenalty
 from tft_train_model import tft_train_model
 
-# Argument parser
-parser = argparse.ArgumentParser(description="Run full TFT forecasting pipeline.")
-parser.add_argument(
-    "--parquet_path",
-    type=str,
-    default=str(project_root / "data" / "raw" / "mar_5_may_12.parquet"),
-    help="Path to the input parquet file (default: mar_5_may_12.parquet in data/raw/)"
-)
-args = parser.parse_args()
-
-# Config
-PARQUET_PATH = Path(args.parquet_path)
+# Constants
 ENC_LEN = 672
 PRED_STEPS = 96
 BATCH_SIZE = 32
-FALLBACK_CKPT = project_root / "analysis" / "saved_models" / "best-model-epoch=16-val_loss=0.7079.ckpt"
 
-if __name__ == "__main__":
+@click.command()
+@click.option(
+    "--parquet-path", 
+    type=click.Path(exists=True), 
+    default=str(project_root / "data" / "raw" / "mar_5_may_12.parquet"), 
+    help="Path to input parquet file."
+)
+def main(parquet_path):
+    """Run full TFT pipeline on Bitcoin fee data."""
+    
     # Step 1 ── Data
-    df, df_train, df_valid, scaler = tft_prepare_data(PARQUET_PATH, PRED_STEPS)
+    df, df_train, df_valid, scaler = tft_prepare_data(Path(parquet_path), PRED_STEPS)
+
+    # Save processed data
+    processed_dir = project_root / "data" / "processed" / "tft"
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    df.to_csv(processed_dir / "df_full.csv", index=False)
+    df_train.to_csv(processed_dir / "df_train.csv", index=False)
+    df_valid.to_csv(processed_dir / "df_valid.csv", index=False)
 
     # Step 2 ── Dataloaders
     tft_ds, train_dl, val_dl = tft_make_dataloaders(df_train, df_valid, ENC_LEN, PRED_STEPS, BATCH_SIZE)
 
     # Step 3 ── Loss
-    loss_fn = MAEWithStdPenalty(std_weight=1.0, de_weight=1.0, clip_weight_std=10.0, clip_weight_dev=10.0)
+    loss_fn = MAEWithStdPenalty(
+        std_weight=1.0, 
+        de_weight=1.0, 
+        clip_weight_std=10.0, 
+        clip_weight_dev=10.0
+    )
 
     # Step 4 ── Training
     model, trainer = tft_train_model(tft_ds, train_dl, val_dl, loss_fn)
 
-    print("TFT Bitcoin fee forecasting pipeline completed.")
+    # Step 5 ── Save model
+    model_save_dir = project_root / "results" / "models"
+    model_save_dir.mkdir(parents=True, exist_ok=True)
+    torch.save(model, model_save_dir / "best-model-tft-full.pt")
+    print(f"✅ Full model saved at: {model_save_dir / 'best-model-tft-full.pt'}")
+
+    print("✅ TFT Bitcoin fee forecasting pipeline completed.")
+
+if __name__ == '__main__':
+    main()

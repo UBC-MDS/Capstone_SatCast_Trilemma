@@ -1,9 +1,22 @@
+# deepar_data_preparation.py
+# author: Ximin Xu
+# date: 2025-06-18
 """
-deepar_data_preparation.py
+Prepares Bitcoin mempool and transaction fee data for DeepAR model training and evaluation.
 
-Utility functions for loading, preprocessing, and scaling Bitcoin mempool & fee data 
-for use with the DeepAR model.
+This script performs the following steps:
+1. Loads raw fee data from a Parquet file.
+2. Applies domain-specific transformations to prepare time-varying covariates.
+3. Splits the dataset into training and validation windows.
+4. Scales the data for stability during RNN training.
+
+Usage:
+------
+Called prior to DeepAR model training to prepare a full DataFrame and normalized splits:
+
+    df, df_train, df_valid, scaler = deepar_prepare_data(parquet_path, pred_steps=96)
 """
+
 import sys
 import os
 import argparse

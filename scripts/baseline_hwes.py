@@ -1,95 +1,104 @@
-"""
-baseline_hwes.py
+# baseline_hwes.py
+# author: Jenny Zhang
+# date: 2025-06-18
 
-Main orchestration script to run the full Holt-Winters Exponential Smoothing (HWES) pipeline
-for Bitcoin transaction fee forecasting.
+"""
+Script to build a Holt–Winters Exponential-Smoothing (HWES) baseline
+for Bitcoin fee forecasting.
 
 This script performs the following steps:
-1. Loads, cleans, and resamples raw fee data from a Parquet file.
-2. Extracts and splits the target series into training and testing datasets.
-3. Performs grid search with cross-validation to optimize HWES hyperparameters.
-4. Trains the final HWES model using the best-found parameters.
-5. Forecasts future fee values over a 48-hour horizon (192 time steps).
-6. Evaluates the forecast against the test set using custom evaluation metrics.
-7. Saves all intermediate and final results including forecast, evaluation, and model file.
+1. Loads and resamples raw Parquet data to 15-minute frequency.
+2. Extracts the target series and splits it into training and
+   48-hour test windows.
+3. Executes a grid search with time-series cross-validation to tune
+   trend, seasonality, and damping options.
+4. Fits the best model on the full training window.
+5. Serialises the fitted model to ``results/models/hwes_best_train.pkl``.
 
 Usage:
-    Run directly as a script from the command line:
-        python scripts/baseline_hwes.py
-
-Dependencies:
-    - Expects supporting modules in src/ and scripts/hwes/
-    - Requires pre-defined utility functions for preprocessing, saving/loading, and evaluation.
+    python baseline_hwes.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 
-import os
-import sys  
-
+import sys
 import pickle
 import pandas as pd
+import numpy as np
+import warnings
+import click
+from pathlib import Path
 from sklearn.preprocessing import MinMaxScaler
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-import warnings
 warnings.filterwarnings("ignore")
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+# Setup project root
+current_file = Path(__file__).resolve()
+project_root = current_file.parents[1]
+
+# Add project src to path
+sys.path.append(str(project_root))
+
+# Import project modules
 from src.preprocess_raw_parquet import preprocess_raw_parquet
-from src.read_csv_data import read_csv_data
-from src.save_csv_data import save_csv_data
-from src.save_model import save_model
-from src.custom_loss_eval import *
 from scripts.hwes.hwes_extract_split import hwes_extract_split
 from scripts.hwes.hwes_cv_optimization import hwes_cv_optimization
 
-# Configuration
+# Configurations
 FORECAST = 192  # 48 hours * (60 / 15 mins)
-DAILY = 96  # 24 hours * (60 / 15 mins)
-# The WINDOWS and STEPS are set to create 5 fold cross-validation windows
-WINDOWS = 672 * 5  # 5 weeks
-STEPS = 672  # 1 week
+DAILY = 96      # 24 hours * (60 / 15 mins)
+WINDOWS = 672 * 5  # 5 weeks of rolling windows
+STEPS = 672     # Step size = 1 week
 
-# File Path and Directory
-INPUT_DATA = "./data/raw/mar_5_may_12.parquet"
-DATA_DIR = './data/processed/hwes'
-RESULTS_DIR = './results'
-MODEL_FROM = './results/models/hwes_best_train.pkl'
+@click.command()
+@click.option(
+    "--parquet-path",
+    type=click.Path(exists=True),
+    default=str(project_root / "data" / "raw" / "mar_5_may_12.parquet"),
+    help="Path to input Parquet file"
+)
+def main(parquet_path):
+    # Step 1: Load and preprocess raw data
+    df = preprocess_raw_parquet(parquet_path)
 
-if __name__ == '__main__':
-
-    ## ---------Step 1: Load, clean, and resample the raw data---------
-    df = preprocess_raw_parquet(INPUT_DATA)
-
-    ## ---------Step 2: Extract and split the target series------------
+    # Step 2: Extract and split fee series
     fee_series, train, test = hwes_extract_split(df, forecast_horizon=FORECAST)
 
-    # Save the processed and split data as CSV files
-    save_csv_data(fee_series, os.path.join(DATA_DIR, 'fee_series.csv'), index=True)
-    save_csv_data(train, os.path.join(DATA_DIR, 'train.csv'), index=True)
-    save_csv_data(test, os.path.join(DATA_DIR, 'test.csv'), index=True)
+    # Step 2.5: Save processed data
+    data_dir = project_root / "data" / "processed" / "hwes"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    fee_series.to_csv(data_dir / "fee_series.csv", index=True)
+    train.to_csv(data_dir / "train.csv", index=True)
+    test.to_csv(data_dir / "test.csv", index=True)
 
-    ## -----Step 3: Hyperparameter optimization through Grid Search----
-    # Set the scaler to prevent numerical instability during grid search
-    scaler = MinMaxScaler(feature_range=(1, 2)) 
-
+    # Step 3: Cross-validated grid search for hyperparameters
+    scaler = MinMaxScaler(feature_range=(1, 2))
     cv_results = hwes_cv_optimization(
         series=train,
         seasonal_periods=DAILY,
         horizon=DAILY,
-        window_size=WINDOWS,  
+        window_size=WINDOWS,
         step=STEPS,
         scaler=scaler
     )
 
-    ## ---------Step 4: Save and read the best parameters--------------
-    os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
-    cv_results.to_csv(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
+    # Step 4: Save and load best parameters
+    tables_dir = project_root / "results" / "tables"/ "hwes"
+    
+    tables_dir.mkdir(parents=True, exist_ok=True)
+    cv_results_path = tables_dir / "hwes_cv_results.csv"
+    cv_results.to_csv(cv_results_path, index=False)
 
-    hyperparam_matrix = read_csv_data(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
+    hyperparam_matrix = pd.read_csv(cv_results_path)
+
+    if hyperparam_matrix.empty:
+        print("HWES cross-validation failed. Not enough data or all configurations failed.")
+        print("Try using a longer series like `mar_5_may_12.parquet` instead of the 8-day sample.")
+        sys.exit(1)
+
     best_trend, best_seasonal, best_damped = hyperparam_matrix.iloc[0][['trend', 'seasonal', 'damped']]
-    print(f"Best HWES parameters: trend={best_trend}, seasonal={best_seasonal}, damped={best_damped}")
+    print(f"✅ Best HWES parameters: trend={best_trend}, seasonal={best_seasonal}, damped={best_damped}")
 
-    ## -----Step 5: Train the final model with the best parameters-----
+    # Step 5: Train final model
     final_model = ExponentialSmoothing(
         train,
         trend=best_trend,
@@ -97,31 +106,14 @@ if __name__ == '__main__':
         seasonal_periods=DAILY if best_seasonal else None,
         damped_trend=best_damped
     )
-
     final_fit = final_model.fit(optimized=True, use_brute=True)
 
-    # Save the final training results using save_model
-    os.makedirs(os.path.join(RESULTS_DIR, 'models'), exist_ok=True)
-    save_model(final_fit, os.path.join(RESULTS_DIR, 'models', 'hwes_best_train.pkl'))
+    # Step 6: Save trained model
+    model_path = project_root / "results" / "models" / "hwes_best_train.pkl"
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(model_path, 'wb') as f:
+        pickle.dump(final_fit, f)
+    print(f"✅ Final model saved to: {model_path}")
 
-    ## ---------------Step 6: Make the forecast------------------------
-    # read in training model (hwes_best_train model object)
-    with open(MODEL_FROM, 'rb') as f:
-        model_fit = pickle.load(f)
-
-    forecast = model_fit.forecast(FORECAST)
-
-    # Save the forecast results
-    forecast_df = pd.DataFrame(forecast, columns=['forecast'])
-    forecast_df.index = test.index
-    
-    save_csv_data(forecast_df, os.path.join(RESULTS_DIR, 'tables', 'hwes_forecast.csv'), index=True)
-
-    ## -----------Step 7: Evaluate the model performance--------------
-    # Evaluate for non-spike day 
-    eval_results = eval_metrics(forecast[ : DAILY], test[ : DAILY])
-    save_csv_data(eval_results, os.path.join(RESULTS_DIR, 'tables', 'hwes_eval_results.csv'), index=True)
-    
-
-
-
+if __name__ == '__main__':
+    main()
