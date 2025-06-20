@@ -1,17 +1,21 @@
+# baseline_sarima.py
+# author: Yajing Liu
+# date: 2025-06-18
+
 """
-baseline_sarima.py
+Script to train a SARIMA baseline for Bitcoin fee forecasting.
 
-This script performs the full SARIMA pipeline including:
-1. Loading and preprocessing raw mempool data
-2. Training/testing data split
-3. Model training with SARIMA (using log-transformed values)
-4. Forecasting and inverse transformation
-5. Saving predictions and evaluation metrics
-
-The trained model is saved as a pickle file, and all intermediate results are written to CSV.
+This script performs the following steps:
+1. Loads raw mempool fee data and applies basic cleaning.
+2. Splits the log-transformed series into training and
+   24-hour evaluation windows.
+3. Fits a SARIMA(1,0,1)(1,0,1,96) model on the training data.
+4. Saves the trained model to
+   ``results/models/sarima_final_model.pkl`` and stores the
+   processed train/test splits for downstream analysis.
 
 Usage:
-    python scripts/baseline_sarima.py
+    python baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 import os
@@ -20,6 +24,8 @@ import pickle
 import pandas as pd
 import numpy as np
 import warnings
+import click
+from pathlib import Path
 
 from sktime.forecasting.model_selection import temporal_train_test_split
 from sktime.forecasting.arima import ARIMA
@@ -34,59 +40,58 @@ from src.custom_loss_eval import *
 
 # Configurations
 FORECAST = 96  # 1 day = 96 steps (15min)
-INPUT_DATA = "./data/raw/mar_5_may_12.parquet"
-DATA_DIR = './data/processed/sarima'
-RESULTS_DIR = './results'
-MODEL_FROM = './results/models/sarima_final_model.pkl'
+from pathlib import Path
 
-if __name__ == '__main__':
+# Setup project root
+current_file = Path(__file__).resolve()
+project_root = current_file.parents[1]
 
-    ## ---------Step 1: Load and preprocess data---------
-    df = preprocess_raw_parquet(INPUT_DATA)
+# Directories
+DATA_DIR = project_root / "data" / "processed" / "sarima"
+RESULTS_DIR = project_root / "results"
+MODEL_FROM = RESULTS_DIR / "models" / "sarima_final_model.pkl"
+
+
+@click.command()
+@click.option(
+    "--parquet-path",
+    type=click.Path(exists=True),
+    default="./data/raw/mar_5_may_12.parquet",
+    help="Path to input Parquet file"
+)
+def main(parquet_path):
+    """Run SARIMA pipeline for Bitcoin fee forecasting."""
+
+    # Step 1: Load and preprocess data
+    df = preprocess_raw_parquet(parquet_path)
 
     # Extract target series
-    y = df['recommended_fee_fastestFee']
-    y = y.astype(float)
+    y = df['recommended_fee_fastestFee'].astype(float)
     y = y.iloc[:-FORECAST]  # remove spike day
 
-    ## ---------Step 2: Train/test split---------
+    # Step 2: Train/test split
     y_train, y_test = temporal_train_test_split(y, test_size=FORECAST)
 
     # Save the processed and split data
-    os.makedirs(DATA_DIR, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    y.to_frame(name='recommended_fee_fastestFee').to_csv(DATA_DIR / 'full_series.csv', index=True)
+    y_train.to_frame(name='train').to_csv(DATA_DIR / 'train.csv', index=True)
+    y_test.to_frame(name='test').to_csv(DATA_DIR / 'test.csv', index=True)
 
-    y.to_frame(name='recommended_fee_fastestFee').to_csv(os.path.join(DATA_DIR, 'full_series.csv'), index=True)
-    y_train.to_frame(name='train').to_csv(os.path.join(DATA_DIR, 'train.csv'), index=True)
-    y_test.to_frame(name='test').to_csv(os.path.join(DATA_DIR, 'test.csv'), index=True)
 
-
-    ## ---------Step 3: Train SARIMA model---------
+    # Step 3: Train SARIMA model on log-transformed data
     y_train_log = np.log1p(y_train)
     forecaster = ARIMA(order=(1, 0, 1), seasonal_order=(1, 0, 1, 96))
     forecaster.fit(y_train_log)
 
-    # Save the final trained model
-    os.makedirs(os.path.join(RESULTS_DIR, 'models'), exist_ok=True)
-
+    # Step 4: Save model
+    (RESULTS_DIR / 'models').mkdir(parents=True, exist_ok=True)
     with open(MODEL_FROM, 'wb') as f:
         pickle.dump(forecaster, f)
+
+
     print(f"✅ SARIMA model saved to {MODEL_FROM}")
 
-    ## ---------Step 4: Forecast---------
-    fh = list(range(1, FORECAST + 1))
-    y_pred_log = forecaster.predict(fh=fh)
 
-    # Convert to pandas series, expm1, assign timestamp
-    y_pred = np.expm1(y_pred_log)
-
-    forecast_df = pd.DataFrame({'timestamp': y_test.index, 'forecast': y_pred.values})
-    os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
-    forecast_df.to_csv(os.path.join(RESULTS_DIR, 'tables', 'sarima_forecast.csv'), index=True)
-    print(f"✅ SARIMA forecast saved to sarima_forecast.csv")
-
-
-    ## ---------Step 5: Evaluate---------
-    eval_results = eval_metrics(y_pred, y_test)
-    os.makedirs(os.path.join(RESULTS_DIR, 'tables'), exist_ok=True)
-    eval_results.to_csv(os.path.join(RESULTS_DIR, 'tables', 'sarima_eval_results.csv'), index=True)
-    print(f"✅ SARIMA evaluation saved to sarima_eval_results.csv")
+if __name__ == '__main__':
+    main()

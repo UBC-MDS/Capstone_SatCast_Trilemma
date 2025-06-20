@@ -1,28 +1,25 @@
+# deepar_train_model.py
+# author: Ximin Xu
+# date: 2025-06-18
 """
-deepar_train_model.py
+Trains a DeepAR model using PyTorch Forecasting for probabilistic Bitcoin transaction fee forecasting.
 
-Trains a DeepAR model using PyTorch Forecasting for probabilistic time series forecasting.
+This script performs the following steps:
+1. Initializes a DeepAR model with default parameters and placeholder learning rate.
+2. Uses PyTorch Lightning's `Tuner.lr_find()` to find an optimal learning rate.
+3. Rebuilds the model with the tuned learning rate.
+4. Applies early stopping and model checkpointing callbacks.
+5. Trains the model on CPU using the final Trainer configuration.
+6. Saves the best-performing checkpoint to disk.
 
-Workflow:
----------
-1. Initializes a DeepAR model with placeholder learning rate and basic config.
-2. Tunes the learning rate using PyTorch Lightning's `Tuner.lr_find()`.
-3. Reinstantiates the model with the suggested learning rate.
-4. Applies early stopping and checkpointing callbacks.
-5. Trains the model using the final Trainer instance.
-6. Saves the best-performing model checkpoint to disk.
+Usage:
+------
+Used after data preprocessing and dataloader construction as part of the DeepAR training pipeline.
+The best model is saved to:
 
-Key Features:
--------------
-- Uses MultivariateNormalDistributionLoss with rank=30.
-- Supports early stopping and learning rate scheduling out of the box.
-- Compatible with CPU only (DeepAR is not stable on MPS as of now).
-- Saves best model to `results/models/best-deepar-full.ckpt`.
-
-Typical Usage:
---------------
-Called from a training orchestration script after data preparation and dataloader creation.
+    results/models/best-deepar-full.ckpt
 """
+
 
 
 import torch

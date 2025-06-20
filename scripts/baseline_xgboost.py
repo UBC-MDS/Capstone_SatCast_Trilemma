@@ -3,35 +3,27 @@
 # date: 2025-06-18
 
 """
-baseline_xgboost.py
+Script to build an XGBoost baseline (with exogenous features) for
+Bitcoin fee forecasting.
 
-Command-line interface (CLI) entry point to optimize and train an XGBoost forecaster.
+This script performs the following steps:
+1. Loads raw fee data, engineers lags/covariates, and
+   writes the processed dataset to ``data/processed/xgboost``.
+2. Samples hyperparameter sets with random search and trains
+   an XGBoost regressor on each fold (expanding or sliding window).
+3. Selects the best configuration based on custom loss and MAE.
+4. Fits the best model on the entire training window and
+   saves it to ``results/models/xgboost.pkl``.
 
-Responsibilities:
------------------
-1. Loads and preprocesses fee data.
-2. Runs randomized hyperparameter optimization.
-3. Fits and saves the best-performing model to disk.
-
-Key Features:
--------------
-- CLI support via `click` for easy pipeline execution.
-- Configurable forecast horizon (`interval`) and file paths.
-- Modular structure supports integration into batch jobs or notebooks.
-
-Typical Usage:
---------------
-$ python baseline_xgboost.py --data-path "data/processed/fee_data.parquet" --result "results/xgb" --interval 15
-
-This script will:
-    - preprocess the data
-    - optimize hyperparameters
-    - train and save the best XGBoost forecaster
+Usage:
+    python baseline_xgboost.py --data-path data/raw/mar_5_may_12.parquet [--skip-optimization]
 """
 
 import sys
 from pathlib import Path
 import click
+import joblib
+import json
 
 # Set up module path for importing local project modules
 current_file = Path(__file__).resolve()
@@ -41,23 +33,51 @@ sys.path.insert(0, str(src_path))
 
 # Import preprocessing, optimization, and training routines
 from xgboost_model_optimization import optimization
-from xgboost_model_training import train_and_save_best_model
+from xgboost_model_training import build_random_search_full
 from xgboost_data_preprocess import data_preprocess
 
 @click.command()
-@click.option('--data-path', type=str, help="Path to training data")
-@click.option('--result', type=str, help="Path to save model")
-@click.option('--interval', type=int, default=15, help="Forecast horizon length (in steps)")
+@click.option(
+    "--parquet-path",
+    type=click.Path(exists=True),
+    default="./data/raw/mar_5_may_12.parquet",
+    help="Path to input Parquet file"
+)
+@click.option(
+    '--skip-optimization',
+    is_flag=True,
+    default=False,
+    help="Skip hyperparameter tuning and use existing config."
+)
+def main(parquet_path, skip_optimization):
+    interval = 15
 
-def main(data_path, result, interval):
-    # Step 1: Load and preprocess dataset from provided path
-    df = data_preprocess(data_path)
-    
-    # Step 2: Perform random search to find the best hyperparameters
+    # Step 1: Load and preprocess dataset
+    df = data_preprocess(parquet_path)
+
+    # Save processed data
+    processed_dir = project_root / "data" / "processed" / "xgboost"
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    df.to_csv(processed_dir / "df_processed.csv", index=False)
+
+    # Step 2: Generate hyperparameter search space + train/test split
     random_search, X_train, y_train = optimization(df, interval)
-    
-    # Step 3: Train final model using the best parameters and save it
-    train_and_save_best_model(random_search, X_train, y_train, result, interval)
+    X_train.to_csv(processed_dir / "X_train.csv", index=False)
+    y_train.to_frame(name="y").to_csv(processed_dir / "y_train.csv", index=False)
+
+    # Step 3: Train model (with or without tuning)
+    result_dir = project_root / "results" / "models"
+    result_dir.mkdir(parents=True, exist_ok=True)
+
+    best_model, best_params, best_score = build_random_search_full(
+        X_train, y_train, random_search, interval=interval, optimize=not skip_optimization
+    )
+
+    # Step 4: Save model
+    file_path = result_dir / "xgboost.pkl"
+    joblib.dump(best_model, file_path)
+    print("Best model saved to:", file_path)
+
 
 if __name__ == '__main__':
     main()

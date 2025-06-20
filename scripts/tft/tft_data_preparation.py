@@ -1,28 +1,31 @@
+# tft_data_preparation.py
+# author: Ximin Xu
+# date: 2025-06-18
 """
-tft_data_preparation.py
+Script to preprocess raw Bitcoin fee data for use with the Temporal Fusion Transformer (TFT)
+forecasting model.
 
-Handles preprocessing and feature engineering for Temporal Fusion Transformer (TFT) input data.
-
-Responsibilities:
------------------
-1. Applies log transformations and target normalization.
-2. Adds lag-based and rolling features to capture temporal dependencies.
-3. Encodes time-based covariates and prepares final training-ready DataFrame.
-
-Key Features:
--------------
-- Includes fee rate smoothing and statistical aggregations.
-- Automatically selects and constructs time-varying and static covariates.
-- Ensures all required columns for TFT input format are generated.
-
-Typical Usage:
---------------
-Called before dataloader construction, this script transforms raw or pre-parqueted input data into the finalized DataFrame.
+This script performs the following steps:
+1. Loads a raw Parquet file and applies initial preprocessing and smoothing.
+2. Transforms the data into a TFT-compatible tabular structure with time-varying features.
+3. Splits the dataset into training and validation subsets, reserving the last `pred_steps` as hold-out.
+4. Scales the numeric columns using a fitted standard scaler.
 
 Returns:
---------
-- Processed DataFrame ready for `TimeSeriesDataSet`.
+    - Full cleaned DataFrame
+    - Scaled training and validation splits
+    - Fitted scaler object for inverse transformations or reuse
+
+Usage:
+    Called before constructing the `TimeSeriesDataSet` for TFT model training or inference.
+
+Dependencies:
+    - preprocess_raw_parquet
+    - transform_fee_data_dl
+    - split_series
+    - scale_series
 """
+
 
 import sys
 import os

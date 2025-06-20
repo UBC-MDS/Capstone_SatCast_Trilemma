@@ -24,17 +24,20 @@ Typical Usage:
 Called within automated training workflows to search optimal Prophet configurations.
 """
 
-
 import sys
 from pathlib import Path
+import itertools
+import json
+from prophet.serialize import model_to_json
+
+# Set up project paths for importing local modules
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
 src_path = project_root / "scripts" / "prophet"
 sys.path.insert(0, str(src_path))
-from prophet_utils import model_optimization as optimization,create_model_new_holiday
-import itertools
-import json
-from prophet.serialize import model_to_json
+
+# Import the custom optimization function
+from prophet_utils import model_optimization as optimization
 
 def model_optimization(df, y_train, result):
     """
@@ -63,6 +66,8 @@ def model_optimization(df, y_train, result):
     >>> print(best_params)
     >>> print(f"Best RMSE: {best_rmse:.2f}")
     """
+
+    # Define the grid of hyperparameters to search over
     param_grid = {
         'changepoint_prior_scale': [0.01, 0.1, 0.3, 0.5],
         'seasonality_prior_scale': [5.0, 10.0, 20.0],
@@ -70,15 +75,17 @@ def model_optimization(df, y_train, result):
         'changepoint_range': [0.8, 0.9, 0.95],
         'n_changepoints': [25, 50, 100]
     }
+
+    # Create all combinations of parameters from the grid
     all_params = [dict(zip(param_grid.keys(), v)) for v in itertools.product(*param_grid.values())]
+
+    # Run model evaluation on each parameter combination and return results
     results = optimization(df, all_params)
+
+    # Select the best parameter set (with lowest RMSE)
     best_params = sorted(results, key=lambda x: x[1])[0]
-    file_path = result+"/prophet_hyperparameter.json"
+
+    # Define output path and save best hyperparameters to a JSON file
+    file_path = result + "/prophet_best_params.json"
     with open(file_path, "w") as f:
         json.dump(best_params[0], f, indent=4)
-    best_model = create_model_new_holiday(y_train)
-    best_model.fit(df)
-    model_path = result+"/prophet_model.json"
-    with open(model_path, 'w') as fout:
-        fout.write(model_to_json(best_model))  # Save model
-    print(f"Best params：{best_params[0]}\nRMSE：{best_params[1]:.4f}")

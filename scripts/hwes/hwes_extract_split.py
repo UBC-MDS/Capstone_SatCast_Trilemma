@@ -1,9 +1,24 @@
+# predict_hwes.py
+# author: Jenny Zhang
+# date: 2025-06-18
 """
 hwes_extract_split.py
 
-Utility function to validate and split the target fee series from a preprocessed DataFrame
-for use in time series forecasting models such as HWES or SARIMA.
+Utility script to extract and split the target series from a preprocessed Bitcoin fee dataset
+for use in classical forecasting models such as Holt-Winters Exponential Smoothing (HWES) or SARIMA.
+
+This script performs the following steps:
+1. Validates the target column ('recommended_fee_fastestFee') for zero values.
+2. Extracts and sorts the series chronologically, inferring its frequency.
+3. Splits the series into training and testing portions based on a forecast horizon.
+
+Usage:
+------
+Used in HWES/SARIMA pipelines to prepare a clean time series split:
+
+    target_series, train, test = hwes_extract_split(df, forecast_horizon=192)
 """
+
 
 import os
 import pandas as pd
