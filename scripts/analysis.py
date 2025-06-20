@@ -1,22 +1,27 @@
-# scripts/analysis/run_all_models.py
+# analysis.py
+# author: Ximin Xu
+# date: 2025-06-18
 
 """
-Main script to run all forecasting models on Bitcoin fee data.
+analysis.py
 
-This script:
-1. Loads the raw fee dataset and preprocesses it.
-2. Runs inference using six different models:
-   - Holt-Winters Exponential Smoothing (HWES)
-   - SARIMA
-   - XGBoost
-   - Prophet
-   - DeepAR
-   - Temporal Fusion Transformer (TFT)
-3. Saves forecast plots for each model to disk.
-4. Aggregates evaluation metrics and exports them as a CSV table.
+Script to run inference with all trained models and compare their
+forecasting performance.
 
-Ensure all model artifacts are stored in `results/models/`
+This script performs the following steps:
+1. Loads the full pre-processed dataset and a 24-hour hold-out test set.
+2. Runs inference for six models (HWES, SARIMA, XGBoost, Prophet,
+   DeepAR, TFT) using their saved checkpoints.
+3. Computes MAE, RMSE, MAPE, and a custom volatility-aware loss
+   for each model.
+4. Saves every model’s forecasts (Pickle) and the aggregated
+   metric table (CSV) to ``results/tables``.
+5. Optionally produces and stores forecast-vs-actual plots.
+
+Usage:
+    python analysis.py
 """
+
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -30,17 +35,26 @@ sys.path.append(str(project_root / "src"))
 
 from preprocess_raw_parquet import preprocess_raw_parquet
 from plot_series import plot_series
+from custom_loss_eval import eval_metrics 
 
 # Add analysis scripts to path
-sys.path.append(str(project_root / "scripts" / "analysis"))
+sys.path.append(str(project_root / "scripts" / "hwes"))
+from hwes_predict import predict_hwes
 
-# Import individual model predictors
-from predict_hwes import predict_hwes
-from predict_sarima import predict_sarima
-from predict_xgboost import predict_xgboost
-from predict_prophet import predict_prophet
-from predict_deepar import predict_deepar
-from predict_tft import predict_tft
+sys.path.append(str(project_root / "scripts" / "sarima"))
+from sarima_predict import predict_sarima
+
+sys.path.append(str(project_root / "scripts" / "xgboost"))
+from xgboost_predict import predict_xgboost
+
+sys.path.append(str(project_root / "scripts" / "prophet"))
+from prophet_predict import predict_prophet
+
+sys.path.append(str(project_root / "scripts" / "deepar"))
+from deepar_predict import predict_deepar
+
+sys.path.append(str(project_root / "scripts" / "tft"))
+from tft_predict import predict_tft
 
 # Define paths
 DATA_PATH = project_root / "data" / "raw" / "mar_5_may_12.parquet"
@@ -76,6 +90,13 @@ forecasts["DeepAR"], metrics["DeepAR"] = predict_deepar(df_full, MODEL_DIR / "be
 print("Running TFT...")
 forecasts["TFT"], metrics["TFT"] = predict_tft(df_full, MODEL_DIR / "best-model-tft-v5.pt")
 
+
+# Add median baseline
+print("Evaluating Median Baseline...")
+test_median = df_full[:-96]["recommended_fee_fastestFee"].median()
+test_median_forecast = pd.Series([test_median] * 96)
+true_values = df_test["recommended_fee_fastestFee"].values
+metrics["Median"] = eval_metrics(test_median_forecast.values, true_values)
 # Step 3: Save forecast plots
 print("Saving forecast plots...")
 for name, df_forecast in forecasts.items():

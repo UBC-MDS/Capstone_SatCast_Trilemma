@@ -1,9 +1,13 @@
-"""
-sarima_window.py
+# sarima_window.py
+# author: Yajing Liu
+# date: 2025-06-18
 
+"""
 Runs SARIMA back-tests on Bitcoin-fee data with **one of three weekly
 windowing schemes**:
 
+Modes:
+------
 1. **Reverse expanding window** – keeps the *last* 24 h as a fixed test set and
    trains on an ever-growing window that moves *backwards* in 1-week chunks.
 2. **Weekly expanding window** – classic walk-forward CV that starts with one
@@ -41,23 +45,20 @@ Typical Usage
 1. Reverse weekly expanding (fixed last-day test):
 
 python scripts/experimentation/sarima_window.py \
-  --data ./data/processed/sarima/preprocessed_sarima_15min.parquet \
-  --results ./results/tables/sarima/expanding_window_reverse_weekly_predictions.csv \
+  --data ./data/raw/mar_5_may_12.parquet \
   --mode reverse
   
   
 2. Weekly expanding:
 
 python scripts/experimentation/sarima_window.py \
-  --data ./data/processed/sarima/preprocessed_sarima_15min.parquet \
-  --results ./results/tables/sarima/expanding_window_weekly_predictions.csv \
+  --data ./data/raw/mar_5_may_12.parquet \
   --mode expanding
   
 3. Weekly sliding:
 
 python scripts/experimentation/sarima_window.py \
-  --data ./data/processed/sarima/preprocessed_sarima_15min.parquet \
-  --results ./results/tables/sarima/sliding_window_weekly_predictions.csv \
+  --data ./data/raw/mar_5_may_12.parquet \
   --mode sliding
 """
 
@@ -68,15 +69,19 @@ import click
 import warnings
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from sktime.forecasting.arima import ARIMA
 from sktime.forecasting.model_selection import ExpandingWindowSplitter, SlidingWindowSplitter
 
 warnings.filterwarnings("ignore", category=FutureWarning)
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from src.custom_loss_eval import eval_metrics
+project_root = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(project_root / "src"))
+from preprocess_raw_parquet import preprocess_raw_parquet
+from custom_loss_eval import eval_metrics
 
 FORECAST = 96
 WEEKLY = 96 * 7
+RESULTS_DIR = project_root / "results" / "tables" / "sarima"
 
 def get_folds(y, mode):
     """
@@ -153,20 +158,19 @@ def run_sarima_cv(y, folds, results_path, mode):
         result["fold"] = i + 1
         all_results.append(result)
 
-        print(f"✅ {mode.capitalize()} Fold {i + 1} — {y.index[train_idx[0]].date()} to {y.index[train_idx[-1]].date()}")
+        print(f"{mode.capitalize()} Fold {i + 1} — {y.index[train_idx[0]].date()} to {y.index[train_idx[-1]].date()}")
 
     df = pd.concat(all_results)
     df.set_index("fold", inplace=True)
-    os.makedirs(os.path.dirname(results_path), exist_ok=True)
+    os.makedirs(results_path.parent, exist_ok=True)
     df.to_csv(results_path)
-    print(f"\n✅ Results saved to {results_path}")
+    print(f"\n Results saved to {results_path}")
 
 
 @click.command()
 @click.option('--data', type=str, required=True, help="Path to preprocessed data")
-@click.option('--results', type=str, required=True, help="Path to save results CSV")
 @click.option('--mode', type=click.Choice(['reverse', 'expanding', 'sliding']), required=True, help="Which window mode to run")
-def main(data, results, mode):
+def main(data, mode):
     """
     Entry point for running SARIMA cross-validation.
 
@@ -175,15 +179,21 @@ def main(data, results, mode):
     data : str
         Path to the preprocessed 15-minute interval Parquet file.
 
-    results : str
-        Path to save the resulting evaluation metrics CSV.
-
     mode : {'reverse', 'expanding', 'sliding'}
         Type of windowing strategy to use for cross-validation.
     """
-    y = pd.read_parquet(data)['recommended_fee_fastestFee'].iloc[:-96].astype(float).asfreq("15min")
+    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'].iloc[:-96].astype(float).asfreq("15min")
     folds = get_folds(y, mode)
-    run_sarima_cv(y, folds, results, mode)
+
+    # Auto filename based on mode
+    filename_map = {
+        "reverse": "expanding_window_reverse_weekly_predictions.csv",
+        "expanding": "expanding_window_weekly_predictions.csv",
+        "sliding": "sliding_window_weekly_predictions.csv"
+    }
+    results_path = RESULTS_DIR / filename_map[mode]
+
+    run_sarima_cv(y, folds, results_path, mode)
 
 
 if __name__ == "__main__":

@@ -1,35 +1,24 @@
+# hwes_cv_optimization.py
+# author: Jenny Zhang
+# date: 2025-06-18
 """
-hwes_cv_optimization.py
+Performs grid-based cross-validation for Holt-Winters Exponential Smoothing (HWES) to
+identify the best combination of trend, seasonality, and damping settings for univariate
+time series forecasting.
 
-Performs cross-validation over a grid of Holt-Winters Exponential Smoothing (HWES) configurations
-to identify the best-performing model for univariate time series forecasting.
+This script performs the following:
+1. Defines sliding-window training and testing splits across the full time series.
+2. Iterates over a parameter grid of HWES configurations.
+3. Fits each model and evaluates it on the next 24-hour (96-step) forecast horizon.
+4. Applies both standard metrics (MAE, RMSE, MAPE) and custom volatility-aware metrics.
+5. Aggregates performance across all windows to rank configurations by average custom loss.
 
-Responsibilities:
------------------
-1. Constructs sliding windows over the time series to simulate realistic forecasting conditions.
-2. Iterates through combinations of HWES parameters: trend, seasonality, and damped trend.
-3. Trains a model on each window and evaluates forecast accuracy on the horizon.
-4. Applies both standard and custom volatility-aware metrics to assess performance.
-5. Returns aggregated average scores for each parameter combination.
+Usage:
+------
+Used during the HWES tuning phase before final model selection:
 
-Key Features:
--------------
-- Supports automatic scaling of training data to mitigate numerical instability.
-- Uses custom metrics to penalize erratic or lagging forecasts beyond MAE/RMSE.
-- Filters out parameter sets that fail during training.
-
-Typical Usage:
---------------
-Used to tune HWES model parameters before final training and forecasting. 
-
-Returns:
---------
-pd.DataFrame
-    DataFrame containing average scores for each parameter combination,
-    sorted by the custom loss metric.
+    cv_results = hwes_cv_optimization(series, seasonal_periods=96, horizon=96)
 """
-
-
 
 import os
 import sys
@@ -162,5 +151,12 @@ def hwes_cv_optimization(series, seasonal_periods=96, horizon=96, window_size=67
             })
 
     # Return results sorted by custom score (lower is better)
-    cv_results = pd.DataFrame(results).sort_values("avg_custom_score")
-    return cv_results
+    if not results:
+        return pd.DataFrame(columns=[
+            "trend", "seasonal", "damped", "avg_mae", "avg_mape", "avg_rmse",
+            "avg_std_penalty", "avg_dev_error", "avg_custom_score"
+        ])
+
+    # Otherwise, return sorted DataFrame
+    cv_results = pd.DataFrame(results)
+    return cv_results.sort_values("avg_custom_score")

@@ -2,9 +2,15 @@
 # author: Tengwei Wang
 # date: 2025-06-18
 
-# Functions for prophet model training, evaluating and optimizing. 
+"""
+Utility functions for training, tuning, and evaluating Prophet models for Bitcoin fee forecasting.
 
-
+This module includes:
+- Hyperparameter optimization using Prophet's built-in cross-validation
+- Standard Prophet model creation with or without custom holidays
+- Evaluation over weekly windows (with or without external regressors)
+- Visualization and scoring using custom and standard metrics
+"""
 
 import pandas as pd
 from prophet import Prophet
@@ -15,298 +21,233 @@ from prophet.diagnostics import cross_validation, performance_metrics
 import json
 import sys
 from pathlib import Path
+
+# Add src path for custom loss function import
 current_file = Path(__file__).resolve()
 project_root = current_file.parents[2]
-src_path = project_root / "src" 
+src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
+
 from custom_loss_eval import custom_loss_eval as mae_with_std_penalty_np
-model_path = str(project_root) + "/results" + "/models"
+model_path = str(project_root / "results" / "models")
 
-
-
-def model_optimization(df,all_params):
+# === Model Optimization ===
+def model_optimization(df, all_params):
     """
-    Fine-tune prophet model.
+    Run grid search for Prophet model hyperparameters using cross-validation.
 
-    Parameters:
+    Parameters
     ----------
-    df : pandas.DataFrame
-        Formatted dataset for prophet model training. 
-    all_params : dict
-        Parameters for fine-tuning.
+    df : pd.DataFrame
+        Must contain 'ds' and 'y' columns (log-transformed target).
+    all_params : list of dict
+        List of Prophet hyperparameter combinations.
 
-    Returns:
+    Returns
     -------
-    list
-        A list containing all fine-tuning results.
-
-    Examples:
-    --------
-    >>> results = model_optimization(df_prophet_new, {"a":[1,2,3]})
+    list of (dict, float)
+        Each tuple contains the parameter set and average RMSE from CV.
     """
-    results = [] 
+    results = []
 
-    for params in all_params:
-        m = Prophet(
-            daily_seasonality=False,
-            weekly_seasonality=False,
-            **params
-        )
-        m.add_seasonality(name='hourly', period=1/24, fourier_order=6)
-        m.add_seasonality(name='daily', period=1, fourier_order=8)
-        m.add_seasonality(name='weekly', period=7, fourier_order=4)
-        
-        m.fit(df)
-        df_cv = cross_validation(m, initial='7 days', period='1 day', horizon='1 day', parallel="processes")
-        df_p = performance_metrics(df_cv)
-        
-        results.append((params, df_p['rmse'].mean()))
+    for i, params in enumerate(all_params):
+        print(f"🔍 Testing parameter set {i+1}/{len(all_params)}: {params}")
+        try:
+            # Initialize model with custom seasonality
+            m = Prophet(daily_seasonality=False, weekly_seasonality=False, **params)
+            m.add_seasonality(name='hourly', period=1/24, fourier_order=6)
+            m.add_seasonality(name='daily', period=1, fourier_order=8)
+            m.add_seasonality(name='weekly', period=7, fourier_order=4)
+            m.fit(df)
+
+            # Perform CV
+            df_cv = cross_validation(m, initial='7 days', period='1 day', horizon='1 day', parallel="processes")
+            df_p = performance_metrics(df_cv)
+            mean_rmse = df_p['rmse'].mean()
+            results.append((params, mean_rmse))
+        except Exception as e:
+            print(f"Skipping due to error: {e}")
+            continue
+
+    if not results:
+        raise ValueError("All hyperparameter sets failed. Try smaller horizon or more data.")
+
     return results
 
-
+# === Model Creation ===
 def create_model_new():
     """
-    Create a new prophet model using best hyperparameters. 
+    Create a Prophet model using best hyperparameters saved in JSON file.
 
-    Parameters:
-    ----------
-    Null
-
-    Returns:
+    Returns
     -------
     Prophet
-        Created Prophet model.
-
-    Examples:
-    --------
-    >>> model = create_model_new()
+        Configured Prophet model.
     """
-    
-    with open(model_path+"/prophet.json", "r") as f:
+    with open(model_path + "/prophet_hyperparameter.json", "r") as f:
         params = json.load(f)
-        
+
     model = Prophet(
         daily_seasonality=False,
         weekly_seasonality=False,
-        changepoint_prior_scale = params["changepoint_prior_scale"],
-        seasonality_prior_scale=params["seasonality_prior_scale"],
-        seasonality_mode=params["seasonality_mode"],
-        changepoint_range=params["changepoint_range"],
-        n_changepoints=params["n_changepoints"]
+        **params
     )
-    model.add_seasonality(name='hourly', period=1/24, fourier_order=5) 
-    model.add_seasonality(name='daily', period=1, fourier_order=10)  
-    model.add_seasonality(name='weekly', period=24, fourier_order=5) 
-
+    model.add_seasonality(name='hourly', period=1/24, fourier_order=5)
+    model.add_seasonality(name='daily', period=1, fourier_order=10)
+    model.add_seasonality(name='weekly', period=24, fourier_order=5)
     return model
-
 
 def create_model_new_holiday(y_train):
     """
-    Create a new prophet model with holiday parameters using best hyperparameters. 
+    Create Prophet model with added congestion spike holidays.
 
-    Parameters:
+    Parameters
     ----------
     y_train : pd.DataFrame
-        Targets of training data.
+        Training data with 'recommended_fee_fastestFee' and timestamp index.
 
-    Returns:
+    Returns
     -------
     Prophet
-        Created Prophet model.
-
-    Examples:
-    --------
-    >>> model = create_model_new_holiday(y_train)
+        Prophet model with holiday events.
     """
-    with open(model_path+"/prophet.json", "r") as f:
+    with open(model_path + "/prophet_best_params.json", "r") as f:
         params = json.load(f)
-        
+
+    # Identify congestion spikes
     s = y_train.reset_index()
     threshold = s['recommended_fee_fastestFee'].quantile(0.9)
     spike_times = s[s['recommended_fee_fastestFee'] > threshold]['timestamp']
 
-    # holidays dataframe
     holidays = pd.DataFrame({
         'ds': pd.to_datetime(spike_times),
         'holiday': 'congestion_spike'
-    })
+    }).drop_duplicates(subset='ds')
 
-    # remove duplicate
-    holidays = holidays.drop_duplicates(subset='ds')
     model = Prophet(
         daily_seasonality=False,
         weekly_seasonality=False,
-        changepoint_prior_scale = params["changepoint_prior_scale"],
-        seasonality_prior_scale=params["seasonality_prior_scale"],
-        seasonality_mode=params["seasonality_mode"],
-        changepoint_range=params["changepoint_range"],
-        n_changepoints=params["n_changepoints"],
-        holidays=holidays
+        holidays=holidays,
+        **params
     )
-
-    model.add_seasonality(name='hourly', period=1/24, fourier_order=5) 
-    model.add_seasonality(name='daily', period=1, fourier_order=10)  
-    model.add_seasonality(name='weekly', period=24, fourier_order=5) 
-
+    model.add_seasonality(name='hourly', period=1/24, fourier_order=5)
+    model.add_seasonality(name='daily', period=1, fourier_order=10)
+    model.add_seasonality(name='weekly', period=24, fourier_order=5)
     return model
 
-def get_result_new(df,y_test,y):
+# === Forecast Result Printer ===
+def get_result_new(df, y_test, y):
     """
-    Calculate metrics and plot comparison of actual values vs. predicted values. 
+    Evaluate and plot Prophet forecast.
 
-    Parameters:
+    Parameters
     ----------
-    df: pd.DataFrame
-        Original dataset.
-    y_test: np.ndarray
-        Ground truth values.
-    y: pd.DataFrame
-        Original set of target values. 
-
-    Returns:
-    -------
-        Null
-
-    Examples:
-    --------
-    >>> df = pd.DataFrame({"a":[1,2],"b":[3,4]})
-    >>> y_test = np.array([4])
-    >>> y = pd.DataFrame({"b":[3,4]})
-    >>> get_result_new(df,y_test,y)
+    df : pd.DataFrame
+        Prophet forecast DataFrame.
+    y_test : np.ndarray
+        Actual values.
+    y : pd.Series
+        Original full series for computing baseline.
     """
     df.index = y.index
-    y_pred = df.iloc[-96:]
-    y_pred = np.expm1(y_pred["yhat"])
+    y_pred = np.expm1(df.iloc[-96:]['yhat'])  # Un-log transform
     split_index = len(y) - 96
-    y_train, a = y.iloc[:split_index], y.iloc[split_index:]
+    y_train = y.iloc[:split_index]
     y_baseline = [y_train.median()] * len(y_test)
+
+    # Compute metrics
     mae = mean_absolute_error(y_test, y_pred)
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     mape = mean_absolute_percentage_error(y_test, y_pred)
-    mae_std = mae_with_std_penalty_np(y_pred,y_test)
+    mae_std = mae_with_std_penalty_np(y_pred, y_test)
+
     base_mae = mean_absolute_error(y_test, y_baseline)
     base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
-    base_mape = mean_absolute_percentage_error(y_test, y_baseline)   
-    base_mae_std = mae_with_std_penalty_np(y_baseline,y_test)
-    print(f"MAE: {mae:.4f}")
-    print(f"RMSE: {rmse:.4f}")
-    print(f"MAPE: {mape:.4f}")
-    print(f"MAE with std and shape penalty: {mae_std:.4f}")
-    print(f"Base MAE: {base_mae:.4f}")
-    print(f"Base RMSE: {base_rmse:.4f}")
-    print(f"Base MAPE: {base_mape:.4f}")
-    print(f"Base MAE with std and shape penalty: {base_mae_std:.4f}")
+    base_mape = mean_absolute_percentage_error(y_test, y_baseline)
+    base_mae_std = mae_with_std_penalty_np(y_baseline, y_test)
 
-    fig,ax = plt.subplots(figsize=(14, 5))
-    # Plot actual vs. predicted values
+    # Print
+    print(f"MAE: {mae:.4f}\nRMSE: {rmse:.4f}\nMAPE: {mape:.4f}\nMAE+STD: {mae_std:.4f}")
+    print(f"Base MAE: {base_mae:.4f}\nBase RMSE: {base_rmse:.4f}\nBase MAPE: {base_mape:.4f}\nBase MAE+STD: {base_mae_std:.4f}")
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(14, 5))
     ax.plot(y_test, label="Actual", color="black")
     ax.plot(y_pred, label="Forecast", color="blue")
-
-    # Axis labels and title
-    ax.set_title(f"Forecast vs Actual", fontsize=14)
-    ax.set_xlabel("Timestamp", fontsize=12)
-    ax.set_ylabel("Transaction Fee (sats/vB)", fontsize=12)
-    # Improve appearance
+    ax.set_title("Forecast vs Actual")
+    ax.set_xlabel("Timestamp")
+    ax.set_ylabel("Transaction Fee (sats/vB)")
     ax.grid(True)
     ax.legend()
     plt.setp(ax.get_xticklabels(), rotation=30, ha="right")
 
-
-def evaluate_model(df_new, weeks=10,holiday=0):
+# === Sliding Evaluation ===
+def evaluate_model(df_new, weeks=10, holiday=0):
     """
-    Evaluate model performance over multiple weeks.
+    Evaluate Prophet with or without holiday logic over multiple weeks.
 
-    Parameters:
+    Parameters
     ----------
-    df_new: pd.DataFrame
-        Original dataset.
-    weeks: int
-        Number of weeks the dataset contains.
-    holiday: pd.DataFrame
-        Whether to manually set holiday parameters. 
+    df_new : pd.DataFrame
+        Data with 15-min resolution.
+    weeks : int
+        How many weeks to evaluate.
+    holiday : int
+        Whether to use spike-based holiday model.
 
-    Returns:
+    Returns
     -------
-    list
-        list of metrics per week
-    dict 
-        dict of average values of all metrics
-
-    Examples:
-    --------
-    >>> evaluate_model(df,10,0)
+    metrics_per_week : list of dict
+    avg_metrics : dict
     """
     metrics_per_week = []
-
-    avg_mae = 0
-    avg_rmse = 0
-    avg_mape = 0
-    avg_mae_std = 0
-
-    base_avg_mae = 0
-    base_avg_rmse = 0
-    base_avg_mape = 0
-    base_avg_mae_std = 0
+    avg_mae = avg_rmse = avg_mape = avg_mae_std = 0
+    base_avg_mae = base_avg_rmse = base_avg_mape = base_avg_mae_std = 0
 
     for i in range(weeks):
-        # print("Week",(i+1))
-        df_sliding = df_new[0+i*7*96:7*96+i*7*96]
+        df_sliding = df_new[i * 96 * 7: (i + 1) * 96 * 7]
         y = df_sliding["recommended_fee_fastestFee"]
         split_index = len(y) - 96
         y_train, y_test = y.iloc[:split_index], y.iloc[split_index:]
-        df_prophet = y_train.reset_index()
-        df_prophet = df_prophet.rename(columns={
-            'timestamp': 'ds',
-            'recommended_fee_fastestFee': 'y'
-        })
+
+        df_prophet = y_train.reset_index().rename(columns={'timestamp': 'ds', 'recommended_fee_fastestFee': 'y'})
         df_prophet['y'] = np.log1p(df_prophet['y'])
 
-        # baseline
-        y_baseline = [y_train.median()] * len(y_test)
-
-        if holiday == 0:
-            model = create_model_new()
-        else:
-            model = create_model_new_holiday(y_train)
+        model = create_model_new_holiday(y_train) if holiday else create_model_new()
         model.fit(df_prophet)
         future = model.make_future_dataframe(periods=96, freq='15min')
         forecast = model.predict(future)
 
-        y_pred_temp = forecast.iloc[-96:]
-        y_pred_temp = np.expm1(y_pred_temp["yhat"])
-        y_pred_temp.index =y_test.index
+        y_pred = np.expm1(forecast.iloc[-96:]["yhat"])
+        y_pred.index = y_test.index
+        y_baseline = [y_train.median()] * len(y_test)
 
-        mae = mean_absolute_error(y_test, y_pred_temp)
-        rmse = np.sqrt(mean_squared_error(y_test, y_pred_temp))
-        mape = mean_absolute_percentage_error(y_test, y_pred_temp)
-        mae_std = mae_with_std_penalty_np(y_pred_temp,y_test)
+        # Evaluate
+        mae = mean_absolute_error(y_test, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        mape = mean_absolute_percentage_error(y_test, y_pred)
+        mae_std = mae_with_std_penalty_np(y_pred, y_test)
 
         base_mae = mean_absolute_error(y_test, y_baseline)
         base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
-        base_mape = mean_absolute_percentage_error(y_test, y_baseline)   
-        base_mae_std = mae_with_std_penalty_np(y_baseline,y_test)
+        base_mape = mean_absolute_percentage_error(y_test, y_baseline)
+        base_mae_std = mae_with_std_penalty_np(y_baseline, y_test)
 
+        metrics_per_week.append({
+            "mae": mae, "rmse": rmse, "mape": mape, "mae_std": mae_std,
+            "base_mae": base_mae, "base_rmse": base_rmse,
+            "base_mape": base_mape, "base_mae_std": base_mae_std
+        })
+
+        # Accumulate
         avg_mae += mae
         avg_rmse += rmse
         avg_mape += mape
         avg_mae_std += mae_std
-        
         base_avg_mae += base_mae
         base_avg_rmse += base_rmse
         base_avg_mape += base_mape
         base_avg_mae_std += base_mae_std
-
-        metrics_per_week.append({
-            "mae": mae,
-            "rmse": rmse,
-            "mape": mape,
-            "mae_std": mae_std,
-            "base_mae": base_mae,
-            "base_rmse": base_rmse,
-            "base_mape": base_mape,
-            "base_mae_std": base_mae_std
-        })
 
     avg_metrics = {
         "avg_mae": avg_mae / weeks,
@@ -319,120 +260,86 @@ def evaluate_model(df_new, weeks=10,holiday=0):
         "base_avg_mae_std": base_avg_mae_std / weeks
     }
 
-
     return metrics_per_week, avg_metrics
 
-
+# === External Feature Evaluation ===
 def evaluate_model_external(df_new, weeks=10):
     """
-    Evaluate model performance using external features over multiple weeks.
+    Evaluate Prophet with external regressors over multiple weeks.
 
-    Parameters:
+    Parameters
     ----------
     df_new: pd.DataFrame
-        Original dataset.
+        Full dataset with external variables.
     weeks: int
-        Number of weeks the dataset contains.
+        Number of evaluation weeks.
 
-    Returns:
+    Returns
     -------
-    y_pred_sliding: dict 
-        Dict of forecasts.
-    metrics_per_week: list 
-        List of dicts for each week's metrics.
-    avg_metrics: dict 
-        Dict of average metrics over all weeks.
+    metrics_per_week : list of dict
+    avg_metrics : dict
     """
     metrics_per_week = []
-
-    avg_mae = 0
-    avg_rmse = 0
-    avg_mape = 0
-    avg_mae_std = 0
-
-    base_avg_mae = 0
-    base_avg_rmse = 0
-    base_avg_mape = 0
-    base_avg_mae_std = 0
+    avg_mae = avg_rmse = avg_mape = avg_mae_std = 0
+    base_avg_mae = base_avg_rmse = base_avg_mape = base_avg_mae_std = 0
 
     for i in range(weeks):
-        # print("Week",(i+1))
-        df_sliding = df_new[0+i*7*96:7*96+i*7*96]
+        df_sliding = df_new[i*7*96: (i+1)*7*96]
 
-        X = df_sliding.drop(columns = "recommended_fee_fastestFee")
+        X = df_sliding.drop(columns="recommended_fee_fastestFee")
         y = df_sliding["recommended_fee_fastestFee"]
 
-        # shift
-        shift_steps = 96 # shift 24h
-        X = X.shift(periods=shift_steps)
-        X.dropna(inplace=True)
+        X = X.shift(96).dropna()
         y = y.loc[X.index]
-        
+
         split_index = len(y) - 96
         X_train, X_test = X.iloc[:split_index], X.iloc[split_index:]
         y_train, y_test = y.iloc[:split_index], y.iloc[split_index:]
-        df_prophet = y_train.reset_index()
-        df_prophet = df_prophet.rename(columns={
-            'timestamp': 'ds',
-            'recommended_fee_fastestFee': 'y'
-        })
+
+        df_prophet = y_train.reset_index().rename(columns={"timestamp": "ds", "recommended_fee_fastestFee": "y"})
         df_prophet['y'] = np.log1p(df_prophet['y'])
 
-        # baseline
-        y_baseline = [y_train.median()] * len(y_test)
-
         model = create_model_new()
-
-        # add external features
-        X_col = X_train.reset_index()
-        X_col = X_col.drop(columns = "timestamp")
-        for i in X_col.columns.values:
-            df_prophet[i] = X_col[i].copy()
-            model.add_regressor(i)
+        for col in X_train.columns:
+            df_prophet[col] = X_train[col].values
+            model.add_regressor(col)
 
         model.fit(df_prophet)
         future = model.make_future_dataframe(periods=96, freq='15min')
-
-        # add external features
-        for i in X.columns.values:
-            future[i] = list(df_prophet[i]) + list(X_test[i])
+        for col in X.columns:
+            future[col] = list(df_prophet[col]) + list(X_test[col])
 
         forecast = model.predict(future)
+        y_pred_temp = np.expm1(forecast.iloc[-96:]["yhat"])
+        y_pred_temp.index = y_test.index
 
-        y_pred_temp = forecast.iloc[-96:]
-        y_pred_temp = np.expm1(y_pred_temp["yhat"])
-        y_pred_temp.index =y_test.index
-
+        # Evaluate
         mae = mean_absolute_error(y_test, y_pred_temp)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred_temp))
         mape = mean_absolute_percentage_error(y_test, y_pred_temp)
-        mae_std = mae_with_std_penalty_np(y_pred_temp,y_test)
+        mae_std = mae_with_std_penalty_np(y_pred_temp, y_test)
 
+        y_baseline = [y_train.median()] * len(y_test)
         base_mae = mean_absolute_error(y_test, y_baseline)
         base_rmse = np.sqrt(mean_squared_error(y_test, y_baseline))
-        base_mape = mean_absolute_percentage_error(y_test, y_baseline)   
-        base_mae_std = mae_with_std_penalty_np(y_baseline,y_test)
+        base_mape = mean_absolute_percentage_error(y_test, y_baseline)
+        base_mae_std = mae_with_std_penalty_np(y_baseline, y_test)
 
+        metrics_per_week.append({
+            "mae": mae, "rmse": rmse, "mape": mape, "mae_std": mae_std,
+            "base_mae": base_mae, "base_rmse": base_rmse,
+            "base_mape": base_mape, "base_mae_std": base_mae_std
+        })
+
+        # Aggregate
         avg_mae += mae
         avg_rmse += rmse
         avg_mape += mape
         avg_mae_std += mae_std
-        
         base_avg_mae += base_mae
         base_avg_rmse += base_rmse
         base_avg_mape += base_mape
         base_avg_mae_std += base_mae_std
-
-        metrics_per_week.append({
-            "mae": mae,
-            "rmse": rmse,
-            "mape": mape,
-            "mae_std": mae_std,
-            "base_mae": base_mae,
-            "base_rmse": base_rmse,
-            "base_mape": base_mape,
-            "base_mae_std": base_mae_std
-        })
 
     avg_metrics = {
         "avg_mae": avg_mae / weeks,
@@ -447,34 +354,26 @@ def evaluate_model_external(df_new, weeks=10):
 
     return metrics_per_week, avg_metrics
 
+# === Final Model Evaluation ===
 def evaluate_best_model(df_new):
     """
-    Evaluate best model performance over the whole dataset.
+    Evaluate final Prophet model on full dataset (no sliding).
 
-    Parameters:
+    Parameters
     ----------
     df_new: pd.DataFrame
-        Original dataset.
+        Full dataset.
 
-    Returns:
+    Returns
     -------
-    list
-        list of metrics per week
-    dict 
-        dict of average values of all metrics
-
-    Examples:
-    --------
-    >>> evaluate_model(df,10,0)
+    list, dict
+        Weekly metrics and averages.
     """
     y = df_new["recommended_fee_fastestFee"]
     split_index = len(y) - 96
     y_train, y_test = y.iloc[:split_index], y.iloc[split_index:]
-    df_prophet = y_train.reset_index()
-    df_prophet = df_prophet.rename(columns={
-        'timestamp': 'ds',
-        'recommended_fee_fastestFee': 'y'
-    })
+
+    df_prophet = y_train.reset_index().rename(columns={'timestamp': 'ds', 'recommended_fee_fastestFee': 'y'})
     df_prophet['y'] = np.log1p(df_prophet['y'])
 
     model = create_model_new_holiday(y_train)
@@ -482,9 +381,8 @@ def evaluate_best_model(df_new):
     future = model.make_future_dataframe(periods=96, freq='15min')
     forecast = model.predict(future)
 
-    y_pred_temp = forecast.iloc[-96:]
-    y_pred_temp = np.expm1(y_pred_temp["yhat"])
-    y_pred_temp.index =y_test.index
-    y_pred_temp.to_csv("prophet.csv",index=True)
+    y_pred_temp = np.expm1(forecast.iloc[-96:]["yhat"])
+    y_pred_temp.index = y_test.index
+    y_pred_temp.to_csv("prophet.csv", index=True)
 
-    get_result_new(forecast,y_test,y)
+    get_result_new(forecast, y_test, y)

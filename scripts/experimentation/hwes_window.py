@@ -1,3 +1,6 @@
+# hwes_window.py
+# author: Jenny Zhang
+# date: 2025-06-18
 """
 hwes_window.py
 
@@ -26,7 +29,7 @@ Workflow
    b. Predict the next 96 time steps (1 day)  
    c. Score against the test set using `eval_metrics()` → MAE, RMSE, MAPE, custom loss, etc.
 4. Aggregate fold-wise metrics into a tidy DataFrame (`fold` as index).
-5. Write results to a CSV at the path specified via `--results`.
+5. Write results to a CSV at table folder
 
 Key Features
 ------------
@@ -43,19 +46,16 @@ Typical Usage
 1. Reverse expanding:
 python scripts/experimentation/hwes_window.py \
   --data ./data/raw/mar_5_may_12.parquet \
-  --results ./results/tables/hwes_experimentation_rev_expand_win_results.csv \
   --mode reverse
 
 2. Weekly expanding: 
 python scripts/experimentation/hwes_window.py \
   --data ./data/raw/mar_5_may_12.parquet \
-  --results ./results/tables/hwes_experimentation_expand_win_results.csv \
   --mode expanding
 
 3. Weekly sliding:
 python scripts/experimentation/hwes_window.py \
   --data ./data/raw/mar_5_may_12.parquet \
-  --results ./results/tables/hwes_experimentation_slide_win_results.csv \
   --mode sliding
 """
   
@@ -65,44 +65,46 @@ import click
 import warnings
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
+# Suppress warnings to keep output clean
 warnings.filterwarnings("ignore")
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from src.preprocess_raw_parquet import preprocess_raw_parquet
-from src.custom_loss_eval import eval_metrics
-from src.read_csv_data import read_csv_data
+
+# Set project root path and append source directory to sys.path for imports
+project_root = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(project_root / "src"))
+
+# Import helper functions
+from preprocess_raw_parquet import preprocess_raw_parquet
+from custom_loss_eval import eval_metrics
 
 # Constants
-DAILY = 96  # 96 steps = 24 hours at 15-min intervals
-WEEK = 96 * 7
-RESULTS_DIR = './results'
+DAILY = 96  # 24 hours × 4 (15-min intervals) = 96 steps
+WEEK = 96 * 7  # 1 week of 15-min intervals
+RESULTS_DIR = project_root / "results"  # Root for saving results
 
 
 def get_folds(y, mode):
     """
-    Generate training and testing index pairs for cross-validation based on the selected mode.
+    Generate train/test splits based on windowing strategy.
 
     Parameters:
     -----------
-    y : pd.Series
-        The full time series to be split.
-    mode : str
-        One of ['reverse', 'expanding', 'sliding']:
-            - 'reverse': test set is fixed to the final day, training expands backward.
-            - 'expanding': walk-forward with cumulative weekly training.
-            - 'sliding': fixed-size weekly training sliding forward.
+    y : pd.Series - full time series
+    mode : str - one of ['reverse', 'expanding', 'sliding']
 
     Returns:
     --------
-    list of tuples:
-        Each tuple contains (train_idx, test_idx), both lists of integer indices.
+    list of (train_idx, test_idx) tuples
     """
+
     if mode == "reverse":
+        # Fixed final day as test set, training expands backwards
         test_end = len(y)
         test_start = test_end - DAILY
         train_end = test_start
-        n_folds = train_end // WEEK
+        n_folds = train_end // WEEK  # number of full weeks
         folds = []
         for i in range(1, n_folds + 1):
             train_start = max(0, train_end - i * WEEK)
@@ -110,17 +112,21 @@ def get_folds(y, mode):
         return folds
 
     elif mode == "expanding":
+        # Train grows weekly, test always the next day (96 steps)
         folds = []
-        for i in range(1, (len(y) - WEEK - DAILY) // WEEK + 1):
-            train_end = WEEK + (i - 1) * WEEK
-            train_idx = list(range(train_end))
-            test_idx = list(range(train_end, train_end + DAILY))
-            folds.append((train_idx, test_idx))
+        for i in range(1, (len(y) - DAILY) // WEEK + 1):  # +1 ensures last test window is included
+            train_end = i * WEEK
+            test_start = train_end
+            test_end = test_start + DAILY
+            if test_end <= len(y):  # extra safety check
+                folds.append((list(range(train_end)), list(range(test_start, test_end))))
         return folds
 
+
     elif mode == "sliding":
+        # Fixed window slides 1 week forward each fold
         folds = []
-        for i in range(0, (len(y) - WEEK - DAILY) // WEEK):
+        for i in range(0, (len(y) - WEEK - DAILY) // WEEK + 1):
             train_start = i * WEEK
             train_end = train_start + WEEK
             test_start = train_end
@@ -134,23 +140,19 @@ def get_folds(y, mode):
 
 def run_hwes_cv(y, folds, results_path, mode, trend, seasonal, damped, periods):
     """
-    Run Holt-Winters Exponential Smoothing on each cross-validation fold.
+    Run HWES on each fold and evaluate performance.
 
     Parameters:
     -----------
-    y : pd.Series
-        Full target time series with 15-minute frequency.
-    folds : list of tuples
-        Output from `get_folds()`, containing (train_idx, test_idx) pairs.
-    results_path : str
-        File path to save the per-fold evaluation results as CSV.
-    mode : str
-        One of ['reverse', 'expanding', 'sliding'], used for progress tracking.
+    y : pd.Series - full series
+    folds : list - index splits
+    results_path : Path - output CSV path
+    mode : str - windowing mode
+    trend, seasonal, damped, periods : HWES parameters
 
-    Output:
+    Saves:
     -------
-    A CSV file saved to `results_path` containing fold-wise metrics:
-        - MAE, RMSE, MAPE, custom loss, etc.
+    A CSV of per-fold metrics.
     """
     all_results = []
 
@@ -159,6 +161,7 @@ def run_hwes_cv(y, folds, results_path, mode, trend, seasonal, damped, periods):
         y_test = y.iloc[test_idx]
 
         try:
+            # Fit HWES model
             model = ExponentialSmoothing(
                 y_train,
                 trend=trend,
@@ -167,48 +170,68 @@ def run_hwes_cv(y, folds, results_path, mode, trend, seasonal, damped, periods):
                 damped_trend=damped
             )
             fit = model.fit(optimized=True, use_brute=True)
+
+            # Forecast next day (96 steps)
             y_pred = fit.forecast(DAILY)
 
+            # Evaluate
             result = eval_metrics(y_pred, y_test).T
             result["fold"] = i + 1
             all_results.append(result)
 
-            print(f"✅ {mode.capitalize()} Fold {i + 1} — {y.index[train_idx[0]].date()} to {y.index[train_idx[-1]].date()}")
+            # Print progress
+            print(f"{mode.capitalize()} Fold {i + 1} — {y.index[train_idx[0]].date()} to {y.index[train_idx[-1]].date()}")
 
         except Exception as e:
-            print(f"❌ Fold {i + 1} failed: {e}")
+            print(f"Fold {i + 1} failed: {e}")
 
+    # Aggregate all fold results
     df = pd.concat(all_results)
     df.set_index("fold", inplace=True)
-    os.makedirs(os.path.dirname(results_path), exist_ok=True)
+
+    # Ensure parent directory exists
+    os.makedirs(results_path.parent, exist_ok=True)
+
+    # Save results
     df.to_csv(results_path)
-    print(f"✅ Results saved to {results_path}")
+    print(f"Results saved to {results_path}")
 
 
 @click.command()
 @click.option('--data', type=str, required=True, help="Path to raw data")
-@click.option('--results', type=str, required=True, help="Path to save results CSV")
 @click.option('--mode', type=click.Choice(['reverse', 'expanding', 'sliding']), required=True, help="Windowing strategy")
-def main(data, results, mode):
+def main(data, mode):
     """
-    CLI entry point for running HWES cross-validation.
+    CLI entry point for HWES forecasting experiment.
 
     Parameters:
     -----------
-    data : str
-        Path to the input Parquet file containing the time series.
-    results : str
-        Path to save the evaluation results CSV.
-    mode : str
-        One or more of ['reverse', 'expanding', 'sliding'] indicating fold strategy.
+    data : str - Parquet path
+    mode : str - windowing strategy
     """
-    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'].astype(float).asfreq("15min")
+    # Load and reindex time series
+    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'][:-96].astype(float).asfreq("15min")
 
-    hyperparam_matrix = read_csv_data(os.path.join(RESULTS_DIR, 'tables', 'hwes_cv_results.csv'))
-    best_trend, best_seasonal, best_damped = hyperparam_matrix.iloc[0][['trend', 'seasonal', 'damped']]
+    # Load best HWES parameters from prior random search
+    cv_result_path = RESULTS_DIR / "tables" / "hwes" / "hwes_cv_results.csv"
+    hyperparam_matrix = pd.read_csv(cv_result_path)
+    best_trend = hyperparam_matrix.loc[0, 'trend']
+    best_seasonal = hyperparam_matrix.loc[0, 'seasonal']
+    best_damped = hyperparam_matrix.loc[0, 'damped']
 
+    # Generate CV folds
     folds = get_folds(y, mode)
-    run_hwes_cv(y, folds, results, mode, best_trend, best_seasonal, best_damped, DAILY)
+
+    # Choose filename based on mode
+    filename_map = {
+        "reverse": "expanding_window_reverse_weekly_predictions.csv",
+        "expanding": "expanding_window_weekly_predictions.csv",
+        "sliding": "sliding_window_weekly_predictions.csv"
+    }
+    results_path = RESULTS_DIR / "tables" / "hwes" / filename_map[mode]
+
+    # Run cross-validation and save results
+    run_hwes_cv(y, folds, results_path, mode, best_trend, best_seasonal, best_damped, DAILY)
 
 
 if __name__ == "__main__":
