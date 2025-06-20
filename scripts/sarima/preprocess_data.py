@@ -1,30 +1,18 @@
+# preprocess_data.py
+# author: Yajing Liu
+# date: 2025-06-18
 """
 preprocess_data.py
 
-Preprocesses raw Bitcoin mempool Parquet data for SARIMA modeling.
+Script to preprocess raw Bitcoin mempool Parquet data for SARIMA modeling.
 
-Workflow:
----------
-1. Loads raw data from a Parquet file.
-2. Applies time-based resampling to 15-minute intervals.
-3. Interpolates missing values and ensures datetime index.
-4. Saves the cleaned data to disk as a new Parquet file.
-
-Key Features:
--------------
-- Designed for preparing data specifically for SARIMA model training.
-- Modular usage with Click CLI: accepts input/output paths.
-- Uses `preprocess_raw_parquet()` from the project's `src/` module.
-- Saves output to `data/processed/preprocessed_sarima_15min.parquet` by default.
-
-Typical Usage:
---------------
-Run from the command line:
-
-python scripts/sarima/preprocess_data.py \
-    --data="./data/raw/mar_5_may_12.parquet" \
-    --data-to="./data/processed"
+This script performs the following steps:
+1. Loads raw fee data from a Parquet file.
+2. Resamples the time series to 15-minute intervals.
+3. Fills missing values using time-based interpolation.
+4. Saves the cleaned dataset to a target directory for downstream modeling.
 """
+
 
 import click
 import os
