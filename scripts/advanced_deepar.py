@@ -15,7 +15,7 @@ This script performs the following steps:
    saves the best checkpoint to disk.
 
 Usage:
-    python advanced_deepar.py --parquet-path data/raw/mar_5_may_12.parquet
+    python scripts/advanced_deepar.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 import sys

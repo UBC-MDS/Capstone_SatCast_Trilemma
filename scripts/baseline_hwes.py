@@ -16,7 +16,7 @@ This script performs the following steps:
 5. Serialises the fitted model to ``results/models/hwes_best_train.pkl``.
 
 Usage:
-    python baseline_hwes.py --parquet-path data/raw/mar_5_may_12.parquet
+    python scripts/baseline_hwes.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 import sys

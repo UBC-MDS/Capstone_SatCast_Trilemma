@@ -16,7 +16,9 @@ This script performs the following steps:
    saves it to ``results/models/xgboost.pkl``.
 
 Usage:
-    python baseline_xgboost.py --data-path data/raw/mar_5_may_12.parquet [--skip-optimization]
+    python scripts/baseline_xgboost.py \
+      --parquet-path data/raw/mar_5_may_12.parquet \
+         [--skip-optimization]
 """
 
 import sys
@@ -33,7 +35,7 @@ sys.path.insert(0, str(src_path))
 
 # Import preprocessing, optimization, and training routines
 from xgboost_model_optimization import optimization
-from xgboost_model_training import build_random_search_full
+from xgboost_model_training import build_random_search_cv
 from xgboost_data_preprocess import data_preprocess
 
 @click.command()
@@ -68,11 +70,14 @@ def main(parquet_path, skip_optimization):
     # Step 3: Train model (with or without tuning)
     result_dir = project_root / "results" / "models"
     result_dir.mkdir(parents=True, exist_ok=True)
-
-    best_model, best_params, best_score = build_random_search_full(
-        X_train, y_train, random_search, interval=interval, optimize=not skip_optimization
-    )
-
+    best_model, best_params, best_score = build_random_search_cv(
+      X_train, y_train,
+      param_dist=random_search,
+      n_iter=8,
+      n_folds=5,               # number of CV folds
+      horizon=96,              # forecast horizon (e.g., 24 hours if 15-min steps)
+      optimize=not skip_optimization
+   )
     # Step 4: Save model
     file_path = result_dir / "xgboost.pkl"
     joblib.dump(best_model, file_path)

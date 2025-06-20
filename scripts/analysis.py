@@ -19,7 +19,7 @@ This script performs the following steps:
 5. Optionally produces and stores forecast-vs-actual plots.
 
 Usage:
-    python analysis.py
+    python scripts/analysis.py
 """
 
 
