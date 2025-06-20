@@ -168,6 +168,14 @@ python scripts/advanced_tft.py --parquet_path ./data/raw/sample_8_days.parquet
 ```
 **⚠️ Note:** Replace the path with your own `.parquet` file if needed.
 
+### (Optional) Step 4: Tests
+
+To run the function tests, enter the following in the root of the repository: 
+
+``` bash
+pytest
+```
+
 ---
 ## Contributing
 
