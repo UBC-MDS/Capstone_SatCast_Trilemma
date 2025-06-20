@@ -109,24 +109,27 @@ Each model has its own Jupyter notebook and corresponding main script.
 | DeepAR  | `analysis/advanced_deepar.ipynb`  | `scripts/advanced_deepar.py`  |
 | TFT     | `analysis/advanced_tft.ipynb`     | `scripts/advanced_tft.py`     |
 
-Run each script like this:
+Example:
+
+- Run each script like this:
 
 ```bash
-python scripts/<model>.py
+python python scripts/<model>.py --parquet-path ./data/raw/sample_8_days.parquet
 ```
 
-Run each notebook like this:
+> Open the script to view its command-line arguments and customize inputs or outputs.
+>
+> `scripts/<model_name>/`: Contains each model’s helper scripts and training/inference logic.
+
+- Run each notebook like this:
 
 ```bash
 jupyter lab analysis/<model>.ipynb
 ```
 
-- Open the script to view its command-line arguments and customize inputs or outputs.
-- `scripts/<model_name>/`: Contains each model’s helper scripts and training/inference logic.
-
 ### Window-Based Evaluation (Optional)
 
-To run time-based window evaluations (e.g., expanding, sliding windows), check subfolders under:
+To run time-based window evaluations (e.g., expanding, sliding windows), check scripts under:
 
 ```bash
 scripts/experimentation/
