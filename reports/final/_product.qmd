@@ -1,8 +1,21 @@
 This section presents results from our analysis, including model performance comparisons and forecast visualizations, followed by a discussion of the final data product—its intended users, applications, and extensibility.
 
 ## Results: Model Performance and Forecast Visualization
-Model comparison tables and the forecast plots illustrate how predictive fidelity improves as we progress from classical statistics to deep learning.
-Baselines such as HWES and SARIMA track the day-level seasonal drift but miss the sharp dips and spikes that dominate the fee landscape, as shown in @fig-hwes-sarima.
+This project evaluates six forecasting models—HWES, SARIMA, Prophet, XGBoost, DeepAR, and Temporal Fusion Transformer (TFT)—for their effectiveness in capturing short-term Bitcoin transaction fee dynamics, particularly high-frequency volatility. For baseline comparison, a global median model is also included, as summarized in @tbl-metrics.
+```{python}
+from IPython.display import Markdown, display
+core_metrics = metrics_df.loc[["custom_loss", "rmse", "mae", "mape"]].round(2)
+sorted_cols = core_metrics.loc["custom_loss"].sort_values().index
+core_metrics_sorted = core_metrics[sorted_cols]
+```
+```{python}
+#| label: tbl-metrics
+#| tbl-cap: Model performance on test data.
+from tabulate import tabulate
+display(Markdown(core_metrics_sorted.round(2).to_markdown(index=True)))
+```
+
+HWES and SARIMA were included as simple, fast-to-train baselines that provide coarse-grained fee trend forecasts. They are able to approximate day-level seasonal drifts but fail to track sharp intraday dips and spikes (see @fig-hwes-sarima). While their predictions are stable, they perform poorly on short-term volatility metrics: HWES records a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'HWES']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'HWES']:.2f}"`, while SARIMA fares in a similar level with a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'SARIMA']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'SARIMA']:.2f}"`. These results underscore the limitations of traditional models in capturing high-frequency dynamics in transaction fee patterns. In fact, both HWES and SARIMA perform no better than the global median baseline, which records a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'Median']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'Median']:.2f}"`.
 ```{python}
 project_root = Path().resolve().parent.parent  # or adjust as needed
 src_path = project_root / "src"
@@ -12,7 +25,7 @@ from plot_forecast_comparison import plot_forecast_comparison
 ```
 ```{python}
 #| label: fig-hwes-sarima
-#| fig-cap: "HWES and SARIMA forecasts vs actual fee (test set)"
+#| fig-cap: "HWES and SARIMA forecasts vs actual fee on test data"
 #| fig-align: "center"
 #| dpi: 150
 
@@ -23,15 +36,12 @@ fig, ax = plot_forecast_comparison(
 plt.show()
 ```
 
-Prophet, with its flexible trend and built-in seasonality terms, improves the global fit but still smooths over most intraday spikes, 
-yielding a custom loss of about `{python} f"{metrics_df.loc['custom_loss', 'Prophet']:.2f}"`
-and an RMSE just about `{python} f"{metrics_df.loc['rmse', 'Prophet']:.2f}"`. XGBoost, which ingests engineered lags and mempool signals, 
-pushes average error lower than any of the purely statistical models. 
-This model yields an RMSE of `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`, but continues to understate high-frequency volatility,
-as shown in @fig-prophet-xgboost. The custom loss of XGBoost is `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"`, indicating that while the model captures general trends, it still struggles to fully account for the sharp fee spikes and intraday volatility present in the data.
+Prophet was chosen for its ease of use, interpretability, and built-in support for trend shifts, seasonality, and holiday effects—features well-suited for capturing macro-level fee patterns with minimal tuning. It benefits from flexible trend components and seasonal priors, yielding improved global fits. However, it still oversmooths transient spikes. Its custom loss is `{python} f"{metrics_df.loc['custom_loss', 'Prophet']:.2f}"`, and RMSE is `{python} f"{metrics_df.loc['rmse', 'Prophet']:.2f}"`.
+
+XGBoost was selected for its ability to model nonlinear interactions between engineered features such as lagged fees and mempool congestion signals, while remaining efficient to train and tune. It outperforms all classical models, achieving a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`. However, it tends to underestimate sharp fee jumps and often produces flat or conservative predictions in highly volatile regions (see @fig-prophet-xgboost).
 ```{python}
 #| label: fig-prophet-xgboost
-#| fig-cap: "Prophet and XGBoost forecasts vs actual fee (test set)"
+#| fig-cap: "Prophet and XGBoost forecasts vs actual fee on test data"
 #| fig-align: "center"
 #| dpi: 150
 
@@ -44,13 +54,13 @@ plt.show()
 
 ```
 
-The neural models represent a meaningful shift in modeling capacity.
-While DeepAR introduces sequential awareness through recurrence, it falls short of Prophet and XGBoost in short-term fee tracking, with a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'DeepAR']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'DeepAR']:.2f}"`.
-It is the TFT that best synchronises with both the amplitude and timing of sudden fee surges (darkcyan versus black traces in @fig-deepar-tft). 
+The neural models represent a meaningful shift in modeling capacity, enabling the system to learn from richer temporal patterns and non-linear interactions.
+DeepAR was selected for its ability to capture sequential dependencies through autoregressive recurrence, offering a pathway toward future probabilistic forecasting, with a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'DeepAR']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'DeepAR']:.2f}"`.
 
+TFT was chosen for its architecture that combines attention mechanisms, gating, and variable selection—allowing it to track both the magnitude and timing of sudden fee surges. It demonstrates the strongest performance on high-frequency volatility, making it ideal for fine-grained, urgency-tiered fee forecasts with real-time planning value (see @fig-deepar-tft).
 ```{python}
 #| label: fig-deepar-tft
-#| fig-cap: "DeepAR and TFT forecasts vs actual fee (test set)"
+#| fig-cap: "DeepAR and TFT forecasts vs actual fee on test data"
 #| fig-align: "center"
 #| dpi: 150
 
@@ -62,25 +72,27 @@ fig, ax = plot_forecast_comparison(
 )
 plt.show()
 ```
-Quantitatively, TFT reduces the bespoke volatility-aware loss from about `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"`, the lowest among the baselines, to `{python} f"{metrics_df.loc['custom_loss', 'TFT']:.2f}"`,
-representing a `{python} f"{100 * (metrics_df.loc['custom_loss', 'XGBoost'] - metrics_df.loc['custom_loss', 'TFT']) / metrics_df.loc['custom_loss', 'XGBoost']:.0f}%"` improvement.
-It also brings RMSE down from the `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`–`{python} f"{metrics_df.loc['rmse', 'HWES']:.2f}"` range to `{python} f"{metrics_df.loc['rmse', 'TFT']:.2f}"`,
-a relative gain of `{python} f"{100 * (min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]) - metrics_df.loc['rmse', 'TFT']) / min(metrics_df.loc['rmse', ['Prophet', 'XGBoost']]):.0f}%"`.
-MAE, MAPE, and distribution-shape penalties follow the same pattern, confirming that TFT strikes the strongest balance between overall accuracy and sensitivity to congestion-driven shocks, as shown in the comprehensive comparison in @tbl-metrics.
-```{python}
-from IPython.display import Markdown, display
-core_metrics = metrics_df.loc[["custom_loss", "rmse", "mae", "mape"]].round(2)
-sorted_cols = core_metrics.loc["custom_loss"].sort_values().index
-core_metrics_sorted = core_metrics[sorted_cols]
-```
 
 ```{python}
-#| label: tbl-metrics
-#| tbl-cap: Model performance on test data.
-from tabulate import tabulate
-display(Markdown(core_metrics_sorted.round(2).to_markdown(index=True)))
+#| echo: false
+#| label: tft-gain
+#| output: asis
+
+customloss_baselines = metrics_df.loc["custom_loss", ["HWES", "SARIMA", "Prophet", "XGBoost"]]
+custom_min_baseline = customloss_baselines.min()
+custom_max_baseline = customloss_baselines.max()
+custom_loss_tft = metrics_df.loc["custom_loss", "TFT"]
+custom_loss_improvement_pct = 100 * (custom_min_baseline - custom_loss_tft) / custom_min_baseline
+
+rmse_tft = metrics_df.loc["rmse", "TFT"]
+rmse_baselines = metrics_df.loc["rmse", ["HWES", "SARIMA", "Prophet", "XGBoost"]]
+rmse_min_baseline = rmse_baselines.min()
+rmse_max_baseline = rmse_baselines.max()
+rmse_improvement_pct = 100 * (rmse_min_baseline - rmse_tft) / rmse_min_baseline
+
 ```
 
+Quantitatively, TFT reduces the bespoke volatility-aware loss from about `{python} f"{custom_min_baseline:.2f}"`, the lowest among the non-neural models, to `{python} f"{custom_loss_tft:.2f}"`, representing a `{python} f"{custom_loss_improvement_pct:.0f}%"` improvement.  It also brings RMSE down from the `{python} f"{rmse_min_baseline:.2f}"`–`{python} f"{rmse_max_baseline:.2f}"` range to `{python} f"{rmse_tft:.2f}"`, yielding a `{python} f"{rmse_improvement_pct:.0f}%"` relative gain. MAE and MAPE follow the same pattern, confirming that TFT strikes the strongest balance between overall accuracy and sensitivity to congestion-driven shocks.
 
 ## Data Product Overview
 
@@ -88,16 +100,10 @@ The data product directly supports Trilemma Capital’s mission of serving indus
 
 The product is purposefully modular. Jupyter notebooks guide users through EDA, modeling decisions, and final TFT results. Python scripts implement a structured pipeline for reproducible experiments and easy re-training on new data. Finally, the open-source GitHub repository—with clear documentation—enables collaboration, scalability, and long-term extensibility.
 
-## Value Proposition and Justification
+## Value Proposition and Strengths
 
-Our product addresses the key limitation of current Bitcoin fee tools, which are reactive, opaque, and confined to short-term horizons. Tools like estimatesmartfee and Mempool.space forecast fees only 10 - 60 minutes ahead, offering single-rate suggestions without transparency into volatility drivers or user-specific needs. In contrast, our system produces 24-hour forecasts across multiple urgency tiers, helping users align timing with cost tolerance. We chose Jupyter notebooks to explain modeling decisions and trade-offs in an accessible format. Modular pipeline scripts offer reproducibility and extensibility for advanced users, while an open-source GitHub repository invites transparency and community contribution—aligned with our partner’s infrastructure mission.
+Our product addresses the key limitations of existing Bitcoin fee estimation tools, which are typically reactive, opaque, and constrained to very short-term horizons. Services like [estimatesmartfee]("https://developer.bitcoin.org/reference/rpc/estimatesmartfee.html")[@estimatesmartfee] and [Mempool.space]("https://mempool.space")[@mempool] provide only 10–60 minute forecasts and offer single-rate suggestions, with no visibility into volatility drivers or user-specific needs. In contrast, our system produces 24-hour forecasts across multiple urgency tiers (fastest, economy, minimum), helping users better align transaction timing with cost sensitivity. These tiered, volatility-aware outputs provide actionable guidance for both individuals and technical teams, offering flexibility not found in conventional one-size-fits-all tools. We prioritized both usability and transparency. Jupyter notebooks communicate modeling decisions and trade-offs in an accessible, narrative format. At the same time, our modular pipeline structure enables reproducibility and extensibility—developers can swap models, retune parameters, or add new features without reworking the entire system. A custom loss function also aligns model behavior with real-world fee dynamics, improving planning around congestion and urgency. Finally, by releasing the code as an open-source GitHub repository, we invite community validation and collaboration. This transparency supports our partner’s infrastructure mission and ensures long-term trust and adaptability.
 
-## Product Strengths and Limitations
+## Limitations and Design Trade-Offs
 
-The product balances analytical depth with real-world usability. It offers tiered, volatility-aware forecasts that are actionable for users ranging from individuals to technical infrastructure teams. Tiered fee outputs (fastest, economy, minimum) accommodate different urgency and cost preferences, offering flexibility not found in existing one-size-fits-all tools. On the development side, its modular structure promotes extensibility—developers can swap models, tune hyperparameters, or introduce new features without disrupting the pipeline. Full transparency also enables peers to audit modeling assumptions, reproduce visualizations, and verify performance results. The inclusion of a custom loss function aligns model behavior with real-world fee dynamics, supporting better planning around cost and urgency trade-offs.
-
-Nonetheless, the system has limitations that affect both performance and accessibility. From a usability standpoint, deep learning models like TFT demand significant compute resources and are not easily accessible to users without GPUs. More critically, model performance will degrade over time unless retrained regularly to adapt to shifting network dynamics. On the input side, models currently rely on lagging indicators and do not incorporate real-time external signals—such as exchange outflows or policy announcements—making them less responsive to abrupt market events that trigger sudden fee spikes. Additionally, the absence of uncertainty estimates may limit users’ confidence in edge cases, and the lack of a real-time dashboard or API could restrict adoption by users expecting more interactive or integrated experiences.
-
-## Design Trade-Offs
-
-We made design choices that prioritize flexibility over complexity. For example, we avoided creating a Makefile to run all models at once due to compute constraints. Probabilistic outputs were also omitted, as current magnitude forecasts are too noisy to support reliable uncertainty estimates. Likewise, real-time API deployment was ruled out due to cost and performance constraints of transformer-based models. Instead, the product supports batch forecasts and modular experimentation as a foundation for future enhancements, such as adaptive loss tuning, hybrid model pipelines, or more scalable delivery formats.
+While the product emphasizes flexibility, insight, and transparency, several constraints affect both its performance and accessibility. Most notably, deep-learning models such as TFT power the pipeline but also raise the cost of entry. Running them almost always requires GPU hardware or paid cloud instances, which puts the system out of reach for many smaller teams and individual developers. On top of that, the models need frequent retraining as Bitcoin network conditions change, so an automated pipeline will eventually be necessary to avoid performance drift. Besides, the feature set is still mostly reactive. It relies on mempool state and recent fee history, but does not yet use forward-looking signals such as exchange flows, protocol-upgrade announcements, or market news. Without those leading indicators, the system can miss abrupt fee spikes. This limitation is felt even more because the forecasts provide only point estimates; users have no confidence bands to guide decisions when volatility is high. Since time and computing resources are tight, the project stays script-first and keeps orchestration to a minimum. It skips tools like Makefiles, end-to-end automation, and real-time APIs so that contributors can iterate quickly. This lightweight backbone makes it easier to swap models, widen hyper-parameter searches, or add new features without overhauling the entire pipeline. When resources allow, uncertainty quantification, adaptive loss functions like fine tuning a best weight, or scalable serving layers can be added on top.

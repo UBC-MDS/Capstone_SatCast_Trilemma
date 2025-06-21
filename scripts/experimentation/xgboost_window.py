@@ -28,17 +28,17 @@ Workflow
 Example usage:
 1. expanding window
 python scripts/experimentation/xgboost_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode expanding
 
 2. sliding window
 python scripts/experimentation/xgboost_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode sliding
 
 3. reverse expanding window
 python scripts/experimentation/xgboost_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode reverse
 """
 
@@ -186,7 +186,7 @@ def run_xgboost_fixed(df: pd.DataFrame, folds, results_path: Path):
 
 # === CLI Interface ===
 @click.command()
-@click.option("--data", type=str, required=True, help="Path to preprocessed Parquet")
+@click.option("--parquet-path", type=str, required=True, help="Path to preprocessed Parquet")
 @click.option("--mode", type=click.Choice(["reverse", "expanding", "sliding"]), required=True)
 def main(data, mode):
     """

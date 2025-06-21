@@ -11,11 +11,6 @@ This script performs the following steps:
 3. Splits the dataset into training and validation subsets, reserving the last `pred_steps` as hold-out.
 4. Scales the numeric columns using a fitted standard scaler.
 
-Returns:
-    - Full cleaned DataFrame
-    - Scaled training and validation splits
-    - Fitted scaler object for inverse transformations or reuse
-
 Usage:
     Called before constructing the `TimeSeriesDataSet` for TFT model training or inference.
 

@@ -45,17 +45,17 @@ Typical Usage
 -------------
 1. Reverse expanding:
 python scripts/experimentation/hwes_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode reverse
 
 2. Weekly expanding: 
 python scripts/experimentation/hwes_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode expanding
 
 3. Weekly sliding:
 python scripts/experimentation/hwes_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode sliding
 """
   
@@ -198,7 +198,7 @@ def run_hwes_cv(y, folds, results_path, mode, trend, seasonal, damped, periods):
 
 
 @click.command()
-@click.option('--data', type=str, required=True, help="Path to raw data")
+@click.option('--parquet-path', type=str, required=True, help="Path to raw data")
 @click.option('--mode', type=click.Choice(['reverse', 'expanding', 'sliding']), required=True, help="Windowing strategy")
 def main(data, mode):
     """
