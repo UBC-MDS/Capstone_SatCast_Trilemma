@@ -19,7 +19,7 @@ This script performs the following steps:
 5. Saves the final model checkpoint to ``results/models``.
 
 Usage:
-    python advanced_tft.py --parquet-path data/raw/mar_5_may_12.parquet
+    python scripts/advanced_tft.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 

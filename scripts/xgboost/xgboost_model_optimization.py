@@ -52,13 +52,15 @@ def optimization(df, interval=15):
     """
     X_train, X_test, y_train, y_test = data_split(df, interval)
     param_dist = {
-        'estimator__n_estimators': [100, 150],
-        'estimator__max_depth': [2, 3],
-        'estimator__learning_rate': [0.01, 0.05],
-        'estimator__subsample': [0.8],
-        'estimator__colsample_bytree': [0.8],
-        'estimator__gamma': [1, 3],
-        'estimator__reg_lambda': [10],
-        'estimator__reg_alpha': [10],
-}
+        'estimator__n_estimators': [50, 100, 150, 200],              # Number of boosting rounds
+        'estimator__max_depth': [2, 3, 4, 5, 6],                     # Tree depth
+        'estimator__learning_rate': [0.005, 0.01, 0.05, 0.1],        # Step size shrinkage
+        'estimator__subsample': [0.6, 0.8, 1.0],                     # Row sampling
+        'estimator__colsample_bytree': [0.6, 0.8, 1.0],              # Feature sampling
+        'estimator__gamma': [0, 1, 3, 5],                            # Min loss reduction to split
+        'estimator__reg_lambda': [1, 5, 10, 20],                     # L2 regularization
+        'estimator__reg_alpha': [0, 1, 5, 10],                       # L1 regularization
+        'estimator__min_child_weight': [1, 3, 5],                    # Min sum hessian in leaf
+        'estimator__max_delta_step': [0, 1, 3],                      # Step constraint (often 0)
+    }
     return param_dist, X_train, y_train
