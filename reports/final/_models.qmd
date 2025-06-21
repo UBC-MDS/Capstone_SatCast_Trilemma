@@ -10,19 +10,19 @@ We began with a simple dummy model. From @fig-fastestfee-distribution, it could 
 
 Given clear seasonality observed in our decomposition analysis @fig-decomp, Holt-Winters Exponential Smoothing was a natural next step. It captured seasonality fairly well and improved upon the dummy model. However, analysis of the residuals in @fig-acf revealed persistent autocorrelation, suggesting that the model failed to account for important lag effects or hidden patterns beyond periodic behavior.
 
-![Multiplicative decomposition of recommended fastest fee rate](../../img/decomposition_multiplicative.png){#fig-decomp width=100%}
+![Multiplicative decomposition of recommended fastest fee rate](../../results/plots/decomposition_multiplicative.png){#fig-decomp width=100%}
 
 ### SARIMA
 
 To address the temporal dependencies missed by HWES, we adopted SARIMA, which supported autoregressive and seasonal differencing components. Because of its capacity to learn from prior values, SARIMA produced a better short-term fit. However, its univariate nature prevented us from including important exogenous features like transaction count, mempool congestion, or size distributions. That limited its practical usefulness in a multi-variable environment.
 
-![ACF and PACF](../../img/acf_pacf_plot.png){#fig-acf width=100%}
+![ACF and PACF](../../results/plots/acf_pacf_plot.png){#fig-acf width=100%}
 
 ### XGBoost
 
 To move beyond univariate models, we adopted XGBoost, which allowed us to leverage the full multivariate feature set. Correlation analysis in @fig-spearman-heat showed that recommended fastest fee rate was significantly influenced by several concurrent indicators. XGBoost is a powerful tree-based model capable of incorporating a broad array of features. It significantly expanded our input space and enabled non-linear interactions among variables. While its numerical performance improved, especially on average error metrics like MAPE, the model still struggled with volatility. It produced smooth and flat outputs that failed to capture sudden fee spikes. However, those spikes were precisely the events most critical for users.
 
-![Spearman correlation heatmap](../../img/spearman_correlation.png){#fig-spearman-heat width=100%}
+![Spearman correlation heatmap](../../results/plots/spearman_correlation.png){#fig-spearman-heat width=100%}
 
 ### Prophet
 
