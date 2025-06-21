@@ -168,7 +168,7 @@ def run_sarima_cv(y, folds, results_path, mode):
 
 
 @click.command()
-@click.option('--data', type=str, required=True, help="Path to preprocessed data")
+@click.option('--parquet-path', type=str, required=True, help="Path to preprocessed data")
 @click.option('--mode', type=click.Choice(['reverse', 'expanding', 'sliding']), required=True, help="Which window mode to run")
 def main(data, mode):
     """

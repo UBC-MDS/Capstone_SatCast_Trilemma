@@ -198,7 +198,7 @@ def run_hwes_cv(y, folds, results_path, mode, trend, seasonal, damped, periods):
 
 
 @click.command()
-@click.option('--data', type=str, required=True, help="Path to raw data")
+@click.option('--parquet-path', type=str, required=True, help="Path to raw data")
 @click.option('--mode', type=click.Choice(['reverse', 'expanding', 'sliding']), required=True, help="Windowing strategy")
 def main(data, mode):
     """
