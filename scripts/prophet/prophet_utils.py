@@ -84,7 +84,7 @@ def create_model_new():
     Prophet
         Configured Prophet model.
     """
-    with open(model_path + "/prophet_hyperparameter.json", "r") as f:
+    with open(model_path + "/prophet_best_params.json", "r") as f:
         params = json.load(f)
 
     model = Prophet(
