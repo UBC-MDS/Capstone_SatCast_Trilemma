@@ -45,17 +45,17 @@ Typical Usage
 -------------
 1. Reverse expanding:
 python scripts/experimentation/hwes_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode reverse
 
 2. Weekly expanding: 
 python scripts/experimentation/hwes_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode expanding
 
 3. Weekly sliding:
 python scripts/experimentation/hwes_window.py \
-  --data ./data/raw/mar_5_may_12.parquet \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode sliding
 """
   
