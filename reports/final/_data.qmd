@@ -2,7 +2,7 @@ This section outlines the core techniques used in our analysis, including data p
 
 ## Dataset Overview
 
-We worked with a time series dataset constructed from 5-minute snapshots of the Bitcoin mempool ([mempool.space](https://mempool.space/), @fig-mempool-gif), captured between March 5 and May 2025. The mempool is a real-time queue of unconfirmed transactions waiting to be included in a block, which serves as proof that the transactions have been validated and recorded on the blockchain. Each snapshot captures the network state at a given point in time and includes 61 features such as mempool congestion, transaction volume, block production, mining difficulty, and BTC price. These snapshots collectively form a time series that reflects both blockchain-level activity and evolving market demand conditions—capturing the key drivers of transaction fee dynamics.
+We worked with a time series dataset constructed from 5-minute snapshots of the Bitcoin mempool ([mempool.space](https://mempool.space/)), captured between March 5 and May 2025.(@fig-mempool-gif) The mempool is a real-time queue of unconfirmed transactions waiting to be included in a block, which serves as proof that the transactions have been validated and recorded on the blockchain. Each snapshot captures the network state at a given point in time and includes 61 features such as mempool congestion, transaction volume, block production, mining difficulty, and BTC price. These snapshots collectively form a time series that reflects both blockchain-level activity and evolving market demand conditions—capturing the key drivers of transaction fee dynamics.
 
 ```{python}
 #| label: fig-mempool-gif
@@ -23,3 +23,17 @@ plt.axis("off")
 plt.tight_layout()
 plt.show()
 ```
+
+To better understand the input features used for modeling, we grouped the features in our dataset into four major categories, as shown in @#tbl-features. These categories capture different aspects of network activity and market conditions that influence fee dynamics.
+
+::: {.table #tbl-features}
+
+Table: Input features from the dataset.
+
+| **Category**           | **Description**                                               |
+|------------------------|---------------------------------------------------------------|
+| Mempool Congestion     | Mempool congestion and fee distribution indicators            |
+| Block Metrics          | Projected mempool block statistics                            |
+| Difficulty Metrics     | Mining difficulty adjustment progress and projection          |
+| BTC Price              | Market BTC price in various currencies                        |
+:::

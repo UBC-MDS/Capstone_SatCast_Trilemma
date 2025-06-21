@@ -2,36 +2,34 @@
 
 To prepare the data, we conducted exploratory correlation analysis between features and the target variable fastestFee, which confirmed that several predictors contained useful signals. This was not used for formal feature selection, but helped validate feature relevance.
 
-To prevent target leakage, we removed a few features (e.g., hourFee) that had extremely high correlation with the target (over 0.97). These were excluded from all models except DeepAR and TFT, where model constraints made removal more complex.
+To prevent target leakage, we removed a few features that had extremely high correlation with the target (e.g., halfHourFee, exhibiting a 0.98 correlation with fastestFee). These were excluded from all models except DeepAR and TFT, where model constraints made removal more complex.
 
-We also applied several feature engineering steps. We first examined the distribution of fastestFee and found it to be highly right-skewed (see @fig-fastestfee-distribution), with most values clustered at the low end and a few extreme spikes. This heavy skew can hinder model stability and violate common assumptions.
+We also applied several feature engineering steps. We first examined the distribution of fastestFee and found it to be highly right-skewed, with most values clustered at the low end and a few extreme spikes shown in @fig-fastestfee-distribution. This heavy skew can hinder model stability and violate common assumptions.
 
 ```{python}
 #| label: fig-fastestfee-distribution
-#| fig-cap: "Original distribution of fastestFee shows strong right skew."
+#| fig-cap: "The distribution of fastestFee shows strong right skew."
 #| fig-align: "center"
 #| dpi: 150
-
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from pathlib import Path
+from PIL import Image
+import matplotlib.pyplot as plt
 
-df = pd.read_parquet(Path().resolve().parent.parent / "data" / "raw" / "mar_5_may_12.parquet")
+# Load image
+img_path = Path().resolve().parent.parent / "results" /"plots" / "fee_distribution.png"
+img = Image.open(img_path)
 
-# Drop 0 or missing values
-df = df[df['recommended_fee_fastestFee'].notna() & (df['recommended_fee_fastestFee'] > 0)]
-
-sns.histplot(df['recommended_fee_fastestFee'], bins=50, kde=True, color='steelblue', edgecolor='black', linewidth=0.5)
-plt.title("Distribution of Recommended Fee (Fastest)")
-plt.xlabel("Fastest Fee (satoshis)")
-plt.ylabel("Frequency")
+# Display
+plt.figure(figsize=(8, 5))
+plt.imshow(img)
+plt.axis('off')
 plt.tight_layout()
 plt.show()
 ```
 
 To mitigate this, we applied a logarithmic transformation to fastestFee, which compresses large values and helps stabilize variance across the series—making it more suitable for forecasting.
-Second, we resampled the original 5-minute data into 15-minute intervals to reduce noise and enhance short-term signal clarity. 
+
+To reduce noise and enhance short-term signal clarity, we resampled the original 5-minute data into 15-minute intervals. Using the raw granularity is not always optimal: if the interval is too short, the signal between time steps becomes unstable and harder for models to learn; if too long, crucial short-term dynamics may be lost. To strike a balance, we tested multiple resampling frequencies and evaluated their predictive strength using the decay ratio.
 
 ```{python}
 #| label: fig-decay-ratio
@@ -43,8 +41,8 @@ from pathlib import Path
 from PIL import Image
 import matplotlib.pyplot as plt
 
-# Load image from img/
-img_path = Path().resolve().parent.parent / "img" / "optimal_interval.png"
+# Load image
+img_path = Path().resolve().parent.parent / "results" /"plots" / "optimal_interval.png"
 img = Image.open(img_path)
 
 # Display
@@ -55,6 +53,6 @@ plt.tight_layout()
 plt.show()
 ```
 
-This choice was motivated by decay ratio analysis, which evaluates the signal strength of short-term temporal dependencies. As shown in @fig-decay-ratio, the 15-minute interval yielded the strongest AR(1)-like pattern among tested frequencies, supporting its selection for resampling.
-Finally, we created lagged variables and rolling aggregations to help models capture short-term temporal dependencies.
+As shown in @fig-decay-ratio, the 15-minute interval achieved the highest decay ratio, indicating the strongest short-term autocorrelation structure. This supports its use as the default sampling interval in our modeling pipeline.
+
 Finally, we created lagged variables and rolling aggregates to help models capture temporal dependencies. The final feature set retained most original variables except those flagged for leakage, balancing completeness with modeling integrity.
