@@ -1,9 +1,27 @@
+# tft_data_preparation.py
+# author: Ximin Xu
+# date: 2025-06-18
 """
-tft_data_preparation.py
+Script to preprocess raw Bitcoin fee data for use with the Temporal Fusion Transformer (TFT)
+forecasting model.
 
-Utility functions for loading, preprocessing, and scaling Bitcoin mempool & fee data 
-for use with the Temporal Fusion Transformer (TFT) model.
+This script performs the following steps:
+1. Loads a raw Parquet file and applies initial preprocessing and smoothing.
+2. Transforms the data into a TFT-compatible tabular structure with time-varying features.
+3. Splits the dataset into training and validation subsets, reserving the last `pred_steps` as hold-out.
+4. Scales the numeric columns using a fitted standard scaler.
+
+Usage:
+    Called before constructing the `TimeSeriesDataSet` for TFT model training or inference.
+
+Dependencies:
+    - preprocess_raw_parquet
+    - transform_fee_data_dl
+    - split_series
+    - scale_series
 """
+
+
 import sys
 import os
 import argparse
@@ -19,7 +37,6 @@ from preprocess_raw_parquet import preprocess_raw_parquet
 from transform_fee_data_dl import transform_fee_data_dl
 from split_series import split_series
 from scale_series import scale_series
-from add_lag_features import add_lag_features
 
 def tft_prepare_data(parquet_path, pred_steps):
     """
@@ -44,21 +61,8 @@ def tft_prepare_data(parquet_path, pred_steps):
         Fitted scaler object used on numerical features.
     """
     df = preprocess_raw_parquet(parquet_path)
-    df = df.iloc[:-96]
+    df = df.iloc[:-pred_steps]
     df = transform_fee_data_dl(df)
-    exclude_cols = [
-        'timestamp', 'series_id', 'target', 'time_idx',
-        'hour_sin', 'hour_cos', 'day_of_week_sin', 'day_of_week_cos',
-        'month_sin', 'month_cos', 'minute_sin', 'minute_cos'
-    ]
-
-    for col in df.columns:
-        if (
-            col not in exclude_cols
-            and not col.startswith("mempool_fee_histogram_bin")
-        ):
-            df = add_lag_features(df, col, 96)
-
     df_train, df_valid = split_series(df, pred_steps)
     df_train, df_valid, scaler = scale_series(df_train, df_valid)
     return df, df_train, df_valid, scaler

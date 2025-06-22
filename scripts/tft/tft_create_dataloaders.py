@@ -1,31 +1,22 @@
+# tft_create_dataloaders.py
+# author: Ximin Xu
+# date: 2025-06-18
 """
-tft_create_dataloaders.py
-
 Builds TimeSeriesDataSet objects and PyTorch DataLoaders for use with the Temporal Fusion Transformer (TFT) model.
 
-Responsibilities:
------------------
-1. Constructs a training `TimeSeriesDataSet` from the preprocessed and lag-augmented training DataFrame.
-2. Applies consistent configuration to generate a validation dataset using `.from_dataset()`.
-3. Automatically identifies known and unknown real-valued covariates based on naming conventions.
-4. Returns DataLoaders with proper batching and multiprocessing setup for training and evaluation.
+This module performs the following:
+1. Constructs a training `TimeSeriesDataSet` using the cleaned and feature-augmented input data.
+2. Generates a validation dataset from the same configuration using `.from_dataset()`.
+3. Automatically selects time-varying real covariates based on naming patterns.
+4. Wraps both datasets into PyTorch DataLoaders with appropriate batching and multiprocessing setup.
 
-Key Features:
--------------
-- Uses GroupNormalizer for per-series normalization.
-- Adds relative time index, target scales, and encoder length to improve learning.
-- Handles multi-series setup using `series_id`.
+Usage:
+------
+Used in a TFT training pipeline after data preparation and before model initialization:
 
-Typical Usage:
---------------
-Used in a TFT training pipeline after data preparation and before model initialization.
-
-Returns:
---------
-- `TimeSeriesDataSet` object (train config)
-- `DataLoader` for training
-- `DataLoader` for validation
+    tft_ds, train_dl, val_dl = tft_make_dataloaders(df_train, df_valid, enc_len=672, pred_steps=96, batch_size=64)
 """
+
 
 
 import os
@@ -60,23 +51,6 @@ def tft_make_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_size):
     # All real covariates based on prefix
     real_covs = [c for c in df_train.columns if c.startswith(("mempool", "difficulty", "price"))]
 
-    # Lagged covariates are "known" because they reference past values
-    known_lagged_covs = [
-        c for c in df_train.columns
-        if (
-            "_lag_" in c and (
-                c.startswith("mempool_") or
-                c.startswith("difficulty_") or
-                c.startswith("price_") or
-                c.startswith("target")
-            )
-        )
-    ]
-
-
-    # Unlagged covariates from same sources are "unknown" at prediction time
-    unknown_real_covs = [c for c in real_covs if c not in known_lagged_covs]
-
     # Create training dataset
     tft_ds = TimeSeriesDataSet(
         df_train,
@@ -99,9 +73,9 @@ def tft_make_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_size):
             "month_cos",
             "minute_sin",
             "minute_cos",
-        ] + known_lagged_covs,
+        ] ,
         # Real-valued covariates not known at prediction time (e.g., mempool load)
-        time_varying_unknown_reals=["target"] + unknown_real_covs,
+        time_varying_unknown_reals=["target"] + real_covs,
         # Normalize target separately per series
         target_normalizer=GroupNormalizer(groups=["series_id"]),
         # Augmented features

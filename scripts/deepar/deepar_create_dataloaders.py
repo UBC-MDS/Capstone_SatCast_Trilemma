@@ -1,8 +1,21 @@
+# deepar_create_dataloaders.py
+# author: Ximin Xu
+# date: 2025-06-18
 """
-deepar_create_dataloaders.py
+Builds TimeSeriesDataSet objects and PyTorch DataLoaders for DeepAR model training and validation.
 
-Builds TimeSeriesDataSet objects and DataLoaders for training and validation.
+This script performs the following steps:
+1. Constructs a training `TimeSeriesDataSet` from the encoded and scaled input data.
+2. Creates a validation dataset using `.from_dataset()` with a fixed cutoff point.
+3. Wraps both datasets into PyTorch DataLoaders with batching and multiprocessing enabled.
+
+Usage:
+------
+Called after DeepAR data preparation to build model-ready DataLoaders:
+
+    train_ds, train_dl, val_dl = deepar_create_dataloaders(df_train, df_valid, enc_len=672, pred_steps=96, batch_size=64)
 """
+
 
 import os
 from pytorch_forecasting import TimeSeriesDataSet
@@ -34,19 +47,6 @@ def deepar_create_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_siz
     """
     last_idx = df_valid.time_idx.max()  
     training_cutoff = last_idx - pred_steps
-
-    # Lagged covariates are "known" because they reference past values
-    known_lagged_covs = [
-        c for c in df_train.columns
-        if (
-            "_lag_" in c and (
-                c.startswith("mempool_") or
-                c.startswith("difficulty_") or
-                c.startswith("price_") or
-                c.startswith("target")
-            )
-        )
-    ]
     TimeSeriesDataSet.verbose = True
 
     # Create training dataset
@@ -70,7 +70,7 @@ def deepar_create_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_siz
             "month_cos",
             "minute_sin",
             "minute_cos",
-        ] + known_lagged_covs,
+        ],
         # Real-valued covariates not known at prediction time (only target because deepar do not accept unmatched encoder and decoder)
         time_varying_unknown_reals=["target"] ,
         # Normalize target separately per series

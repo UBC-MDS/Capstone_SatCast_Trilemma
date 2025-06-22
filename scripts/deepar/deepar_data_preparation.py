@@ -1,9 +1,22 @@
+# deepar_data_preparation.py
+# author: Ximin Xu
+# date: 2025-06-18
 """
-deepar_data_preparation.py
+Prepares Bitcoin mempool and transaction fee data for DeepAR model training and evaluation.
 
-Utility functions for loading, preprocessing, and scaling Bitcoin mempool & fee data 
-for use with the DeepAR model.
+This script performs the following steps:
+1. Loads raw fee data from a Parquet file.
+2. Applies domain-specific transformations to prepare time-varying covariates.
+3. Splits the dataset into training and validation windows.
+4. Scales the data for stability during RNN training.
+
+Usage:
+------
+Called prior to DeepAR model training to prepare a full DataFrame and normalized splits:
+
+    df, df_train, df_valid, scaler = deepar_prepare_data(parquet_path, pred_steps=96)
 """
+
 import sys
 import os
 import argparse
@@ -19,7 +32,6 @@ from preprocess_raw_parquet import preprocess_raw_parquet
 from transform_fee_data_dl import transform_fee_data_dl
 from split_series import split_series
 from scale_series import scale_series
-from add_lag_features import add_lag_features
 
 def deepar_prepare_data(parquet_path, pred_steps):
     """
@@ -46,19 +58,6 @@ def deepar_prepare_data(parquet_path, pred_steps):
     df = preprocess_raw_parquet(parquet_path)
     df = df.iloc[:-96]
     df = transform_fee_data_dl(df)
-    exclude_cols = [
-        'timestamp', 'series_id', 'target', 'time_idx',
-        'hour_sin', 'hour_cos', 'day_of_week_sin', 'day_of_week_cos',
-        'month_sin', 'month_cos', 'minute_sin', 'minute_cos'
-    ]
-
-    for col in df.columns:
-        if (
-            col not in exclude_cols
-            and not col.startswith("mempool_fee_histogram_bin")
-        ):
-            df = add_lag_features(df, col, 96)
-
     df_train, df_valid = split_series(df, pred_steps)
     df_train, df_valid, scaler = scale_series(df_train, df_valid)
     return df, df_train, df_valid, scaler

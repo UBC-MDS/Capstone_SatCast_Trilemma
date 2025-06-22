@@ -2,7 +2,6 @@ import numpy as np
 import os
 import sys
 import pandas as pd
-import numpy as np
 from sklearn.metrics import (
     mean_absolute_error, 
     mean_absolute_percentage_error, 
@@ -10,51 +9,114 @@ from sklearn.metrics import (
 )
 
 def std_diff(y_pred, y_true):
+    """
+    Compute the absolute difference between the standard deviations of 
+    predicted and true values.
+
+    Parameters
+    ----------
+    y_pred : array-like
+        Predicted values.
+    y_true : array-like
+        Actual target values.
+
+    Returns
+    -------
+    float
+        Absolute difference of standard deviations.
+    """
     pred_std = np.std(y_pred)
     true_std = np.std(y_true)
     return np.abs(pred_std - true_std)
 
 def dev_error_component(y_pred, y_true):
+    """
+    Compute the element-wise absolute difference in deviations from the mean 
+    between predicted and true values.
+
+    Parameters
+    ----------
+    y_pred : array-like
+        Predicted values.
+    y_true : array-like
+        Actual target values.
+
+    Returns
+    -------
+    np.ndarray
+        Array of absolute differences in deviations from the mean.
+    """
     pred_dev = y_pred - np.mean(y_pred)
     true_dev = y_true - np.mean(y_true)
     return np.abs(pred_dev - true_dev)
 
-def custom_loss_eval(y_pred, y_true, std_weight=None, 
-                     de_weight=None):
+def custom_loss_eval(y_pred, y_true, std_weight=1.0, de_weight=1.0):
+    """
+    Custom loss function that penalizes:
+    - Standard prediction error (MAE)
+    - Standard deviation mismatch between prediction and ground truth
+    - Deviation error from global mean
+
+    Parameters
+    ----------
+    y_pred : array-like
+        Predicted values.
+    y_true : array-like
+        Actual target values.
+    std_weight : float, optional
+        Weight for standard deviation mismatch penalty. Default is 1.0.
+    de_weight : float, optional
+        Weight for deviation-from-mean penalty. Default is 1.0.
+
+    Returns
+    -------
+    float
+        Weighted custom loss score.
+    """
     base_loss = np.abs(y_pred - y_true)
     mae = base_loss.mean()
 
-    # Std penalty
     std_penalty = std_diff(y_pred, y_true)
     w_std = mae / (std_penalty + 1e-8)
     if std_weight is not None:
         w_std = std_weight
 
-    # Deviation penalty
     dev_error = dev_error_component(y_pred, y_true)
     w_dev = base_loss / (dev_error + 1e-8)
     if de_weight is not None:
-        # w_dev = np.minimum(w_dev, clip_weight_dev)
         w_dev = de_weight
 
-    # Total weighted loss
-    total_loss = base_loss + std_weight * w_std * std_penalty + de_weight * w_dev * dev_error
+    total_loss = base_loss + std_weight * std_penalty + de_weight * dev_error
     return total_loss.mean()
 
 def eval_metrics(y_pred, y_true, std_weight=1.0, de_weight=1.0):
     """
-    Computes evaluation metrics for a forecast and returns as a DataFrame.
+    Computes evaluation metrics for model forecast vs. actual data.
 
-    Args:
-        y_pred (np.ndarray or pd.Series): Forecasted values
-        y_true (np.ndarray or pd.Series): True values
-        std_weight (float): Weight for standard deviation penalty in custom loss
-        de_weight (float): Weight for deviation error penalty in custom loss
-        clip_weight_std (float or None): Optional clip for std weight
-        clip_weight_dev (float or None): Optional clip for deviation weight
+    Metrics:
+    --------
+    - MAE: Mean Absolute Error
+    - MAPE: Mean Absolute Percentage Error
+    - RMSE: Root Mean Squared Error
+    - std_diff: Absolute standard deviation difference
+    - dev_error: Mean deviation-from-mean mismatch
+    - custom_loss: Weighted aggregate loss combining all the above
 
-    Returns:
-        pd.DataFrame: Single-row DataFrame with evaluation metrics
+    Parameters
+    ----------
+    y_pred : array-like
+        Predicted values.
+    y_true : array-like
+        Actual target values.
+    std_weight : float, optional
+        Weight for standard deviation penalty. Default is 1.0.
+    de_weight : float, optional
+        Weight for deviation error penalty. Default is 1.0.
+
+    Returns
+    -------
+    pd.DataFrame
+        Transposed single-row DataFrame of evaluation metrics.
     """
     y_pred = np.asarray(y_pred)
     y_true = np.asarray(y_true)
