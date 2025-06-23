@@ -200,7 +200,7 @@ def run_hwes_cv(y, folds, results_path, mode, trend, seasonal, damped, periods):
 @click.command()
 @click.option('--parquet-path', type=str, required=True, help="Path to raw data")
 @click.option('--mode', type=click.Choice(['reverse', 'expanding', 'sliding']), required=True, help="Windowing strategy")
-def main(data, mode):
+def main(parquet_path, mode):
     """
     CLI entry point for HWES forecasting experiment.
 
@@ -210,7 +210,7 @@ def main(data, mode):
     mode : str - windowing strategy
     """
     # Load and reindex time series
-    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'][:-96].astype(float).asfreq("15min")
+    y = preprocess_raw_parquet(parquet_path)['recommended_fee_fastestFee'][:-96].astype(float).asfreq("15min")
 
     # Load best HWES parameters from prior random search
     cv_result_path = RESULTS_DIR / "tables" / "hwes" / "hwes_cv_results.csv"
