@@ -29,7 +29,7 @@ plt.show()
 
 To mitigate this, we applied a logarithmic transformation to fastestFee, which compresses large values and helps stabilize variance across the series—making it more suitable for forecasting.
 
-To reduce noise and enhance short-term signal clarity, we resampled the original 5-minute data into 15-minute intervals. Using the raw granularity is not always optimal: if the interval is too short, the signal between time steps becomes unstable and harder for models to learn; if too long, crucial short-term dynamics may be lost. To strike a balance, we tested multiple resampling frequencies and evaluated their predictive strength using the decay ratio.
+To reduce noise and enhance short-term signal clarity, we resampled the original 5-minute data into 15-minute intervals. Extremely short intervals introduce high-frequency noise, making patterns harder for models to learn, while overly long intervals risk losing short-term dynamics. As resampling effectively reduces the number of data points, it eases the computational burden during hyperparameter tuning and model training, enabling more efficient use of resources. To strike a balance, we tested multiple resampling frequencies and evaluated their predictive strength using the decay ratio.
 
 ```{python}
 #| label: fig-decay-ratio
