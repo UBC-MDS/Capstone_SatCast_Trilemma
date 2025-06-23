@@ -18,7 +18,7 @@ This script performs the following steps:
    ``prophet.serialize.model_from_json``.
 
 Usage:
-    python advanced_prophet.py \
+    python scripts/advanced_prophet.py \
         --parquet-path data/raw/mar_5_may_12.parquet \
         [--skip-optimization]
 """

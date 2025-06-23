@@ -15,7 +15,7 @@ This script performs the following steps:
    processed train/test splits for downstream analysis.
 
 Usage:
-    python baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
+    python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 import os
