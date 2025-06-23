@@ -10,11 +10,11 @@ To address the limitations of standard loss functions in modeling Bitcoin fee sp
 
 Table: Breakdown of custom loss function components.
 
-| **Component**     | **Base Loss**            | **Std Loss**                | **Deviation Error**                                  |
-|-------------------|--------------------------|-----------------------------|------------------------------------------------------|
-| **Calculation**   | `y_pred − y_true`        | `std_pred − std_true`       | `(y_pred − ȳ_pred) − (y_true − ȳ_true)`             |
-| **Captures**   | Raw error                | Overall volatility mismatch | Dynamic (pointwise) pattern mismatch                 |
-| **Relevance to Spikes** | Underweights spikes | Penalizes smoothing         | Captures spike timing                                |
+| **Component**     | **Base Loss**            | **Std Loss**                | **Deviation Error**                        |
+|-------------------|--------------------------|-----------------------------|--------------------------------------------|
+| **Calculation**   | `y_pred − y_true`        | `std_pred − std_true`       | `(y_pred − ȳ_pred) − (y_true − ȳ_true)`    |
+| **Captures**   | Raw error                | Overall volatility mismatch | Dynamic (pointwise) pattern mismatch          |
+| **Relevance to Spikes** | Underweights spikes | Penalizes smoothing         | Captures spike timing                     |
 :::
 
 ## Stakeholder Impact & Ethical Considerations
