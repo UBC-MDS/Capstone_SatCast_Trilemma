@@ -170,7 +170,7 @@ def run_sarima_cv(y, folds, results_path, mode):
 @click.command()
 @click.option('--parquet-path', type=str, required=True, help="Path to preprocessed data")
 @click.option('--mode', type=click.Choice(['reverse', 'expanding', 'sliding']), required=True, help="Which window mode to run")
-def main(data, mode):
+def main(parquet_path, mode):
     """
     Entry point for running SARIMA cross-validation.
 
@@ -182,7 +182,8 @@ def main(data, mode):
     mode : {'reverse', 'expanding', 'sliding'}
         Type of windowing strategy to use for cross-validation.
     """
-    y = preprocess_raw_parquet(data)['recommended_fee_fastestFee'].iloc[:-96].astype(float).asfreq("15min")
+    y = preprocess_raw_parquet(parquet_path)['recommended_fee_fastestFee'].iloc[:-96].astype(float).asfreq("15min")
+    print("loading folds")
     folds = get_folds(y, mode)
 
     # Auto filename based on mode

@@ -66,7 +66,7 @@ from custom_loss_eval import eval_metrics
 
 # Constants
 RESULTS_DIR = project_root / "results" / "tables" / "xgboost"
-BEST_PARAMS_PATH = project_root / "results" / "models" / "xgb_best_params.json"
+BEST_PARAMS_PATH = project_root / "results" / "models" / "xgb_best_params_cv.json"
 FORECAST = 96                    # 96 steps = 1 day @ 15min
 WEEKLY = FORECAST * 7            # 672 steps = 1 week
 
@@ -188,12 +188,12 @@ def run_xgboost_fixed(df: pd.DataFrame, folds, results_path: Path):
 @click.command()
 @click.option("--parquet-path", type=str, required=True, help="Path to preprocessed Parquet")
 @click.option("--mode", type=click.Choice(["reverse", "expanding", "sliding"]), required=True)
-def main(data, mode):
+def main(parquet_path, mode):
     """
     Main CLI entrypoint.
     """
     # Preprocess and get folds
-    df = data_preprocess(data)
+    df = data_preprocess(parquet_path)
     y = df["recommended_fee_fastestFee"][:-96]
     folds = get_folds(y, mode)
 
