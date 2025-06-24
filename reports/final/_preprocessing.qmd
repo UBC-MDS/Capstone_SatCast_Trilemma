@@ -2,9 +2,26 @@
 
 To prepare the data, we conducted exploratory correlation analysis between features and the target variable fastestFee, which confirmed that several predictors contained useful signals. This was not used for formal feature selection, but helped validate feature relevance.
 
-To prevent target leakage, we removed a few features that had extremely high correlation with the target (e.g., halfHourFee, exhibiting a 0.98 correlation with fastestFee). These were excluded from all models except DeepAR and TFT, where model constraints made removal more complex.
+```{python}
+import sys
+from pathlib import Path
+from scipy.stats import pearsonr
 
-We also applied several feature engineering steps. We first examined the distribution of fastestFee and found it to be highly right-skewed, with most values clustered at the low end and a few extreme spikes shown in @fig-fastestfee-distribution. This heavy skew can hinder model stability and violate common assumptions.
+project_root = Path().resolve().parent.parent
+src_path = project_root / "src"
+sys.path.append(str(src_path))
+from preprocess_raw_parquet import preprocess_raw_parquet
+
+df = preprocess_raw_parquet('../../data/raw/mar_5_may_12.parquet')
+x = df["recommended_fee_halfHourFee"].dropna()
+y = df["recommended_fee_fastestFee"].dropna()
+common_idx = x.index.intersection(y.index)
+r, _ = pearsonr(x.loc[common_idx], y.loc[common_idx])
+```
+
+To prevent target leakage, we removed a few features that had extremely high correlation with the target (e.g., halfHourFee, exhibiting a `{python} f"{r:.2f}"` correlation with fastestFee). These were excluded from all models except DeepAR and TFT, where model constraints made removal more complex.
+
+We also applied several feature engineering steps. We first examined the distribution of fastestFee and found it to be highly right-skewed, with most values clustered at the low end and a few extreme spikes shown in @fig-fastestfee-distribution. This kind of heavy skew can adversely affect model stability and violate assumptions required by some forecasting models.
 
 ```{python}
 #| label: fig-fastestfee-distribution
@@ -27,7 +44,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-To mitigate this, we applied a logarithmic transformation to fastestFee, which compresses large values and helps stabilize variance across the series—making it more suitable for forecasting.
+To mitigate this, we applied a logarithmic transformation to fastestFee, which compresses large values and helps stabilize variance across the series—making it more suitable for forecasting. Note that not all models require this transformation, we applied it selectively based on model needs.
 
 To reduce noise and enhance short-term signal clarity, we resampled the original 5-minute data into 15-minute intervals. Extremely short intervals introduce high-frequency noise, making patterns harder for models to learn, while overly long intervals risk losing short-term dynamics. As resampling effectively reduces the number of data points, it eases the computational burden during hyperparameter tuning and model training, enabling more efficient use of resources. To strike a balance, we tested multiple resampling frequencies and evaluated their predictive strength using the decay ratio.
 
