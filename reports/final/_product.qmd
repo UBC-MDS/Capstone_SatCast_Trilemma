@@ -1,7 +1,7 @@
 This section presents results from our analysis, including model performance comparisons and forecast visualizations, followed by a discussion of the final data product—its intended users, applications, and extensibility.
 
 ## Results: Model Performance and Forecast Visualization
-This project evaluates six forecasting models—HWES, SARIMA, Prophet, XGBoost, DeepAR, and Temporal Fusion Transformer (TFT)—for their effectiveness in capturing short-term Bitcoin transaction fee dynamics, particularly high-frequency volatility. For baseline comparison, a global median model is also included, as summarized in @tbl-metrics.
+We evaluated six forecasting models—HWES, SARIMA, Prophet, XGBoost, DeepAR, and Temporal Fusion Transformer (TFT)—for their effectiveness in capturing short-term Bitcoin transaction fee dynamics, particularly high-frequency volatility. For baseline comparison, a global median model is also included, as summarized in @tbl-metrics.
 ```{python}
 from IPython.display import Markdown, display
 core_metrics = metrics_df.loc[["custom_loss", "rmse", "mae", "mape"]].round(2)
@@ -15,7 +15,7 @@ from tabulate import tabulate
 display(Markdown(core_metrics_sorted.round(2).to_markdown(index=True)))
 ```
 
-HWES and SARIMA were included as simple, fast-to-train baselines that provide coarse-grained fee trend forecasts. They are able to approximate day-level seasonal drifts but fail to track sharp intraday dips and spikes (see @fig-hwes-sarima). While their predictions are stable, they perform poorly on short-term volatility metrics: HWES records a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'HWES']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'HWES']:.2f}"`, while SARIMA fares in a similar level with a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'SARIMA']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'SARIMA']:.2f}"`. These results underscore the limitations of traditional models in capturing high-frequency dynamics in transaction fee patterns. In fact, both HWES and SARIMA perform no better than the global median baseline, which records a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'Median']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'Median']:.2f}"`.
+We included HWES and SARIMA as simple, fast-to-train baselines for coarse-grained fee trend forecasting. These models approximated day-level seasonal drifts but failed to capture sharp intraday dips and spikes (see @fig-hwes-sarima). Although their predictions remained stable, they performed poorly on short-term volatility metrics. HWES yielded a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'HWES']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'HWES']:.2f}"`. SARIMA produced similar results, with a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'SARIMA']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'SARIMA']:.2f}"`. These findings highlight the limitations of traditional models in capturing high-frequency dynamics in transaction fee patterns. Both models performed no better than the global median baseline, which yielded a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'Median']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'Median']:.2f}"`.
 ```{python}
 project_root = Path().resolve().parent.parent  # or adjust as needed
 src_path = project_root / "src"
@@ -36,9 +36,10 @@ fig, ax = plot_forecast_comparison(
 plt.show()
 ```
 
-Prophet was chosen for its ease of use, interpretability, and built-in support for trend shifts, seasonality, and holiday effects—features well-suited for capturing macro-level fee patterns with minimal tuning. It benefits from flexible trend components and seasonal priors, yielding improved global fits. However, it still oversmooths transient spikes. Its custom loss is `{python} f"{metrics_df.loc['custom_loss', 'Prophet']:.2f}"`, and RMSE is `{python} f"{metrics_df.loc['rmse', 'Prophet']:.2f}"`.
+We chose Prophet for its ease of use, interpretability, and built-in support for trend shifts, seasonality, and holiday effects—features well-suited to capturing macro-level fee patterns with minimal tuning. Its flexible trend components and seasonal priors improved global fits. However, Prophet still oversmoothed transient spikes. It recorded a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'Prophet']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'Prophet']:.2f}"`.
 
-XGBoost was selected for its ability to model nonlinear interactions between engineered features such as lagged fees and mempool congestion signals, while remaining efficient to train and tune. It outperforms all classical models, achieving a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"` and RMSE of `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`. However, it tends to underestimate sharp fee jumps and often produces flat or conservative predictions in highly volatile regions (see @fig-prophet-xgboost).
+We selected XGBoost for its ability to model nonlinear interactions between engineered features such as lagged fees and mempool congestion signals, while remaining efficient to train and tune. XGBoost outperformed all classical models, achieving a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'XGBoost']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'XGBoost']:.2f}"`. Despite this, it tended to underestimate sharp fee jumps and often produced flat or conservative predictions in highly volatile regions (see @fig-prophet-xgboost).
+
 ```{python}
 #| label: fig-prophet-xgboost
 #| fig-cap: "Prophet and XGBoost forecasts vs actual fee on test data"
@@ -54,10 +55,9 @@ plt.show()
 
 ```
 
-The neural models represent a meaningful shift in modeling capacity, enabling the system to learn from richer temporal patterns and non-linear interactions.
-DeepAR was selected for its ability to capture sequential dependencies through autoregressive recurrence, offering a pathway toward future probabilistic forecasting, with a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'DeepAR']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'DeepAR']:.2f}"`.
+The neural models marked a meaningful shift in modeling capacity, enabling the system to learn from richer temporal patterns and nonlinear interactions. We selected DeepAR for its ability to capture sequential dependencies through autoregressive recurrence. It offered a pathway toward future probabilistic forecasting and achieved a custom loss of `{python} f"{metrics_df.loc['custom_loss', 'DeepAR']:.2f}"` and an RMSE of `{python} f"{metrics_df.loc['rmse', 'DeepAR']:.2f}"`.
 
-TFT was chosen for its architecture that combines attention mechanisms, gating, and variable selection—allowing it to track both the magnitude and timing of sudden fee surges. It demonstrates the strongest performance on high-frequency volatility, making it ideal for fine-grained, urgency-tiered fee forecasts with real-time planning value (see @fig-deepar-tft).
+We chose TFT for its architecture, which combines attention mechanisms, gating, and variable selection. This design enabled it to track both the magnitude and timing of sudden fee surges. TFT delivered the strongest performance on high-frequency volatility, making it well-suited for fine-grained, urgency-tiered fee forecasts with real-time planning value (see @fig-deepar-tft).
 ```{python}
 #| label: fig-deepar-tft
 #| fig-cap: "DeepAR and TFT forecasts vs actual fee on test data"
@@ -92,7 +92,7 @@ rmse_improvement_pct = 100 * (rmse_min_baseline - rmse_tft) / rmse_min_baseline
 
 ```
 
-Quantitatively, TFT reduces the bespoke volatility-aware loss from about `{python} f"{custom_min_baseline:.2f}"`, the lowest among the non-neural models, to `{python} f"{custom_loss_tft:.2f}"`, representing a `{python} f"{custom_loss_improvement_pct:.0f}%"` improvement.  It also brings RMSE down from the `{python} f"{rmse_min_baseline:.2f}"`–`{python} f"{rmse_max_baseline:.2f}"` range to `{python} f"{rmse_tft:.2f}"`, yielding a `{python} f"{rmse_improvement_pct:.0f}%"` relative gain. MAE and MAPE follow the same pattern, confirming that TFT strikes the strongest balance between overall accuracy and sensitivity to congestion-driven shocks.
+Quantitatively, TFT reduced the bespoke volatility-aware loss from approximately `{python} f"{custom_min_baseline:.2f}"`—the best among non-neural models—to `{python} f"{custom_loss_tft:.2f}"`, representing a `{python} f"{custom_loss_improvement_pct:.0f}%"` improvement. It also lowered RMSE from the `{python} f"{rmse_min_baseline:.2f}"`–`{python} f"{rmse_max_baseline:.2f}"` range to `{python} f"{rmse_tft:.2f}"`, yielding a `{python} f"{rmse_improvement_pct:.0f}%"` relative gain. MAE and MAPE followed the same trend, confirming that TFT achieved the strongest balance between overall accuracy and responsiveness to congestion-driven fee shocks.
 
 ## Data Product Overview
 
