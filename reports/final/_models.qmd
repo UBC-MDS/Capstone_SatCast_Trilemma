@@ -29,8 +29,47 @@ To address the temporal dependencies missed by HWES, we introduced SARIMA that c
 ![Residual autocorrelation highlights unmodeled temporal dependencies.](../../results/plots/acf_pacf_plot.png){#fig-acf width=100%}
 
 ### XGBoost
+```{python}
+from scipy.stats import spearmanr
+# Selected features for correlation analysis
+corr_features = [
+    "recommended_fee_fastestFee",
+    "mempool_total_fee",
+    "mempool_count",
+    "mempool_blocks_nTx",
+    "mempool_blocks_blockVSize",
+    "difficulty_adjustment_difficultyChange",
+    "mempool_blocks_totalFees"
+]
+# Map for nicer axis labels
+label_map = {
+    "recommended_fee_fastestFee": "Fastest Fee",
+    "mempool_total_fee": "Mempool Total Fee",
+    "mempool_count": "Mempool Count",
+    "mempool_blocks_nTx": "Next Block # of Transaction",
+    "mempool_blocks_blockVSize": "Block vSize",
+    "difficulty_adjustment_difficultyChange": "Difficulty Change",
+    "mempool_blocks_totalFees": "Next Block Total Fee"
+}
 
-We next adopted XGBoost to leverage a broader set of concurrent features. As shown in the correlation heatmap (@fig-spearman-heat), variables such as mempool total fee, mempool count, and projected block fees were strongly correlated with the fastest fee rate. XGBoost, a gradient-boosted tree model, enabled us to capture non-linear interactions among these features. It expanded our modeling capacity beyond univariate structures and allowed fine-grained feature importance analysis. We tuned the model using randomized search over tree depth, learning rate, and regularization terms.
+# Initialize empty DataFrames for correlation and p-values
+spearman_corr = pd.DataFrame(index=corr_features, columns=corr_features)
+
+# Compute Spearman correlation for each pair
+for i in corr_features:
+    for j in corr_features:
+        x = df[i].dropna()
+        y = df[j].dropna()
+        common_idx = x.index.intersection(y.index)
+        if len(common_idx) > 2:
+            r_s, p_s = spearmanr(x[common_idx], y[common_idx])
+            spearman_corr.loc[i, j] = r_s
+
+# Rename labels for plot
+spearman_corr = spearman_corr.astype(float).rename(index=label_map, columns=label_map)
+
+```
+We next adopted XGBoost to leverage a broader set of concurrent features. As shown in the correlation heatmap (@fig-spearman-heat), variables such as mempool total fee(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Mempool Total Fee"],2)):.2f}"""`), mempool count(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Mempool Count"],2)):.2f}"""`), and projected block fees(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Next Block Total Fee"],2)):.2f}"""`) were strongly correlated with the fastest fee rate. XGBoost, a gradient-boosted tree model, enabled us to capture non-linear interactions among these features. It expanded our modeling capacity beyond univariate structures and allowed fine-grained feature importance analysis. We tuned the model using randomized search over tree depth, learning rate, and regularization terms.
 
 ![Strong correlations observed between target fee rate and key explanatory variables.](../../results/plots/spearman_correlation.png){#fig-spearman-heat width=100%}
 
