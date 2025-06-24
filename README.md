@@ -165,6 +165,8 @@ python scripts/baseline_xgboost.py \
 
 - For XGBoost and Prophet models that support skipping optimization, use `--skip-optimization` to load pre-tuned parameters. (Note: HWES script have optimization process but does not have the option `--skip-optimization` as it does not take very long to run.)
 
+> The trained models will be saved at `results/models/temp_models`
+
 **Reference Compute Setup and Runtime:**
 
 | Model    | Full Run Time (est.) | Optimization Required | Notes                        |
