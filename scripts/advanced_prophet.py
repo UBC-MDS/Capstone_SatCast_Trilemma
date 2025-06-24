@@ -64,7 +64,7 @@ def main(parquet_path, skip_optimization):
     y_train.to_frame(name="y").to_csv(output_dir / "y_train.csv", index=False)
 
     # Hardcoded result output path
-    result_dir = project_root / "results" / "models"
+    result_dir = project_root / "results" / "models"/ "temp_models"
     result_dir.mkdir(parents=True, exist_ok=True)
 
     # Step 2: Hyperparameter optimization

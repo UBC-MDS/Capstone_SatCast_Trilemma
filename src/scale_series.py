@@ -2,6 +2,7 @@
 scale_series.py
 
 Applies standard scaling to real-valued features in training and validation datasets.
+Note that this is using third party function, no need for testing.
 """
 import pandas as pd
 from sklearn.preprocessing import StandardScaler

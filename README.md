@@ -150,10 +150,10 @@ If you'd like to understand and customize how each model is trained:
 Each script is runnable from the command line and supports customizable arguments.  
 You can find **usage instructions** at the top of every script file.
 
-**Example (Run HWES with full data):**
+**Example (Run XGBoost with full data):**
 
 ```bash
-python scripts/baseline_hwes.py \
+python scripts/baseline_xgboost.py \
     --parquet-path data/raw/mar_5_may_12.parquet \
     --skip-optimization
 ```
@@ -163,7 +163,7 @@ python scripts/baseline_hwes.py \
 - We provide a sample dataset (`data/raw/sample_8_days.parquet`) for quick testing, but:
   - It **should not** be used for models that require hyperparameter tuning (HWES, XGBoost, Prophet).
 
-- For models that support skipping optimization, use `--skip-optimization` to load pre-tuned parameters. (Note: HWES script does not have the option `--skip-optimization` as it does not take very long to run.)
+- For XGBoost and Prophet models that support skipping optimization, use `--skip-optimization` to load pre-tuned parameters. (Note: HWES script have optimization process but does not have the option `--skip-optimization` as it does not take very long to run.)
 
 **Reference Compute Setup and Runtime:**
 
@@ -173,10 +173,10 @@ python scripts/baseline_hwes.py \
 | SARIMA   | ~5 min               | ❌ No                  | Fastest                      |
 | XGBoost  | ~2 hrs               | ✅ Yes                 | Parallelizable               |
 | Prophet  | ~3–4 hrs             | ✅ Yes                 | Sensitive to daily pattern   |
-| DeepAR   | ~6 hrs               | ❌ No                  | Requires GPU for speed       |
+| DeepAR   | ~6 hrs               | ❌ No                  | GPU supported for CUDA     |
 | TFT      | ~8–9 hrs             | ❌ No                  | Best run on GPU              |
 
-> All benchmarks run on: `Intel i9-13980HX`, `RTX 4090 GPU`, `Windows 11 Pro`.
+> All benchmarks run on: `Intel i9-13980HX`, `RTX 4090 labtop GPU`, `Windows 11 Pro`.
 >
 > All scripts save outputs to `results/models/`, `results/plots/`, and `results/tables/`.
 

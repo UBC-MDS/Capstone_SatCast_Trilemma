@@ -80,7 +80,7 @@ def main(parquet_path):
     model, trainer = tft_train_model(tft_ds, train_dl, val_dl, loss_fn)
 
     # Step 5 ── Save model
-    model_save_dir = project_root / "results" / "temp_models"/ "models"
+    model_save_dir = project_root / "results" / "models"/ "temp_models"
     model_save_dir.mkdir(parents=True, exist_ok=True)
     torch.save(model, model_save_dir / "best-model-tft-full.pt")
     print(f"✅ Full model saved at: {model_save_dir / 'best-model-tft-full.pt'}")
