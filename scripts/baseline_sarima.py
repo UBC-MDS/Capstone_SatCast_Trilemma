@@ -85,7 +85,7 @@ def main(parquet_path):
     forecaster.fit(y_train_log)
 
     # Step 4: Save model
-    (RESULTS_DIR / 'models').mkdir(parents=True, exist_ok=True)
+    (RESULTS_DIR / 'models'/ "temp_models").mkdir(parents=True, exist_ok=True)
     with open(MODEL_FROM, 'wb') as f:
         pickle.dump(forecaster, f)
 

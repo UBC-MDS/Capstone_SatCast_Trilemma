@@ -77,7 +77,7 @@ def main(parquet_path, skip_optimization):
     model = prophet_model_training(df_processed, y_train, str(result_dir))
 
     # Step 4: Save the model to disk
-    model_path = result_dir / "prophet_model.json"
+    model_path = result_dir / "temp_models"/ "prophet_model.json"
     with open(model_path, 'w') as fout:
         fout.write(model_to_json(model))
 

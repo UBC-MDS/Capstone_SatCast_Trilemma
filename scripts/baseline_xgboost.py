@@ -55,6 +55,7 @@ def main(parquet_path, skip_optimization):
     interval = 15
 
     # Step 1: Load and preprocess dataset
+    print("Loading and preprocessing data...")
     df = data_preprocess(parquet_path)
 
     # Save processed data
@@ -63,12 +64,14 @@ def main(parquet_path, skip_optimization):
     df.to_csv(processed_dir / "df_processed.csv", index=False)
 
     # Step 2: Generate hyperparameter search space + train/test split
+    print("Preparing training data and search space...")
     random_search, X_train, y_train = optimization(df, interval)
     X_train.to_csv(processed_dir / "X_train.csv", index=False)
     y_train.to_frame(name="y").to_csv(processed_dir / "y_train.csv", index=False)
 
     # Step 3: Train model (with or without tuning)
-    result_dir = project_root / "results" / "models"
+    print("Training model (skip optimization =", skip_optimization, ")...")
+    result_dir = project_root / "results" / "models"/ "temp_models"
     result_dir.mkdir(parents=True, exist_ok=True)
     best_model, best_params, best_score = build_random_search_cv(
       X_train, y_train,
