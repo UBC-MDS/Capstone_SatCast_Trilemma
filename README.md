@@ -52,149 +52,144 @@ conda activate satcast
 python -m ipykernel install --user --name=satcast
 ```
 
-4. (Optional) Open the terminal and run the following commands to render the [final report](reports/final/final_report.pdf)
-
-``` bash
-quarto render reports/final/final_report.qmd
-```
-
 ## Repository Structure
-
-Here is how this repository is organized:
 
 | Folder / File          | Purpose                                                                 |
 |------------------------|-------------------------------------------------------------------------|
-| `analysis/`            | Jupyter notebooks for EDA, baseline models, and advanced models.  |
-| `scripts/`             | Python scripts for running each model, data prep, and experimentation.|
-| `data/`                | Contains raw and preprocessed data files and how to fetch data from API. |
-| `results/`             | Stores generated plots, forecasts, and summary tables.                 |
-| `reports/`             | Proposal and final report in Quarto format (rendered as PDF).     |
-| `environment.yml`      | Conda environment configuration file.                                  |
-| `README.md`            | This file — provides usage instructions and project overview.          |
-| `LICENSE.md`           | Open-source license (MIT).                                             |
+| `analysis/`            | Jupyter notebooks for EDA, modeling, and final results                  |
+| `scripts/`             | High-level entry-point scripts to run full forecasting pipelines        |
+| ├─`<model_name>/`      | Each subfolder contains helper functions to load, preprocess, and train |
+| `src/`                 | Modularized utility functions used across notebooks and scripts         |
+| `data/`                | Raw and processed data files; includes live API fetch script            |
+| `results/`             | Saved plots, model outputs, and evaluation metrics                      |
+| `reports/`             | Project proposal and final report (Quarto format)                       |
+| `tests/`               | Unit tests for utility functions in `src/`                              |
+| `environment.yml`      | Conda environment specification                                         |
 
-#### Notes on `scripts/`
+## Start Here
 
-Each model has:
+If you're new to this project, start with one of the following:
 
-- A main script (e.g., `baseline_sarima.py`) to run from command line.
+1. **[Final Report (PDF)](reports/final/final_report.pdf)** — A complete summary of our goals, methodology, EDA, model results, and insights.
 
-- A subfolder (e.g., `scripts/baseline_sarima/`) with helper functions for loading, preprocessing, and training.
+**Run:**
 
-Users typically run the main script; helper files are imported and not meant to be executed directly.
+```bash
+quarto render reports/final/final_report.qmd
+```
 
-## Explore the Project: From Overview to Full Reproduction
-
-This repository offers a layered approach to forecasting Bitcoin transaction fees using classical time series models, gradient boosting, and deep learning techniques.
-
-Whether you're here for a quick summary or looking to reproduce everything from scratch, follow the three levels below — from light exploration to full model training.
-
-### Quick Overview (Start Here)
-
-If you want to get a summary of all models, results, and visualizations, start by opening the [comprehensive_overview.ipynb](analysis/comprehensive_overview.ipynb):
-
+2. **[Overview Notebook](analysis/comprehensive_overview.ipynb)** — A single Jupyter notebook that visualizes and compares all six forecasting models. 
+ 
 **Run:**
 
 ```bash
 jupyter lab analysis/comprehensive_overview.ipynb
 ```
 
-This notebook:
+   This is the most convenient way to understand model performance and evaluation results.
 
-- Summarizes all models, forecasts, and key results
+> These two files offer the quickest way to explore our project.
 
-- Includes links to each model’s detailed notebook for deeper analysis
+## How to Navigate This Project
 
-> ⚠️ **Note**: To run this notebook end-to-end, you must first generate the SARIMA model file (`sarima_final_model.pkl`), which is too large to store in the repo.
-> To regenerate it, run:
+We designed this section to support **two types of users**:
+
+1. **Exploratory Users**: Those who want to **explore the data, visualizations, and model results** without rerunning code or configuring environments.
+2. **Technical Developers**: Those who want to **reproduce results, run forecasting models**, or customize the pipeline using scripts and configuration options.
+
+Feel free to start at the level that suits your needs — whether it's viewing a single notebook or re-running the full pipeline from scratch.
+
+### For Exploratory Users
+
+If you're mainly here to **review results**, **explore insights**, or **see the models in action**, you’re in the right place.
+
+After reviewing the **Start Here** section (see above), we recommend exploring the following notebooks for more detail:
+
+#### Notebooks You Can Explore
+
+- [analysis/data_spec.ipynb](analysis/data_spec.ipynb): In-depth exploratory data analysis (e.g., trends, seasonality, stationarity).
+- [analysis/baseline_hwes.ipynb](analysis/baseline_hwes.ipynb): Exponential smoothing baseline forecasting.
+- [analysis/baseline_sarima.ipynb](analysis/baseline_sarima.ipynb): SARIMA baseline model and diagnostics.
+- [analysis/baseline_xgboost.ipynb](analysis/baseline_xgboost.ipynb): Gradient boosting on tabular time features.
+- [analysis/advanced_prophet.ipynb](analysis/advanced_prophet.ipynb): Facebook Prophet forecasting model.
+- [analysis/advanced_deepar.ipynb](analysis/advanced_deepar.ipynb): DeepAR probabilistic forecasting using GluonTS.
+- [analysis/advanced_tft.ipynb](analysis/advanced_tft.ipynb): Temporal Fusion Transformer for multivariate time series.
+
+> All plots and metrics have been pre-saved in the `results/` folder. You can explore the notebooks directly without re-running them.  
+
+⚠️ If you want to re-run `baseline_sarima.ipynb`, please first generate the SARIMA model file by running:
 
 ```bash
 python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
 
-### Option 2: One-Command Forecast Generation
+> The `sarima_final_model.pkl` file is too large to include in the repo.
 
-If you'd like to quickly reproduce all final forecasts using saved models:
+### For Technical Developers
+
+If you're looking to **reproduce results**, **train models**, or **extend the pipeline**, this section is for you.
+
+We offer a modular setup that supports three levels of interaction:
+
+#### 1. Run Pretrained Models for Fast Forecasting
+
+You can skip training and use pretrained models to generate predictions([scripts/analysis.py](scripts/analysis.py)):
 
 ```bash
 python scripts/analysis.py
 ```
 
-This will:
+This script:
 
 - Load and preprocess the dataset
 - Use stored models (HWES, SARIMA, XGBoost, Prophet, DeepAR, TFT) to generate forecasts
 - Save forecasts and metrics to `results/models/`, `results/tables/`, and `results/plots/` and no model training is triggered.
 
-### Full Model Execution (Custom Training)
-
-If you'd like to understand and customize how each model is trained:
-
-- Use the corresponding Jupyter notebook or script
-
-- Check the top of each script for command-line usage
-
-| Model   | Notebook                          | Script File                   |
-| ------- | --------------------------------- | ----------------------------- |
-| HWES    | [analysis/baseline_hwes.ipynb](analysis/baseline_hwes.ipynb)    | [scripts/baseline_hwes.py](scripts/baseline_hwes.py)    |
-| SARIMA  | [analysis/baseline_sarima.ipynb](analysis/baseline_sarima.ipynb)  | [scripts/baseline_sarima.py](scripts/baseline_sarima.py)  |
-| XGBoost | [analysis/baseline_xgboost.ipynb](analysis/baseline_xgboost.ipynb) | [scripts/baseline_xgboost.py](scripts/baseline_xgboost.py) |
-| Prophet | [analysis/advanced_prophet.ipynb](analysis/advanced_prophet.ipynb) | [scripts/advanced_prophet.py](scripts/advanced_prophet.py) |
-| DeepAR  | [analysis/advanced_deepar.ipynb](analysis/advanced_deepar.ipynb)  | [scripts/advanced_deepar.py](scripts/advanced_deepar.py)  |
-| TFT     | [analysis/advanced_tft.ipynb](analysis/advanced_tft.ipynb)     | [scripts/advanced_tft.py](scripts/advanced_tft.py)     |
-
-### Notes on Running Individual Scripts and Notebooks
-
-#### Scripts (`scripts/*.py`)
-
-Each script is runnable from the command line and supports customizable arguments.  
-You can find **usage instructions** at the top of every script file.
-
-**Example (Run HWES with full data):**
+⚠️ **Before running this script, make sure you generate the SARIMA model file manually:**
 
 ```bash
-python scripts/baseline_hwes.py \
-    --parquet-path data/raw/mar_5_may_12.parquet \
-    --skip-optimization
+python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
 
-- `--parquet-path` can be changed to point to your own data file.
+> The `sarima_final_model.pkl` file is too large to include in the repo and must be created locally.
 
-- We provide a sample dataset (`data/raw/sample_8_days.parquet`) for quick testing, but:
-  - It **should not** be used for models that require hyperparameter tuning (HWES, XGBoost, Prophet).
+#### 2. Train Individual Models
 
-- For models that support skipping optimization, use `--skip-optimization` to load pre-tuned parameters. (Note: HWES script does not have the option `--skip-optimization` as it does not take very long to run.)
+If you want to customize hyperparameters or train from scratch, you can run each model's main script:
 
-**Reference Compute Setup and Runtime:**
+| Model   | Script File                        |
+|---------|------------------------------------|
+| HWES    | [scripts/baseline_hwes.py](scripts/baseline_hwes.py)          |
+| SARIMA  | [scripts/baseline_sarima.py](scripts/baseline_sarima.py)      |
+| XGBoost | [scripts/baseline_xgboost.py](scripts/baseline_xgboost.py)    |
+| Prophet | [scripts/advanced_prophet.py](scripts/advanced_prophet.py)    |
+| DeepAR  | [scripts/advanced_deepar.py](scripts/advanced_deepar.py)      |
+| TFT     | [scripts/advanced_tft.py](scripts/advanced_tft.py)            |
 
-| Model    | Full Run Time (est.) | Optimization Required | Notes                        |
-|----------|----------------------|------------------------|------------------------------|
-| HWES     | ~5 min               | ✅ Yes                 | Fastest                      |
-| SARIMA   | ~5 min               | ❌ No                  | Fastest                      |
-| XGBoost  | ~2 hrs               | ✅ Yes                 | Parallelizable               |
-| Prophet  | ~3–4 hrs             | ✅ Yes                 | Sensitive to daily pattern   |
-| DeepAR   | ~6 hrs               | ❌ No                  | Requires GPU for speed       |
-| TFT      | ~8–9 hrs             | ❌ No                  | Best run on GPU              |
+Each script has a `usage` section at the top that shows all command-line arguments.  
+Common option include:
 
-> All benchmarks run on: `Intel i9-13980HX`, `RTX 4090 GPU`, `Windows 11 Pro`.
->
-> All scripts save outputs to `results/models/`, `results/plots/`, and `results/tables/`.
+- `--skip-optimization`: Skip grid search (only applies to XGBoost and Prophet). HWES does not support this option, since it's hyperparameter tuning time is short.
 
-#### Notebooks (`analysis/*.ipynb`)
-
-Each model also includes a notebook version for interactive exploration.
-
-**Run in Jupyter Lab:**
+Basic usage example:
 
 ```bash
-jupyter lab analysis/<model>.ipynb
+python scripts/<model>.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
 
-**Use notebooks if you want to:**
+> A sample dataset (`data/raw/sample_8_days.parquet`) is provided for quick testing.  
+> But this is **not suitable** for HWES, XGBoost, or Prophet — these models require sufficient data to tune hyperparameters effectively.
 
-- Understand model logic step by step
-- View intermediate outputs and plots
-- Modify hyperparameters manually
+Approximate training time on a high-end laptop (i9-13980HX CPU, RTX 4090 GPU):
+
+| Model    | Full Data Runtime |
+|----------|-------------------|
+| HWES     | ~5 minutes        |
+| SARIMA   | ~5 minutes        |
+| XGBoost  | ~2 hours          |
+| Prophet  | ~3–4 hours        |
+| DeepAR   | ~6 hours          |
+| TFT      | ~8–9 hours        |
 
 ### Window-Based Evaluation (Optional)
 
@@ -239,11 +234,11 @@ python scripts/experimentation/hwes_window.py \
 
 #### Runtime Estimates (Full Data)
 
-| Model    | Script                      | Est. Runtime      |
-|----------|-----------------------------|-------------------|
-| SARIMA   | [sarima_window.py](scripts/experimentation/sarima_window.py)          | ~1.5 hours        |
-| XGBoost  | [xgboost_window.py](scripts/experimentation/xgboost_window.py)         | ~1 hour           |
-| HWES     | [hwes_window.py](scripts/experimentation/hwes_window.py)            | ~15 minutes       |
+| Model    | Script                                                | Est. Runtime  |
+|----------|-------------------------------------------------------|---------------|
+| HWES     | [hwes_window.py](scripts/experimentation/hwes_window.py)           | ~15 minutes   |
+| XGBoost  | [xgboost_window.py](scripts/experimentation/xgboost_window.py)      | ~1 hour       |
+| SARIMA   | [sarima_window.py](scripts/experimentation/sarima_window.py)       | ~1.5 hours    |
 
 ### Tests (Optional)
 
