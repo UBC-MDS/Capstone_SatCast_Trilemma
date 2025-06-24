@@ -17,15 +17,27 @@ file_path = project_root / "data" / "raw" / "mar_5_may_12.parquet"
 from unittest.mock import patch
 
 def test_preprocess_raw_parquet_file_not_exist():
+    """
+    Test that preprocess_raw_parquet raises FileNotFoundError when the provided file path does not exist.
+    Confirms that missing file errors are surfaced clearly and early.
+    """
     with pytest.raises(FileNotFoundError):
         preprocess_raw_parquet("a/a.parquet")
 
 def test_preprocess_raw_parquet_success():
+    """
+    Test that preprocess_raw_parquet successfully reads a valid parquet file and returns a non-empty DataFrame.
+    Verifies the core functionality of data loading and initial validation.
+    """
     df = preprocess_raw_parquet(file_path)
     assert df.shape[0] != 0
 
 
 def test_preprocess_raw_parquet_read_failure():
+    """
+    Test that preprocess_raw_parquet raises a ValueError when parquet read operation fails due to I/O or format issues.
+    Uses mocking to simulate a failure in pandas.read_parquet, ensuring robust error handling.
+    """
     with patch("preprocess_raw_parquet.pd.read_parquet") as mock_read:
         mock_read.side_effect = Exception("parquet read failed")
         with pytest.raises(ValueError):

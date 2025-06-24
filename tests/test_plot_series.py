@@ -19,6 +19,10 @@ from datetime import datetime
 
 
 def test_plot_series_success():
+    """
+    Test that plot_series generates a plot with the expected title when given
+    a valid DataFrame for a known series_id. Confirms standard visualization behavior.
+    """
     df = pd.DataFrame({
         "series_id": ["A"] * 5,
         "timestamp": pd.date_range("2025-01-01", periods=5, freq="15min"),
@@ -29,6 +33,10 @@ def test_plot_series_success():
     assert ax.get_title().startswith("Series A")
 
 def test_plot_series_fail_missing_cols():
+    """
+    Test that plot_series raises a ValueError when required columns ('y_true' or 'y_pred') are missing.
+    Validates input validation and informative error messaging for incomplete data.
+    """
     df = pd.DataFrame({
         "series_id": ["A"],
         "timestamp": [datetime.now()]
@@ -37,6 +45,10 @@ def test_plot_series_fail_missing_cols():
         plot_series(df, sid="A")
 
 def test_plot_series_fail_unknown_sid():
+    """
+    Test that plot_series raises a ValueError when the provided series_id is not found in the DataFrame.
+    Ensures robust filtering and proper error reporting for invalid series requests.
+    """
     df = pd.DataFrame({
         "series_id": ["B"],
         "timestamp": [datetime.now()],

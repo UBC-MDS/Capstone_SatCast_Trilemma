@@ -17,6 +17,11 @@ from plot_forecast_comparison import plot_forecast_comparison
 from matplotlib.figure import Figure
 
 def test_plot_forecast_comparison_success():
+    """
+    Test that plot_forecast_comparison successfully generates a Figure object
+    when given valid input DataFrames for two models with matching series_id.
+    Ensures normal functionality of the visualization under expected use.
+    """
     df_common = pd.DataFrame({
         "series_id": ["recommended_fee_fastestFee"] * 4,
         "timestamp": pd.date_range("2023-01-01", periods=4, freq="h"),
@@ -27,6 +32,11 @@ def test_plot_forecast_comparison_success():
     assert isinstance(fig, Figure)
 
 def test_plot_forecast_comparison_fail_missing_series():
+    """
+    Test that plot_forecast_comparison raises a ValueError when the specified
+    series_id does not exist in either of the input DataFrames.
+    Validates error handling for missing or mismatched series.
+    """
     df1 = pd.DataFrame({
         "series_id": ["a"],
         "timestamp": [pd.Timestamp("2023-01-01")],
@@ -46,6 +56,10 @@ def test_plot_forecast_comparison_fail_missing_series():
         assert True
 
 def test_plot_forecast_comparison_edge_one_point():
+    """
+    Test that plot_forecast_comparison works when the input DataFrames contain only one timestamp.
+    Ensures the function is robust to edge cases with minimal data.
+    """
     df = pd.DataFrame({
         "series_id": ["recommended_fee_fastestFee"],
         "timestamp": [pd.Timestamp("2023-01-01 00:00:00")],
