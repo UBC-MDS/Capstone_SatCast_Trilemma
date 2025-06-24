@@ -3,10 +3,18 @@
 To understand and anticipate Bitcoin transaction fee rate dynamics, we implemented a progressive series of models. Each model was chosen to overcome specific limitations identified in its predecessor, forming an iterative pipeline that is summarized in @fig-models. Below, we describe each model, its contributions, and where it ultimately fell short.
 
 ![Model progression from simple baselines to deep learning, each addressing prior gaps.](../../img/model_progression.png){#fig-models width=100%}
+```{python}
+import pandas as pd
+df = pd.read_parquet('../../data/raw/mar_5_may_12.parquet')
+fee_cols = [col for col in df.columns if col.startswith("mempool_fee_histogram_bin_")]
+total = df[fee_cols].values.sum()
+num1_2 = df["mempool_fee_histogram_bin_1_2"].values.sum()
+num2_3 = df["mempool_fee_histogram_bin_2_3"].values.sum()
 
+```
 ### Dummy Model (Global Median)
 
-We began with a dummy model that predicted a constant value: the global median of the fee rate series. As shown in the distribution of fastest fee rates (@fig-fastestfee-distribution), over 92.5% of observed values clustered between 2–3 satoshis/byte, making the median a surprisingly strong benchmark. While this model ignored all temporal and contextual variation, it provided a reference point to quantify the inherent difficulty of the forecasting task. No training or hyperparameter tuning was required for this static approach.
+We began with a dummy model that predicted a constant value: the global median of the fee rate series. As shown in the distribution of fastest fee rates (@fig-fastestfee-distribution), roughly `{python} f"{(num1_2/total*100):.1f}"`% of all transactions fell into the 1–2 sats/vB bin; including 2–3 sats/vB brought the cumulative share above `{python} f"{((num1_2+num2_3)/total*100):.1f}"`%. It made the median a surprisingly strong benchmark. While this model ignored all temporal and contextual variation, it provided a reference point to quantify the inherent difficulty of the forecasting task. No training or hyperparameter tuning was required for this static approach.
 
 ### Holt-Winters Exponential Smoothing (HWES)
 
