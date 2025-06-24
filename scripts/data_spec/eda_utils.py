@@ -114,7 +114,7 @@ def plot_group_correlation(
         label_map: dict[str, str] | None = None,
         save_path: str | None = None):
     """
-    Draws a Pearson-correlation heatmap for all columns whose names start
+    Draws a Spearman-correlation heatmap for all columns whose names start
     with *prefix* (after optional exclusions).
 
     Parameters
@@ -142,7 +142,7 @@ def plot_group_correlation(
     -----
     * Auto-label fallback removes the common *prefix* and converts
       ``mempool_blocks_blockVSize`` → ``Block VSize``.
-    * Correlation uses pair-wise complete observations (Pandas ``.corr()``).
+    * Correlation uses pair-wise complete observations (Pandas ``.corr(method="spearman")``).
 
     Examples
     --------
@@ -161,7 +161,7 @@ def plot_group_correlation(
         print(f"Skipping '{group_name}': <2 usable columns.")
         return
 
-    corr = df[cols].dropna().corr()
+    corr = df[cols].dropna().corr(method="spearman")
 
     # generate readable name
     def pretty(col: str) -> str:
