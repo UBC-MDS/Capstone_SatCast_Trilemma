@@ -28,7 +28,6 @@ import sys
 from pathlib import Path
 import itertools
 import json
-from prophet.serialize import model_to_json
 
 # Set up project paths for importing local modules
 current_file = Path(__file__).resolve()
@@ -80,7 +79,7 @@ def model_optimization(df, y_train, result):
     all_params = [dict(zip(param_grid.keys(), v)) for v in itertools.product(*param_grid.values())]
 
     # Run model evaluation on each parameter combination and return results
-    results = optimization(df, all_params)
+    results = optimization(df,y_train, all_params)
 
     # Select the best parameter set (with lowest RMSE)
     best_params = sorted(results, key=lambda x: x[1])[0]
