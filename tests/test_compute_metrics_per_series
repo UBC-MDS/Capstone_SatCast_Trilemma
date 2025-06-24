@@ -18,6 +18,11 @@ from compute_metrics_per_series import compute_metrics
 
 
 def test_compute_metrics_success():
+    """
+    Test that compute_metrics successfully computes metrics
+    when given a well-formed input DataFrame with multiple series.
+    Verifies that the function returns a DataFrame and includes expected columns.
+    """
     df_eval = pd.DataFrame({
         "series_id": ["s1"] * 4 + ["s2"] * 4,
         "y_true": [1, 2, 3, 4, 2, 4, 6, 8],
@@ -28,6 +33,10 @@ def test_compute_metrics_success():
     assert "MAE" in result.columns
 
 def test_compute_metrics_fail_missing_column():
+    """
+    Test that compute_metrics raises a KeyError when 'y_pred' column is missing.
+    This ensures the function properly validates required inputs.
+    """
     df_eval = pd.DataFrame({
         "series_id": ["s1"] * 4,
         "y_true": [1, 2, 3, 4]
@@ -39,6 +48,10 @@ def test_compute_metrics_fail_missing_column():
         assert True
 
 def test_compute_metrics_edge_single_point():
+    """
+    Test compute_metrics behavior on a minimal edge case with a single data point.
+    Ensures that metrics like MAE return correctly (should be zero when prediction is perfect).
+    """
     df_eval = pd.DataFrame({
         "series_id": ["s1"],
         "y_true": [1],
