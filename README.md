@@ -1,7 +1,9 @@
 # Capstone_SatCast_Trilemma
 
 Forecasting Bitcoin Transaction Fees using Time Series and Machine Learning  
-📍UBC Master of Data Science – Capstone Project | In collaboration with Trilemma Capital
+📍[UBC Master of Data Science](https://masterdatascience.ubc.ca/) – Capstone Project | In collaboration with [Trilemma Foundation](https://www.trilemma.foundation/)
+
+Special thanks to our mentor [Hedayat Zarkoob](https://www.linkedin.com/in/hedayat-zarkoob-6b218b106/) from the UBC MDS program for his invaluable guidance and support throughout this project.
 
 ## Welcome!
 
@@ -44,47 +46,75 @@ conda env create -f environment.yml
 conda activate satcast
 ```
 
-3. (Optional) Open the terminal and run the following commands to render the report
+3. (Optional) If Jupyter can't find your environment kernel, you may need to manually add it:
+
+```bash
+python -m ipykernel install --user --name=satcast
+```
+
+4. (Optional) Open the terminal and run the following commands to render the [final report](reports/final/final_report.pdf)
 
 ``` bash
-quarto render reports/proposal/proposal_report.qmd
 quarto render reports/final/final_report.qmd
 ```
 
----
+## Repository Structure
 
-## Guidance to Run This Project
+Here is how this repository is organized:
 
-This repository provides forecasting pipelines to predict Bitcoin transaction fees using six different models, including classical time series, gradient boosting, and deep learning methods.  
-Users can either **view the results** directly in our summary notebook or **run the scripts** to reproduce and extend the work.
+| Folder / File          | Purpose                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| `analysis/`            | Jupyter notebooks for EDA, baseline models, and advanced models.  |
+| `scripts/`             | Python scripts for running each model, data prep, and experimentation.|
+| `data/`                | Contains raw and preprocessed data files and how to fetch data from API. |
+| `results/`             | Stores generated plots, forecasts, and summary tables.                 |
+| `reports/`             | Proposal and final report in Quarto format (rendered as PDF).     |
+| `environment.yml`      | Conda environment configuration file.                                  |
+| `README.md`            | This file — provides usage instructions and project overview.          |
+| `LICENSE.md`           | Open-source license (MIT).                                             |
 
-### How to Use This Repository
+#### Notes on `scripts/`
 
-You have three options to explore this project:
+Each model has:
 
-### Option 1: Quick Overview
+- A main script (e.g., `baseline_sarima.py`) to run from command line.
 
-To get a summary of all models, results, and visualizations:
+- A subfolder (e.g., `scripts/baseline_sarima/`) with helper functions for loading, preprocessing, and training.
+
+Users typically run the main script; helper files are imported and not meant to be executed directly.
+
+## Explore the Project: From Overview to Full Reproduction
+
+This repository offers a layered approach to forecasting Bitcoin transaction fees using classical time series models, gradient boosting, and deep learning techniques.
+
+Whether you're here for a quick summary or looking to reproduce everything from scratch, follow the three levels below — from light exploration to full model training.
+
+### Quick Overview (Start Here)
+
+If you want to get a summary of all models, results, and visualizations, start by opening the [comprehensive_overview.ipynb](analysis/comprehensive_overview.ipynb):
 
 **Run:**
 
 ```bash
-jupyter lab analysis/model_overview.ipynb
+jupyter lab analysis/comprehensive_overview.ipynb
 ```
 
-This notebook compares all models in a unified view and links to individual model notebooks.  
-If you wish to re-run this notebook **end-to-end**, you must first generate the SARIMA model file.
+This notebook:
 
-> ⚠️ **Note**: The SARIMA model (`sarima_final_model.pkl`) is too large for GitHub.  
+- Summarizes all models, forecasts, and key results
+
+- Includes links to each model’s detailed notebook for deeper analysis
+
+> ⚠️ **Note**: To run this notebook end-to-end, you must first generate the SARIMA model file (`sarima_final_model.pkl`), which is too large to store in the repo.
 > To regenerate it, run:
 
 ```bash
-python scripts/baseline_sarima.py
+python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
 
-### Option 2: Re-run All Models via One Script
+### Option 2: One-Command Forecast Generation
 
-To reproduce results fully with one script, run the full forecasting pipeline with one command:
+If you'd like to quickly reproduce all final forecasts using saved models:
 
 ```bash
 python scripts/analysis.py
@@ -93,59 +123,127 @@ python scripts/analysis.py
 This will:
 
 - Load and preprocess the dataset
-- Run all six models: HWES, SARIMA, XGBoost, Prophet, DeepAR, TFT
-- Save forecasts and metrics to `results/models/`, `results/tables/`, and `results/plots/`
+- Use stored models (HWES, SARIMA, XGBoost, Prophet, DeepAR, TFT) to generate forecasts
+- Save forecasts and metrics to `results/models/`, `results/tables/`, and `results/plots/` and no model training is triggered.
 
-### Option 3: Run Individual Models
+### Full Model Execution (Custom Training)
 
-Each model has its own Jupyter notebook and corresponding main script.
+If you'd like to understand and customize how each model is trained:
+
+- Use the corresponding Jupyter notebook or script
+
+- Check the top of each script for command-line usage
 
 | Model   | Notebook                          | Script File                   |
 | ------- | --------------------------------- | ----------------------------- |
-| HWES    | `analysis/baseline_hwes.ipynb`    | `scripts/baseline_hwes.py`    |
-| SARIMA  | `analysis/baseline_sarima.ipynb`  | `scripts/baseline_sarima.py`  |
-| XGBoost | `analysis/baseline_xgboost.ipynb` | `scripts/baseline_xgboost.py` |
-| Prophet | `analysis/advanced_prophet.ipynb` | `scripts/advanced_prophet.py` |
-| DeepAR  | `analysis/advanced_deepar.ipynb`  | `scripts/advanced_deepar.py`  |
-| TFT     | `analysis/advanced_tft.ipynb`     | `scripts/advanced_tft.py`     |
+| HWES    | [analysis/baseline_hwes.ipynb](analysis/baseline_hwes.ipynb)    | [scripts/baseline_hwes.py](scripts/baseline_hwes.py)    |
+| SARIMA  | [analysis/baseline_sarima.ipynb](analysis/baseline_sarima.ipynb)  | [scripts/baseline_sarima.py](scripts/baseline_sarima.py)  |
+| XGBoost | [analysis/baseline_xgboost.ipynb](analysis/baseline_xgboost.ipynb) | [scripts/baseline_xgboost.py](scripts/baseline_xgboost.py) |
+| Prophet | [analysis/advanced_prophet.ipynb](analysis/advanced_prophet.ipynb) | [scripts/advanced_prophet.py](scripts/advanced_prophet.py) |
+| DeepAR  | [analysis/advanced_deepar.ipynb](analysis/advanced_deepar.ipynb)  | [scripts/advanced_deepar.py](scripts/advanced_deepar.py)  |
+| TFT     | [analysis/advanced_tft.ipynb](analysis/advanced_tft.ipynb)     | [scripts/advanced_tft.py](scripts/advanced_tft.py)     |
 
-Example:
+### Notes on Running Individual Scripts and Notebooks
 
-- Run each script like this:
+#### Scripts (`scripts/*.py`)
+
+Each script is runnable from the command line and supports customizable arguments.  
+You can find **usage instructions** at the top of every script file.
+
+**Example (Run HWES with full data):**
 
 ```bash
-python python scripts/<model>.py --parquet-path ./data/raw/sample_8_days.parquet
+python scripts/baseline_hwes.py \
+    --parquet-path data/raw/mar_5_may_12.parquet \
+    --skip-optimization
 ```
 
-> Open the script to view its command-line arguments and customize inputs or outputs.
->
-> `scripts/<model_name>/`: Contains each model’s helper scripts and training/inference logic.
+- `--parquet-path` can be changed to point to your own data file.
 
-- Run each notebook like this:
+- We provide a sample dataset (`data/raw/sample_8_days.parquet`) for quick testing, but:
+  - It **should not** be used for models that require hyperparameter tuning (HWES, XGBoost, Prophet).
+
+- For models that support skipping optimization, use `--skip-optimization` to load pre-tuned parameters. (Note: HWES script does not have the option `--skip-optimization` as it does not take very long to run.)
+
+**Reference Compute Setup and Runtime:**
+
+| Model    | Full Run Time (est.) | Optimization Required | Notes                        |
+|----------|----------------------|------------------------|------------------------------|
+| HWES     | ~5 min               | ✅ Yes                 | Fastest                      |
+| SARIMA   | ~5 min               | ❌ No                  | Fastest                      |
+| XGBoost  | ~2 hrs               | ✅ Yes                 | Parallelizable               |
+| Prophet  | ~3–4 hrs             | ✅ Yes                 | Sensitive to daily pattern   |
+| DeepAR   | ~6 hrs               | ❌ No                  | Requires GPU for speed       |
+| TFT      | ~8–9 hrs             | ❌ No                  | Best run on GPU              |
+
+> All benchmarks run on: `Intel i9-13980HX`, `RTX 4090 GPU`, `Windows 11 Pro`.
+>
+> All scripts save outputs to `results/models/`, `results/plots/`, and `results/tables/`.
+
+#### Notebooks (`analysis/*.ipynb`)
+
+Each model also includes a notebook version for interactive exploration.
+
+**Run in Jupyter Lab:**
 
 ```bash
 jupyter lab analysis/<model>.ipynb
 ```
 
+**Use notebooks if you want to:**
+
+- Understand model logic step by step
+- View intermediate outputs and plots
+- Modify hyperparameters manually
+
 ### Window-Based Evaluation (Optional)
 
-To run time-based window evaluations (e.g., expanding, sliding windows), check scripts under:
+To evaluate model performance across time-based windows (e.g., expanding, reverse expanding, sliding), we provide additional scripts under:
 
 ```bash
 scripts/experimentation/
 ```
 
-These contain additional experiments for HWES, SARIMA and XGBoost window performance.  
-They are **not required** to reproduce the main results but provide deeper insights.
-Usage are shown in each script.
+These experiments are designed for deeper insight and are **not required** to reproduce the main results.
 
-Example:
+#### Available Modes
+
+Each script supports the following time-based windowing strategies:
+
+1. **Weekly Expanding Window**  
+2. **Reverse Weekly Expanding Window**  
+3. **Weekly Sliding Window**
+
+Specify the mode using the `--mode` argument.
+
+#### Example: HWES Window Evaluation
 
 ```bash
-python scripts/experimentation/hwes_window.py
+# Reverse weekly expanding
+python scripts/experimentation/hwes_window.py \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
+  --mode reverse
+
+# Weekly expanding
+python scripts/experimentation/hwes_window.py \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
+  --mode expanding
+
+# Weekly sliding
+python scripts/experimentation/hwes_window.py \
+  --parquet-path ./data/raw/mar_5_may_12.parquet \
+  --mode sliding
 ```
 
-> ⚠️ These scripts may take longer to run as they iterate across multiple time slices.
+> You can find similar scripts for SARIMA (`sarima_window.py`) and XGBoost (`xgboost_window.py`).
+
+#### Runtime Estimates (Full Data)
+
+| Model    | Script                      | Est. Runtime      |
+|----------|-----------------------------|-------------------|
+| SARIMA   | [sarima_window.py](scripts/experimentation/sarima_window.py)          | ~1.5 hours        |
+| XGBoost  | [xgboost_window.py](scripts/experimentation/xgboost_window.py)         | ~1 hour           |
+| HWES     | [hwes_window.py](scripts/experimentation/hwes_window.py)            | ~15 minutes       |
 
 ### Tests (Optional)
 
@@ -154,8 +252,6 @@ To run the function tests, enter the following in the root of the repository:
 ``` bash
 pytest
 ```
-
----
 
 ## Contributing
 
@@ -171,7 +267,7 @@ Please open an [issue](https://github.com/UBC-MDS/Capstone_SatCast_Trilemma/issu
 
 ## Contributors
 
-Jenny Zhang, Ximin Xu, Yajing Liu, Tengwei Wang
+[Jenny Zhang](https://github.com/JennyonOort), [Ximin Xu](https://github.com/davyxuximin), [Yajing Liu](https://github.com/yajing03), [Tengwei Wang](https://github.com/interestingtj)
 
 ## 📜 License
 
