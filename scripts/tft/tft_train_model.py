@@ -167,7 +167,7 @@ def tft_train_model(tft_ds, train_dl, val_dl, loss_fn):
 
     # Step 5: Set up callbacks for early stopping, LR monitoring, and checkpointing
     project_root = Path(__file__).resolve().parents[2]
-    model_save_dir = project_root / "results" / "models"
+    model_save_dir = project_root / "results" / "models" / "temp_models"
 
     callbacks = [
         EarlyStopping(  # Stop training early if val_loss doesn't improve

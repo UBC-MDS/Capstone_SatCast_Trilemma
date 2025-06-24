@@ -160,9 +160,9 @@ def build_random_search_cv(X, y, param_dist, n_iter=8, n_folds=5, horizon=96, op
 
         # Save best config
         if best_params:
-            with open(model_dir / "xgb_best_params_cv.json", "w") as f:
+            with open(model_dir / 'temp_models'/ "xgb_best_params_cv.json", "w") as f:
                 json.dump(best_params, f, indent=4)
-            print(f"Best params saved to: {model_dir / 'xgb_best_params_cv.json'}")
+            print(f"Best params saved to: {model_dir / 'temp_models' / 'xgb_best_params_cv.json'}")
             return best_forecaster, best_params, best_score
         else:
             print("No valid model found. Falling back to saved parameters...")

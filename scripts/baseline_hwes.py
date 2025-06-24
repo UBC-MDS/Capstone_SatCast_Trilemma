@@ -109,7 +109,7 @@ def main(parquet_path):
     final_fit = final_model.fit(optimized=True, use_brute=True)
 
     # Step 6: Save trained model
-    model_path = project_root / "results" / "models" / "hwes_best_train.pkl"
+    model_path = project_root / "results" / "models"/ "temp_models" / "hwes_best_train.pkl"
     model_path.parent.mkdir(parents=True, exist_ok=True)
     with open(model_path, 'wb') as f:
         pickle.dump(final_fit, f)
