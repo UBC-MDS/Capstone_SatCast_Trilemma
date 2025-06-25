@@ -69,9 +69,9 @@ Here is how this repository is organized:
 | `data/`                | Contains raw and preprocessed data files and how to fetch data from API. |
 | `results/`             | Stores generated plots, forecasts, and summary tables.                 |
 | `reports/`             | Proposal and final report in Quarto format (rendered as PDF).     |
+| `src/`                 | Modularized utility functions used across notebooks and scripts         |
+| `tests/`               | Unit tests for utility functions in `src/`                              |
 | `environment.yml`      | Conda environment configuration file.                                  |
-| `README.md`            | This file — provides usage instructions and project overview.          |
-| `LICENSE.md`           | Open-source license (MIT).                                             |
 
 #### Notes on `scripts/`
 
@@ -112,7 +112,7 @@ This notebook:
 python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
 
-### Option 2: One-Command Forecast Generation
+### One-Command Forecast Generation
 
 If you'd like to quickly reproduce all final forecasts using saved models:
 
@@ -133,6 +133,12 @@ If you'd like to understand and customize how each model is trained:
 - Use the corresponding Jupyter notebook or script
 
 - Check the top of each script for command-line usage
+
+**Exploratory Data Analysis (EDA)**  
+
+- [analysis/data_spec.ipynb](analysis/data_spec.ipynb): Provides detailed EDA, including time coverage, seasonality, stationarity checks, and correlation analysis.
+
+**Models**
 
 | Model   | Notebook                          | Script File                   |
 | ------- | --------------------------------- | ----------------------------- |

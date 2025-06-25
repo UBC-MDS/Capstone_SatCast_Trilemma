@@ -24,7 +24,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-Our primary target variable, the recommended Fastest Fee (in sats/vByte), reflects the rate needed for near-immediate transaction confirmation and serves as the core signal for all modeling. The provided time series dataset includes 61 features spanning mempool activity, transaction volume, block statistics, mining difficulty, BTC price, and other relevant indicators. For clarity, we grouped these into four high-level categories (see @#tbl-features), each capturing a distinct aspect of network or market behavior affecting fee dynamics.
+Our primary target variable, the recommended Fastest Fee (in sats/vByte), reflects the rate needed for near-immediate transaction confirmation and serves as the core signal for all modeling. The provided time series dataset includes 61 features spanning mempool activity, transaction volume, block statistics, mining difficulty, BTC price, and other relevant indicators. For clarity, we grouped these into four high-level categories (see @tbl-features), each capturing a distinct aspect of network or market behavior affecting fee dynamics.
 
 ::: {.table #tbl-features}
 
