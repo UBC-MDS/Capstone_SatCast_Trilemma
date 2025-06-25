@@ -63,8 +63,7 @@ def main(parquet_path, skip_optimization):
     df_processed.to_csv(output_dir / "df_processed.csv", index=False)
     y_train.to_frame(name="y").to_csv(output_dir / "y_train.csv", index=False)
 
-    # Hardcoded result output path
-    result_dir = project_root / "results" / "models"/ "temp_models"
+    result_dir = project_root / "results" / "models"
     result_dir.mkdir(parents=True, exist_ok=True)
 
     # Step 2: Hyperparameter optimization
@@ -77,7 +76,7 @@ def main(parquet_path, skip_optimization):
     model = prophet_model_training(df_processed, y_train, str(result_dir))
 
     # Step 4: Save the model to disk
-    model_path = result_dir / "temp_models"/ "prophet_model.json"
+    model_path = result_dir / "prophet_model.json"
     with open(model_path, 'w') as fout:
         fout.write(model_to_json(model))
 
