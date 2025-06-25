@@ -66,12 +66,12 @@ If you're new to this project, we recommend starting with one of the following:
   quarto render reports/final/final_report.qmd
   ```
 
-2. **[Overview Notebook](analysis/comprehensive_overview.ipynb)** — An all-in-one Jupyter notebook that showcase the most important findings of the project.
+2. **[Comprehensive Overview Notebook](analysis/comprehensive_overview.ipynb)** — An all-in-one Jupyter notebook that showcase the most important findings of the project.
 
   To open the notebook, you can use Jupyter Lab or Jupyter Notebook. Type the following command in terminal and then select the notebook from the Jupyter interface to ensure all images and links are rendered properly.
 
   ```bash
-  jupyterlab
+  jupyter lab
   ```
 
 ## 🛠️ Further Navigation and Exploration
@@ -86,15 +86,15 @@ This project is designed to be modular and user-friendly, allowing you to explor
 python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
 
-> **Note:** You must first generate `sarima_final_model.pkl` for any SARIMA-related scripts, notebooks, or `scripts/analysis.py` to run without errors.
+> **Note:** You must first generate `sarima_final_model.pkl` for any SARIMA-related scripts, notebooks, or [`scripts/analysis.py`](scripts/analysis.py) to run without errors.
 
 ### Exploratory Users
 
-For those who prefer to engage with the project using minimal code while still gaining a comprehensive understanding of the data, models, and results, we recommend reviewing the notebooks in the `analysis/` folder. 
+For those who prefer to engage with the project using minimal code while still gaining a comprehensive understanding of the data, models, and results, we recommend reviewing the notebooks in the [`analysis/`](analysis/) folder. 
 
 These are designed to emphasize reasoning, interpretation, and model logic over implementation details.
 
-Please use the same command (`jupyterlab`) in the terminal to open the Jupyter Lab interface and the following table to navigate through the notebooks:
+Please use the same command (`jupyter lab`) in the terminal to open the Jupyter Lab interface and the following table to navigate through the notebooks:
 
 | Item   | Notebook                                   | Reading Time                  |
 | ----------| -------------------------------------------------| -------------------------------|
@@ -106,7 +106,7 @@ Please use the same command (`jupyterlab`) in the terminal to open the Jupyter L
 | DeepAR  | [analysis/advanced_deepar.ipynb](analysis/advanced_deepar.ipynb)  | ~5 minutes    |
 | TFT     | [analysis/advanced_tft.ipynb](analysis/advanced_tft.ipynb)     | ~5-10 minutes    |
 
-> **Note:** You can also navigate to these notebooks directly from the comprehensive overview notebook (`analysis/comprehensive_overview.ipynb`), which includes inline links embedded throughout the summary.
+> **Note:** You can also navigate to these notebooks directly from the comprehensive overview notebook ([`analysis/comprehensive_overview.ipynb`](analysis/comprehensive_overview.ipynb)), which includes inline links embedded throughout the summary.
 
 ### Technical Developers
 
