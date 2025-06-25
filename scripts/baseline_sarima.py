@@ -49,7 +49,7 @@ project_root = current_file.parents[1]
 # Directories
 DATA_DIR = project_root / "data" / "processed" / "sarima"
 RESULTS_DIR = project_root / "results"
-MODEL_FROM = RESULTS_DIR / "models" / "sarima_final_model.pkl"
+MODEL_FROM = RESULTS_DIR / "models"/ "sarima_final_model.pkl"
 
 
 @click.command()
@@ -80,6 +80,7 @@ def main(parquet_path):
 
 
     # Step 3: Train SARIMA model on log-transformed data
+    print("Fitting SARIMA model...")
     y_train_log = np.log1p(y_train)
     forecaster = ARIMA(order=(1, 0, 1), seasonal_order=(1, 0, 1, 96))
     forecaster.fit(y_train_log)

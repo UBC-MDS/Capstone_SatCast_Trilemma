@@ -1,7 +1,3 @@
-# eda_utils.py
-# Author: [Your Name]
-# Date: 2025-06-23
-
 """
 Utility functions for the EDA notebook in the Bitcoin transaction fee forecasting project.
 
@@ -9,15 +5,17 @@ This script provides helper functions to streamline visualization and analysis d
 These functions are called directly in the EDA notebook to maintain a clean, modular workflow.
 """
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.dates as mdates
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-def plot_feature_group(df, prefix, max_cols=3, figsize=(16, 10)):
+def plot_feature_group(df, prefix, max_cols=3, figsize=(16, 10), special_cols=None):
     """
     Plots the distribution (histogram with KDE) of all features in the DataFrame that start with a given prefix.
+    Allows custom handling for special columns (e.g., log-scale Y axis).
 
     Parameters:
     ----------
@@ -29,26 +27,35 @@ def plot_feature_group(df, prefix, max_cols=3, figsize=(16, 10)):
         Maximum number of plots per row.
     figsize : tuple, optional (default=(16, 10))
         Size of the entire figure.
+    special_cols : list, optional
+        List of column names that require special handling (e.g., log-scale Y-axis).
 
     Returns:
     -------
     None
         Displays the matplotlib figure inline.
-    Example
-    -------
-    >>> plot_feature_group(df, prefix="mempool_")
     """
+    if special_cols is None:
+        special_cols = []
+
     group_cols = [col for col in df.columns if col.startswith(prefix)]
     n = len(group_cols)
     rows = (n + max_cols - 1) // max_cols
     fig, axes = plt.subplots(rows, max_cols, figsize=figsize, squeeze=False)
-    
+
     for i, col in enumerate(group_cols):
         ax = axes[i // max_cols][i % max_cols]
-        sns.histplot(df[col].dropna(), kde=True, ax=ax)
+        data = df[col].dropna()
+
+        if col in special_cols:
+            sns.histplot(data, kde=True, ax=ax, bins=50, log_scale=(False, True))
+        else:
+            sns.histplot(data, kde=True, ax=ax)
+
         ax.set_title(col)
         ax.set_ylabel("Frequency")
-    for j in range(i+1, rows * max_cols):
+
+    for j in range(i + 1, rows * max_cols):
         fig.delaxes(axes[j // max_cols][j % max_cols])
 
     fig.suptitle(f"Distribution of {prefix} Features", fontsize=16)

@@ -1,6 +1,6 @@
 ## Feature Preprocessing
 
-To prepare the data, we conducted exploratory correlation analysis between features and the target variable fastestFee, which confirmed that several predictors contained useful signals. This was not used for formal feature selection, but helped validate feature relevance.
+We conducted exploratory correlation analysis to better understand the data. This analysis confirmed that several predictors carry meaningful signals related to the target variable fastestFee. This was not used for formal feature selection, but helped validate feature relevance.
 
 ```{python}
 import sys
@@ -19,7 +19,7 @@ common_idx = x.index.intersection(y.index)
 r, _ = pearsonr(x.loc[common_idx], y.loc[common_idx])
 ```
 
-To prevent target leakage, we removed a few features that had extremely high correlation with the target (e.g., halfHourFee, exhibiting a `{python} f"{r:.2f}"` correlation with fastestFee). These were excluded from all models except DeepAR and TFT, where model constraints made removal more complex.
+To avoid target leakage, we excluded features with extremely high correlation to the target. For instance, halfHourFee showed a correlation of `{python} f"{r:.2f}"` with fastestFee. These were excluded from all models except DeepAR and TFT, where model constraints made removal more complex.
 
 We also applied several feature engineering steps. We first examined the distribution of fastestFee and found it to be highly right-skewed, with most values clustered at the low end and a few extreme spikes shown in @fig-fastestfee-distribution. This kind of heavy skew can adversely affect model stability and violate assumptions required by some forecasting models.
 

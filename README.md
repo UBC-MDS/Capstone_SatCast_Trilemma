@@ -69,9 +69,9 @@ Here is how this repository is organized:
 | `data/`                | Contains raw and preprocessed data files and how to fetch data from API. |
 | `results/`             | Stores generated plots, forecasts, and summary tables.                 |
 | `reports/`             | Proposal and final report in Quarto format (rendered as PDF).     |
+| `src/`                 | Modularized utility functions used across notebooks and scripts         |
+| `tests/`               | Unit tests for utility functions in `src/`                              |
 | `environment.yml`      | Conda environment configuration file.                                  |
-| `README.md`            | This file — provides usage instructions and project overview.          |
-| `LICENSE.md`           | Open-source license (MIT).                                             |
 
 #### Notes on `scripts/`
 
@@ -112,7 +112,7 @@ This notebook:
 python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
 
-### Option 2: One-Command Forecast Generation
+### One-Command Forecast Generation
 
 If you'd like to quickly reproduce all final forecasts using saved models:
 
@@ -134,6 +134,12 @@ If you'd like to understand and customize how each model is trained:
 
 - Check the top of each script for command-line usage
 
+**Exploratory Data Analysis (EDA)**  
+
+- [analysis/data_spec.ipynb](analysis/data_spec.ipynb): Provides detailed EDA, including time coverage, seasonality, stationarity checks, and correlation analysis.
+
+**Models**
+
 | Model   | Notebook                          | Script File                   |
 | ------- | --------------------------------- | ----------------------------- |
 | HWES    | [analysis/baseline_hwes.ipynb](analysis/baseline_hwes.ipynb)    | [scripts/baseline_hwes.py](scripts/baseline_hwes.py)    |
@@ -150,10 +156,10 @@ If you'd like to understand and customize how each model is trained:
 Each script is runnable from the command line and supports customizable arguments.  
 You can find **usage instructions** at the top of every script file.
 
-**Example (Run HWES with full data):**
+**Example (Run XGBoost with full data):**
 
 ```bash
-python scripts/baseline_hwes.py \
+python scripts/baseline_xgboost.py \
     --parquet-path data/raw/mar_5_may_12.parquet \
     --skip-optimization
 ```
@@ -163,7 +169,9 @@ python scripts/baseline_hwes.py \
 - We provide a sample dataset (`data/raw/sample_8_days.parquet`) for quick testing, but:
   - It **should not** be used for models that require hyperparameter tuning (HWES, XGBoost, Prophet).
 
-- For models that support skipping optimization, use `--skip-optimization` to load pre-tuned parameters. (Note: HWES script does not have the option `--skip-optimization` as it does not take very long to run.)
+- For XGBoost and Prophet models that support skipping optimization, use `--skip-optimization` to load pre-tuned parameters. (Note: HWES script have optimization process but does not have the option `--skip-optimization` as it does not take very long to run.)
+
+> The trained models will be saved at `results/models/temp_models`
 
 **Reference Compute Setup and Runtime:**
 
@@ -173,10 +181,10 @@ python scripts/baseline_hwes.py \
 | SARIMA   | ~5 min               | ❌ No                  | Fastest                      |
 | XGBoost  | ~2 hrs               | ✅ Yes                 | Parallelizable               |
 | Prophet  | ~3–4 hrs             | ✅ Yes                 | Sensitive to daily pattern   |
-| DeepAR   | ~6 hrs               | ❌ No                  | Requires GPU for speed       |
+| DeepAR   | ~6 hrs               | ❌ No                  | GPU supported for CUDA     |
 | TFT      | ~8–9 hrs             | ❌ No                  | Best run on GPU              |
 
-> All benchmarks run on: `Intel i9-13980HX`, `RTX 4090 GPU`, `Windows 11 Pro`.
+> All benchmarks run on: `Intel i9-13980HX`, `RTX 4090 labtop GPU`, `Windows 11 Pro`.
 >
 > All scripts save outputs to `results/models/`, `results/plots/`, and `results/tables/`.
 

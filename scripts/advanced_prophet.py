@@ -63,7 +63,6 @@ def main(parquet_path, skip_optimization):
     df_processed.to_csv(output_dir / "df_processed.csv", index=False)
     y_train.to_frame(name="y").to_csv(output_dir / "y_train.csv", index=False)
 
-    # Hardcoded result output path
     result_dir = project_root / "results" / "models"
     result_dir.mkdir(parents=True, exist_ok=True)
 
