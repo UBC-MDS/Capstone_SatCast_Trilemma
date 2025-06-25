@@ -1,4 +1,5 @@
 # 🪙 SatCast: Forecasting Bitcoin Transaction Fees
+
 📍[UBC Master of Data Science](https://masterdatascience.ubc.ca/) – Capstone Project | In partnership with [Trilemma Foundation](https://www.trilemma.foundation/)
 
 Special thanks to our mentor [Hedayat Zarkoob](https://www.linkedin.com/in/hedayat-zarkoob-6b218b106/) from the UBC MDS program for his invaluable guidance and support throughout this project.
@@ -58,6 +59,7 @@ Whether you're exploring volatility, comparing time series models, or forecastin
 If you're new to this project, we recommend starting with one of the following:
 
 1. **[Final Report (PDF)](reports/final/final_report.pdf)** — A complete summary of our goals, methodology, EDA, model results, and insights.  
+  
   To regenerate the report, you need to have [Quarto](https://quarto.org/docs/get-started/) installed. Then run the following command in terminal:  
   
   ```bash
@@ -83,6 +85,7 @@ This project is designed to be modular and user-friendly, allowing you to explor
 ```bash
 python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 ```
+
 > **Note:** You must first generate `sarima_final_model.pkl` for any SARIMA-related scripts, notebooks, or `scripts/analysis.py` to run without errors.
 
 ### Exploratory Users

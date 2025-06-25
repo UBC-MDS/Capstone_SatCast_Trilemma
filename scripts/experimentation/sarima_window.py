@@ -48,7 +48,6 @@ python scripts/experimentation/sarima_window.py \
   --parquet-path ./data/raw/mar_5_may_12.parquet \
   --mode reverse
   
-  
 2. Weekly expanding:
 
 python scripts/experimentation/sarima_window.py \
