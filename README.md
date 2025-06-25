@@ -1,37 +1,38 @@
-# Capstone_SatCast_Trilemma
-
-Forecasting Bitcoin Transaction Fees using Time Series and Machine Learning  
-📍[UBC Master of Data Science](https://masterdatascience.ubc.ca/) – Capstone Project | In collaboration with [Trilemma Foundation](https://www.trilemma.foundation/)
+# 🪙 SatCast: Forecasting Bitcoin Transaction Fees
+📍[UBC Master of Data Science](https://masterdatascience.ubc.ca/) – Capstone Project | In partnership with [Trilemma Foundation](https://www.trilemma.foundation/)
 
 Special thanks to our mentor [Hedayat Zarkoob](https://www.linkedin.com/in/hedayat-zarkoob-6b218b106/) from the UBC MDS program for his invaluable guidance and support throughout this project.
 
-## Welcome!
+## 📚 Overview
 
-Welcome to our capstone project! In the world of Bitcoin, transaction fees can spike dramatically due to network congestion. These spikes make it hard for users and services to estimate optimal fees.
+Bitcoin transaction fees are unpredictable, often spiking without warning. Most existing tools offer only short-term estimates with limited foresight (<1 hour). 
 
-**SatCast** aims to tackle this problem by predicting the "fastestFee" (sat/vByte) using real-time mempool data and advanced time series forecasting models.
+This project tackles that problem by building a system to forecast Bitcoin transaction fees 24 hours ahead.
 
-## Motivation and Purpose
+Our data product includes:
 
-The Bitcoin network doesn't enforce fixed fees. Instead, users compete in an open auction for limited block space. As a result, fees can jump sharply during network congestion.
+- Custom volatility-aware loss functions for improved evaluation of fee spikes
+- Modular, end-to-end pipelines for six forecasting models: HWES, SARIMA, Prophet, XGBoost, DeepAR, and TFT
+- Exploratory notebooks detailing data preparation, EDA, model training, and evaluation for each method
+- A final report summarizing key findings and benchmarking model performance across metrics
 
-Our goals:
+Whether you're exploring volatility, comparing time series models, or forecasting blockchain costs, this repo offers a practical and extensible foundation.
 
-- Help users forecast transaction costs for the next 24 hours  
-- Analyze congestion and fee dynamics using public mempool data  
-- Evaluate both traditional and deep learning models for short-term forecasting  
+## 📁 Repository Structure
 
-## What Can You Learn from This Project?
+| Folder / File          | Purpose                                                                 |
+|------------------------|-------------------------------------------------------------------------|
+| `analysis/`            | Jupyter notebooks for overview, EDA, and walkthroughs of each model.   |
+| `scripts/`             | Main training/evaluation scripts for each model, with helper functions organized in model-specific subfolders. |
+| `data/`                | Contains raw data, processed data, and script for data extraction from API. |
+| `results/`             | Stores generated plots, tables, and figures generated from scrpts.    |
+| `reports/`             | Project proposal and final report in Quarto format (rendered as PDF).     |
+| `src/`                 | Utility functions used across notebooks and scripts.         |
+| `tests/`               | Unit tests for utility functions in `src/`.                              |
+| `environment.yml`      | Conda environment configuration file.                                  |
 
-This project helps you learn how to:
 
-- Perform **time series EDA** on Bitcoin fees, mempool congestion, and block activity  
-- Build **short-term forecasting models (15-min resolution)** using SARIMA, HWES, XGBoost, Prophet, and DeepAR  
-- Evaluate model performance under both stable and volatile conditions  
-- Create a **reproducible forecasting pipeline** using real-time mempool data
-
----
-## Installation & Setup
+## 💻 Installation & Setup
 
 1. Clone the repository
 
@@ -46,32 +47,95 @@ conda env create -f environment.yml
 conda activate satcast
 ```
 
-3. (Optional) If Jupyter can't find your environment kernel, you may need to manually add it:
+3. (Optional) If Jupyter can't find your environment kernel, you may need to manually add it by running the following command in the terminal:
 
 ```bash
 python -m ipykernel install --user --name=satcast
 ```
 
+## 🔰 Getting Started
+
+If you're new to this project, we recommend starting with one of the following:
+
+1. **[Final Report (PDF)](reports/final/final_report.pdf)** — A complete summary of our goals, methodology, EDA, model results, and insights.
+
+To regenerate the report, you need to have [Quarto](https://quarto.org/docs/get-started/) installed. Then run the following command in the root of the repository:
+
+```bash
+quarto render reports/final/final_report.qmd
+```
+
+2. **[Overview Notebook](analysis/comprehensive_overview.ipynb)** — An all-in-one Jupyter notebook that showcase the most important findings of the project.
+
+To open the notebook, you can use Jupyter Lab or Jupyter Notebook. Run the following command in the root of the repository and then select the notebook from the Jupyter interface to ensure all images and links are rendered properly.
+
+```bash
+jupyterlab
+```
+
+## 🛠️ Further Navigation and Exploration
+
+This project is designed to be modular and user-friendly, allowing you to explore, run, and reproduce results at different levels of detail.
+
+### Exploratory Users
+
+For those who prefer to engage with the project using minimal code while still gaining a comprehensive understanding of the data, models, and results, we recommend reviewing the notebooks in the `analysis/` folder. These are designed to emphasize reasoning, interpretation, and model logic over implementation details.
+
+| Item   | Notebook                                   | Reading Time                  |
+| ------- | ------------------------------------------ | ----------------------------- |
+| EDA    | [analysis/data_spec.ipynb](analysis/data_spec.ipynb)    | ~10 - 15 minutes    |
+| HWES    | [analysis/baseline_hwes.ipynb](analysis/baseline_hwes.ipynb)    | ~5 minutes    |
+| SARIMA  | [analysis/baseline_sarima.ipynb](analysis/baseline_sarima.ipynb)  | ~5 minutes    |
+| XGBoost | [analysis/baseline_xgboost.ipynb](analysis/baseline_xgboost.ipynb) | ~5 minutes    |
+| Prophet | [analysis/advanced_prophet.ipynb](analysis/advanced_prophet.ipynb) | ~5 minutes    |
+| DeepAR  | [analysis/advanced_deepar.ipynb](analysis/advanced_deepar.ipynb)  | ~5 minutes    |
+| TFT     | [analysis/advanced_tft.ipynb](analysis/advanced_tft.ipynb)     | ~5 - 10 minutes    |
+
+> **Note:** You can also navigate to these notebooks directly from the comprehensive overview notebook (`analysis/comprehensive_overview.ipynb`), which includes inline links embedded throughout the summary.
+
+### Technical Developers
+
+If you're looking to reproduce results, train models, or extend the pipeline, this section is for you.
+
+We offer a modular setup that supports three levels of interaction:
+
+#### 1. Run Pretrained Models for Fast Forecasting
+
+You can skip training and use pretrained models to generate predictions([scripts/analysis.py](scripts/analysis.py)):
+
+```bash
+python scripts/analysis.py
+```
+
+This script:
+
+- Load and preprocess the dataset
+- Use stored models (HWES, SARIMA, XGBoost, Prophet, DeepAR, TFT) to generate forecasts
+- Save forecasts and metrics to `results/models/`, `results/tables/`, and `results/plots/` and no model training is triggered.
+
+⚠️ **Before running this script, make sure you generate the SARIMA model file manually:**
+
+```bash
+python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
+```
+
+> The `sarima_final_model.pkl` file is too large to include in the repo and must be created locally.
+
+#### 2. Train Individual Models
+
+If you want to customize hyperparameters or train from scratch, you can run each model's main script:
+
+| Model   | Script File                        |
+|---------|------------------------------------|
+| HWES    | [scripts/baseline_hwes.py](scripts/baseline_hwes.py)          |
+
+
+
 4. (Optional) Open the terminal and run the following commands to render the [final report](reports/final/final_report.pdf)
 
 ``` bash
 quarto render reports/final/final_report.qmd
-```
-
-## Repository Structure
-
-Here is how this repository is organized:
-
-| Folder / File          | Purpose                                                                 |
-|------------------------|-------------------------------------------------------------------------|
-| `analysis/`            | Jupyter notebooks for EDA, baseline models, and advanced models.  |
-| `scripts/`             | Python scripts for running each model, data prep, and experimentation.|
-| `data/`                | Contains raw and preprocessed data files and how to fetch data from API. |
-| `results/`             | Stores generated plots, forecasts, and summary tables.                 |
-| `reports/`             | Proposal and final report in Quarto format (rendered as PDF).     |
-| `src/`                 | Modularized utility functions used across notebooks and scripts         |
-| `tests/`               | Unit tests for utility functions in `src/`                              |
-| `environment.yml`      | Conda environment configuration file.                                  |
+``` 
 
 #### Notes on `scripts/`
 
