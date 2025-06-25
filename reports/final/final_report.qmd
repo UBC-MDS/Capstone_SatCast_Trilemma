@@ -59,7 +59,7 @@ max_improvement_pct = max(custom_loss_improvement_pct, rmse_improvement_pct, map
 {{< include _summary.qmd >}}
 
 # Introduction
-[^note]: Refer to Appendix (@sec-appendix) for formal definitions of Bitcoin-related terms.
+[^note]: Refer to [Appendix A](#sec-terminology) for formal definitions of Bitcoin-related terms.
 
 {{< include _background.qmd >}}
 {{< include _objective.qmd >}}
@@ -80,7 +80,7 @@ max_improvement_pct = max(custom_loss_improvement_pct, rmse_improvement_pct, map
 
 {{< include _conclusion.qmd >}}
 
-# Appendix {.appendix #sec-appendix}
+# Appendix{.appendix #sec-appendix}
 
 {{< include appendix.qmd >}}
 
