@@ -21,7 +21,6 @@ Used in a TFT training pipeline after data preparation and before model initiali
 
 import os
 from pytorch_forecasting import TimeSeriesDataSet
-from torch.utils.data import DataLoader
 from pytorch_forecasting.data import GroupNormalizer
 
 def tft_make_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_size):
