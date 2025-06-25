@@ -31,7 +31,6 @@ import sys
 from pathlib import Path
 import click
 import joblib
-import json
 
 # Set up module path for importing local project modules
 current_file = Path(__file__).resolve()

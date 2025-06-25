@@ -22,7 +22,6 @@ Usage:
 import sys
 import pickle
 import pandas as pd
-import numpy as np
 import warnings
 import click
 from pathlib import Path
