@@ -14,7 +14,12 @@ This script performs the following steps:
 4. Trains the DeepAR model with validation-based early stopping and
    saves the best checkpoint to disk.
 
-Usage:
+Typical Usage:
+-------------
+1. Run with sample data:
+    python scripts/advanced_deepar.py --parquet-path data/raw/sample_8_days.parquet
+
+2. [~6 hours] Run with full dataset:
     python scripts/advanced_deepar.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 

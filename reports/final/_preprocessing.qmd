@@ -1,7 +1,3 @@
-## Feature Preprocessing
-
-We conducted exploratory correlation analysis to better understand the data. This analysis confirmed that several predictors carry meaningful signals related to the target variable fastestFee. This was not used for formal feature selection, but helped validate feature relevance.
-
 ```{python}
 import sys
 from pathlib import Path
@@ -19,9 +15,13 @@ common_idx = x.index.intersection(y.index)
 r, _ = pearsonr(x.loc[common_idx], y.loc[common_idx])
 ```
 
-To avoid target leakage, we excluded features with extremely high correlation to the target. For instance, halfHourFee showed a correlation of `{python} f"{r:.2f}"` with fastestFee. These were excluded from all models except DeepAR and TFT, where model constraints made removal more complex.
+## Feature Preprocessing
 
-We also applied several feature engineering steps. We first examined the distribution of fastestFee and found it to be highly right-skewed, with most values clustered at the low end and a few extreme spikes shown in @fig-fastestfee-distribution. This kind of heavy skew can adversely affect model stability and violate assumptions required by some forecasting models.
+We conducted exploratory correlation analysis to understand the data and validate feature relevance. While not used for formal feature selection, the analysis confirmed that several predictors carry meaningful signals for the target variable, *fastestFee*.
+
+Moreover, we excluded features with extremely high correlation to the target to prevent data leakage. For instance, *halfHourFee* showed a correlation of `{python} f"{r:.2f}"` with *fastestFee*. These features were removed from all models except DeepAR and TFT, where architectural constraints made exclusion more difficult.
+
+We also applied several feature engineering steps. The distribution of *fastestFee* was highly right skewed, with most values concentrated at the low end and a few extreme spikes (@fig-fastestfee-distribution). This skew can reduce model stability and violate assumptions in some forecasting methods. 
 
 ```{python}
 #| label: fig-fastestfee-distribution
@@ -44,9 +44,9 @@ plt.tight_layout()
 plt.show()
 ```
 
-To mitigate this, we applied a logarithmic transformation to fastestFee, which compresses large values and helps stabilize variance across the series—making it more suitable for forecasting. Note that not all models require this transformation, we applied it selectively based on model needs.
+To address this, we selectively applied a logarithmic transformation to *fastestFee* to compress large values, stabilize variance, and make the series more suitable for modeling. 
 
-To reduce noise and enhance short-term signal clarity, we resampled the original 5-minute data into 15-minute intervals. Extremely short intervals introduce high-frequency noise, making patterns harder for models to learn, while overly long intervals risk losing short-term dynamics. As resampling effectively reduces the number of data points, it eases the computational burden during hyperparameter tuning and model training, enabling more efficient use of resources. To strike a balance, we tested multiple resampling frequencies and evaluated their predictive strength using the decay ratio.
+Furthermore, we resampled the original 5-minute data into 15-minute intervals to reduce noise and improve short-term signal clarity. Excessively short intervals introduce high-frequency noise, while overly long intervals risk losing important dynamics. Resampling also reduces the data volume, easing the computational load during tuning and training. To find the right balance, we tested multiple frequencies and assessed their predictive strength using the decay ratio.
 
 ```{python}
 #| label: fig-decay-ratio
@@ -70,6 +70,6 @@ plt.tight_layout()
 plt.show()
 ```
 
-As shown in @fig-decay-ratio, the 15-minute interval achieved the highest decay ratio, indicating the strongest short-term autocorrelation structure. This supports its use as the default sampling interval in our modeling pipeline.
+As shown in @fig-decay-ratio, the 15-minute interval yielded the highest decay ratio, indicating the strongest short-term autocorrelation. This supported its selection as the default sampling interval.
 
-Finally, we created lagged variables and rolling aggregates to help models capture temporal dependencies. The final feature set retained most original variables except those flagged for leakage, balancing completeness with modeling integrity.
+Finally, we created lagged features and rolling aggregates to help models capture temporal dependencies. The final feature set retained most original variables, excluding those flagged for leakage, to balance completeness and modeling integrity.

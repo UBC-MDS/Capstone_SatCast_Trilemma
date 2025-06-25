@@ -17,10 +17,16 @@ This script performs the following steps:
 4. Saves the trained model to JSON so it can be re-loaded with
    ``prophet.serialize.model_from_json``.
 
-Usage:
+Typical Usage:
+-------------
+1. Skip optimization (use saved config):
     python scripts/advanced_prophet.py \
         --parquet-path data/raw/mar_5_may_12.parquet \
-        [--skip-optimization]
+        --skip-optimization
+
+2. [~3-4 hours] Full Optimization (train from scratch):
+    python scripts/advanced_prophet.py \
+        --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 

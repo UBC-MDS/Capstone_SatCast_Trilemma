@@ -18,7 +18,12 @@ This script performs the following steps:
    scheduling.
 5. Saves the final model checkpoint to ``results/models``.
 
-Usage:
+Typical Usage:
+-------------
+1. Run with sample data:
+    python scripts/advanced_tft.py --parquet-path data/raw/sample_8_days.parquet
+
+2. [~8-9 hours] Run with full dataset:
     python scripts/advanced_tft.py --parquet-path data/raw/mar_5_may_12.parquet
 """
 

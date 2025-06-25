@@ -15,10 +15,16 @@ This script performs the following steps:
 4. Fits the best model on the entire training window and
    saves it to ``results/models/xgboost.pkl``.
 
-Usage:
+Typical Usage:
+-------------
+1. Skip optimization (use saved config):
     python scripts/baseline_xgboost.py \
       --parquet-path data/raw/mar_5_may_12.parquet \
-         [--skip-optimization]
+      --skip-optimization
+
+2. [~2 hours] Full Optimization (train from scratch):
+    python scripts/baseline_xgboost.py \
+      --parquet-path data/raw/mar_5_may_12.parquet
 """
 
 import sys
