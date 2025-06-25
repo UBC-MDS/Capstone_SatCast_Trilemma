@@ -19,7 +19,6 @@ Called after DeepAR data preparation to build model-ready DataLoaders:
 
 import os
 from pytorch_forecasting import TimeSeriesDataSet
-from torch.utils.data import DataLoader
 from pytorch_forecasting.data import GroupNormalizer
 
 def deepar_create_dataloaders(df_train, df_valid, enc_len, pred_steps, batch_size):
