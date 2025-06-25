@@ -38,14 +38,12 @@ Whether you're exploring volatility, comparing time series models, or forecastin
   ``` bash
   git clone git@github.com:UBC-MDS/Capstone_SatCast_Trilemma.git
   ```
-
 2. Create and activate the virtual environment
 
   ``` bash
   conda env create -f environment.yml
   conda activate satcast
   ```
-
 3. (Optional) If Jupyter can't find your environment kernel, you may need to manually add it by running the following command in the terminal:
 
   ```bash
