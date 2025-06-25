@@ -31,7 +31,6 @@ project_root = current_file.parents[2]
 src_path = project_root / "scripts" /"xgboost"
 sys.path.insert(0, str(src_path))
 from xgboost_utils import data_split
-import numpy as np
 
 
 
