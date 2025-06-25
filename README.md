@@ -24,7 +24,7 @@ Whether you're exploring volatility, comparing time series models, or forecastin
 | Folder / File          | Purpose                                                                 |
 |------------------------|-------------------------------------------------------------------------|
 | `analysis/`            | Jupyter notebooks for overview, EDA, and walkthroughs of each model.   |
-| `scripts/`             | Main training/evaluation scripts for each model, with helper functionsorganized in model-specific subfolders. |
+| `scripts/`             | Main training/evaluation scripts for each model, with helper functions organized in model-specific subfolders. |
 | `data/`                | Contains raw data, processed data, and script for data extraction from API. |
 | `results/`             | Stores generated plots, tables, and figures generated from scrpts.    |
 | `reports/`             | Project proposal and final report in Quarto format (rendered as PDF).     |
@@ -68,10 +68,10 @@ If you're new to this project, we recommend starting with one of the following:
 
 2. **[Comprehensive Overview Notebook](analysis/comprehensive_overview.ipynb)** — An all-in-one Jupyter notebook that showcase the most important findings of the project.
 
-  To open the notebook, you can use Jupyter Lab or Jupyter Notebook. Type the following command in terminal and then select the notebook from the Jupyter interface to ensure all images and links are rendered properly.
+  To open the notebook, you can use Jupyter Lab or Jupyter Notebook. Type the following command in terminal and then navigate to `analysis/comprehensive_overview.ipynb` from the Jupyter interface to ensure all images and links are rendered properly.
 
   ```bash
-  jupyter lab analysis
+  jupyter lab
   ```
 
 ## 🛠️ Further Navigation and Exploration
