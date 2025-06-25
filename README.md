@@ -59,19 +59,19 @@ If you're new to this project, we recommend starting with one of the following:
 
 1. **[Final Report (PDF)](reports/final/final_report.pdf)** — A complete summary of our goals, methodology, EDA, model results, and insights.
 
-To regenerate the report, you need to have [Quarto](https://quarto.org/docs/get-started/) installed. Then run the following command in the root of the repository:
+  To regenerate the report, you need to have [Quarto](https://quarto.org/docs/get-started/) installed. Then run the following command in the root of the repository:
 
-```bash
-quarto render reports/final/final_report.qmd
-```
+  ```bash
+  quarto render reports/final/final_report.qmd
+  ```
 
 2. **[Overview Notebook](analysis/comprehensive_overview.ipynb)** — An all-in-one Jupyter notebook that showcase the most important findings of the project.
 
-To open the notebook, you can use Jupyter Lab or Jupyter Notebook. Run the following command in the root of the repository and then select the notebook from the Jupyter interface to ensure all images and links are rendered properly.
+  To open the notebook, you can use Jupyter Lab or Jupyter Notebook. Run the following command in the root of the repository and then select the notebook from the Jupyter interface to ensure all images and links are rendered properly.
 
-```bash
-jupyterlab
-```
+  ```bash
+  jupyterlab
+  ```
 
 ## 🛠️ Further Navigation and Exploration
 
