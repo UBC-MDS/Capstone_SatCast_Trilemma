@@ -23,7 +23,7 @@ Whether you're exploring volatility, comparing time series models, or forecastin
 | Folder / File          | Purpose                                                                 |
 |------------------------|-------------------------------------------------------------------------|
 | `analysis/`            | Jupyter notebooks for overview, EDA, and walkthroughs of each model.   |
-| `scripts/`             | Main training/evaluation scripts for each model, with helper functions organized in model-specific subfolders. |
+| `scripts/`             | Main training/evaluation scripts for each model, with helper functionsorganized in model-specific subfolders. |
 | `data/`                | Contains raw data, processed data, and script for data extraction from API. |
 | `results/`             | Stores generated plots, tables, and figures generated from scrpts.    |
 | `reports/`             | Project proposal and final report in Quarto format (rendered as PDF).     |
@@ -78,7 +78,7 @@ This project is designed to be modular and user-friendly, allowing you to explor
 
 ### First Things First
 
-⚠️ Due to Github's file size limits, we cannot include the pretrained SARIMA model file (`sarima_final_model.pkl`) in the repository. Instead, you can generate it locally by training the model with the following command:
+⚠️ Due to Github's file size limits, we **cannot** include the pretrained SARIMA model file (`sarima_final_model.pkl`) in the repository. Instead, you can generate it locally by training the model with the following command:
 
 ```bash
 python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
@@ -87,7 +87,11 @@ python scripts/baseline_sarima.py --parquet-path data/raw/mar_5_may_12.parquet
 
 ### Exploratory Users
 
-For those who prefer to engage with the project using minimal code while still gaining a comprehensive understanding of the data, models, and results, we recommend reviewing the notebooks in the `analysis/` folder. These are designed to emphasize reasoning, interpretation, and model logic over implementation details.
+For those who prefer to engage with the project using minimal code while still gaining a comprehensive understanding of the data, models, and results, we recommend reviewing the notebooks in the `analysis/` folder. 
+
+These are designed to emphasize reasoning, interpretation, and model logic over implementation details.
+
+Please use the same command (`jupyterlab`) in the terminal to open the Jupyter Lab interface and the following table to navigate through the notebooks:
 
 | Item   | Notebook                                   | Reading Time                  |
 | ----------| -------------------------------------------------| -------------------------------|
@@ -133,17 +137,17 @@ If you want to customize hyperparameters or train from scratch, you can run each
 
 - Training time is estimated based on a compute setup of `Intel i9-13980HX`, `RTX 4090 labtop GPU`, `Windows 11 Pro`. Actual time may vary depending on your hardware and configuration.
 
-- Given the different configurations and arguments of each model, command-line options may differ depending on the model you are running. Therefore, please check the top of each script file for detailed usage instructions.
+- Given the different configurations and arguments of each model, command-line options may differ depending on the model you are running. Therefore, **please refer to the top of each script file for detailed usage instructions**.
 
-- For models that require hyperparameter tuning (HWES, XGBoost, Prophet), sample data `data/raw/sample_8_days.parquet` cannot be used as it is too small to capture the necessary patterns.
+- For models that require hyperparameter tuning (HWES, XGBoost, Prophet), sample data `data/raw/sample_8_days.parquet` **cannot** be used as it is too small to capture the necessary patterns.
 
 - For models that require long time to train, we have built in mechanisms to save time:
-  - For **XGBoost** and **Prophet**, you can use the `--skip-optimization` flag to load pre-tuned hyperparameters. This will save time by skipping the optimization step and directly using the best hyperparameters saved during our best model training.
-  - For **DeepAR** and **TFT**, we provided a sample dataset (`data/raw/sample_8_days.parquet`) that allows you to quickly test the model without waiting for long training times with argument `--parquet-path data/raw/sample_8_days.parquet`. However, for full training, you should use the larger dataset (`data/raw/mar_5_may_12.parquet`).
+  - For **XGBoost** and **Prophet**, you can use the **`--skip-optimization`** flag to load pre-tuned hyperparameters. This will save time by skipping the optimization step and directly using the best hyperparameters saved during our best model training.
+  - For **DeepAR** and **TFT**, we provided a sample dataset (`data/raw/sample_8_days.parquet`) that allows you to quickly test the model without waiting for long training times. However, for full training, you should use the larger dataset (`data/raw/mar_5_may_12.parquet`). This is controlled by the **`--parquet-path`** argument in the command.
   - Pay attention to the specific requirements and dependencies for each model, as outlined in their respective script files.
 - If you have played around with the scripts, which may have modified files in `results/models` folder, and want to reset to default:
-  -**please copy the official model files from `saved_models/` back into `results/models/`**
-  - Re-run the analysis script to ensure that all results are up-to-date
+  - **please copy the official model files from `saved_models/` back into `results/models/`**
+  - Re-run the analysis script (`scripts/analysis.py`) to ensure that all results are up-to-date
   - (Optional) Re-render the final report to reflect actual project findings
 
 
@@ -151,11 +155,11 @@ If you want to customize hyperparameters or train from scratch, you can run each
 
 If you want to customize the training process or experiment with different configurations, you can modify the respective script files in the `scripts/` directory. Each model has its own script, and you can adjust preprocessing, training, and prediction as needed. For each model, you can find:
 
-- A main script (e.g., `baseline_sarima.py`) to run from the command line.
+- A main script (e.g., `baseline_sarima.py`) in `scripts` folder that can be run from the command line.
 - A subfolder (e.g., `scripts/sarima/`) with modularized helper functions for loading, preprocessing, training, forecasting, and evaluation.
 - Users typically run the main script; helper files are imported and not meant to be executed directly.
 
-### (Optional) Other Available Scripts
+### (Optional) Other Scripts
 
 #### 1. Unit Tests for Utility Functions
 
@@ -183,7 +187,7 @@ These scripts are designed for deeper insight and are **not required** to reprod
 
 - Runtime estimates are based on a standard compute setup and may vary based on your hardware.
 - Please refer to the top of the specific script files for detailed usage instructions and available modes.
-- The available arguments for each script include `--parquet-path` to specify the data file, and `--mode` to select the time-based windowing strategy (e.g., expanding, reverse expanding, sliding).
+- The available arguments for each script include **`--parquet-path`** to specify the data file, and **`--mode`** to select the time-based windowing strategy (e.g., expanding, reverse expanding, sliding).
 - These experiments can only be excuted on the full dataset (`data/raw/mar_5_may_12.parquet`) and are **not** compatible with the sample dataset (`data/raw/sample_8_days.parquet`).
 
 ## 🖇 Contributing
