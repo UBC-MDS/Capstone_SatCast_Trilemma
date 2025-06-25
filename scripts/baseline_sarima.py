@@ -21,7 +21,6 @@ Usage:
 import os
 import sys
 import pickle
-import pandas as pd
 import numpy as np
 import warnings
 import click
