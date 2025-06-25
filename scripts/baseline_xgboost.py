@@ -71,7 +71,7 @@ def main(parquet_path, skip_optimization):
 
     # Step 3: Train model (with or without tuning)
     print("Training model (skip optimization =", skip_optimization, ")...")
-    result_dir = project_root / "results" / "models"/ "temp_models"
+    result_dir = project_root / "results" / "models"
     result_dir.mkdir(parents=True, exist_ok=True)
     best_model, best_params, best_score = build_random_search_cv(
       X_train, y_train,

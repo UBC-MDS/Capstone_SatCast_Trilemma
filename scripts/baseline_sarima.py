@@ -49,7 +49,7 @@ project_root = current_file.parents[1]
 # Directories
 DATA_DIR = project_root / "data" / "processed" / "sarima"
 RESULTS_DIR = project_root / "results"
-MODEL_FROM = RESULTS_DIR / "models"/ "temp_models" / "sarima_final_model.pkl"
+MODEL_FROM = RESULTS_DIR / "models"/ "sarima_final_model.pkl"
 
 
 @click.command()
@@ -86,7 +86,7 @@ def main(parquet_path):
     forecaster.fit(y_train_log)
 
     # Step 4: Save model
-    (RESULTS_DIR / 'models'/ "temp_models").mkdir(parents=True, exist_ok=True)
+    (RESULTS_DIR / 'models').mkdir(parents=True, exist_ok=True)
     with open(MODEL_FROM, 'wb') as f:
         pickle.dump(forecaster, f)
 

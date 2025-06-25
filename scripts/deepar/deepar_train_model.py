@@ -48,7 +48,7 @@ def train_deepar_model(training, train_dl, val_dl):
         DataLoader for validation.
     """
     project_root = Path(__file__).resolve().parents[2]
-    model_save_dir = project_root / "results" / "models" / "temp_models"
+    model_save_dir = project_root / "results" / "models"
 
     # Step 1: Set up initial trainer for tuning
     tuner_trainer = Trainer(accelerator="cpu", devices=1, gradient_clip_val=0.1)
