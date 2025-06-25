@@ -35,23 +35,22 @@ Whether you're exploring volatility, comparing time series models, or forecastin
 ## 💻 Installation & Setup
 
 1. Clone the repository
-
-``` bash
-git clone git@github.com:UBC-MDS/Capstone_SatCast_Trilemma.git
-```
+  ``` bash
+  git clone git@github.com:UBC-MDS/Capstone_SatCast_Trilemma.git
+  ```
 
 2. Create and activate the virtual environment
 
-``` bash
-conda env create -f environment.yml
-conda activate satcast
-```
+  ``` bash
+  conda env create -f environment.yml
+  conda activate satcast
+  ```
 
 3. (Optional) If Jupyter can't find your environment kernel, you may need to manually add it by running the following command in the terminal:
 
-```bash
-python -m ipykernel install --user --name=satcast
-```
+  ```bash
+  python -m ipykernel install --user --name=satcast
+  ```
 
 ## 🔰 Getting Started
 
