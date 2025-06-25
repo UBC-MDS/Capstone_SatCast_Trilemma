@@ -71,7 +71,7 @@ If you're new to this project, we recommend starting with one of the following:
   To open the notebook, you can use Jupyter Lab or Jupyter Notebook. Type the following command in terminal and then select the notebook from the Jupyter interface to ensure all images and links are rendered properly.
 
   ```bash
-  jupyter lab
+  jupyter lab analysis
   ```
 
 ## 🛠️ Further Navigation and Exploration
@@ -94,7 +94,7 @@ For those who prefer to engage with the project using minimal code while still g
 
 These are designed to emphasize reasoning, interpretation, and model logic over implementation details.
 
-Please use the same command (`jupyter lab`) in the terminal to open the Jupyter Lab interface and the following table to navigate through the notebooks:
+Please use the same command (`jupyter lab analysis`) in the terminal to open the Jupyter Lab interface and the following table to navigate through the notebooks:
 
 | Item   | Notebook                                   | Reading Time                  |
 | ----------| -------------------------------------------------| -------------------------------|
@@ -142,31 +142,31 @@ If you want to customize hyperparameters or train from scratch, you can run each
 
 - Given the different configurations and arguments of each model, command-line options may differ depending on the model you are running. Therefore, **please refer to the top of each script file for detailed usage instructions**.
 
-- For models that require hyperparameter tuning (HWES, XGBoost, Prophet), sample data `data/raw/sample_8_days.parquet` **cannot** be used as it is too small to capture the necessary patterns.
+- For models that require hyperparameter tuning (HWES, XGBoost, Prophet), sample data [`data/raw/sample_8_days.parquet`](data/raw/sample_8_days.parquet) **cannot** be used as it is too small to capture the necessary patterns.
 
 - For models that require long time to train, we have built in mechanisms to save time:
   - For **XGBoost** and **Prophet**, you can use the **`--skip-optimization`** flag to load pre-tuned hyperparameters. This will save time by skipping the optimization step and directly using the best hyperparameters saved during our best model training.
-  - For **DeepAR** and **TFT**, we provided a sample dataset (`data/raw/sample_8_days.parquet`) that allows you to quickly test the model without waiting for long training times. However, for full training, you should use the larger dataset (`data/raw/mar_5_may_12.parquet`). This is controlled by the **`--parquet-path`** argument in the command.
+  - For **DeepAR** and **TFT**, we provided a sample dataset ([`data/raw/sample_8_days.parquet`](data/raw/sample_8_days.parquet)) that allows you to quickly test the model without waiting for long training times. However, for full training, you should use the larger dataset ([`data/raw/mar_5_may_12.parquet`](data/raw/mar_5_may_12.parquet)). This is controlled by the **`--parquet-path`** argument in the command.
   - Pay attention to the specific requirements and dependencies for each model, as outlined in their respective script files.
-- If you have played around with the scripts, which may have modified files in `results/models` folder, and want to reset to default:
-  - **please copy the official model files from `saved_models/` back into `results/models/`**
-  - Re-run the analysis script (`scripts/analysis.py`) to ensure that all results are up-to-date
+- If you have played around with the scripts, which may have modified files in [`results/models`](results/models) folder, and want to reset to default:
+  - **please copy the official model files from [`results/saved_models/`](results/saved_models/) back into [`results/models/`](results/models/)**
+  - Re-run the analysis script ([`scripts/analysis.py`](scripts/analysis.py)) to ensure that all results are up-to-date
   - (Optional) Re-render the final report to reflect actual project findings
 
 
 #### 3. Extensions to Pipelines
 
-If you want to customize the training process or experiment with different configurations, you can modify the respective script files in the `scripts/` directory. Each model has its own script, and you can adjust preprocessing, training, and prediction as needed. For each model, you can find:
+If you want to customize the training process or experiment with different configurations, you can modify the respective script files in the [`scripts/`](scripts/) directory. Each model has its own script, and you can adjust preprocessing, training, and prediction as needed. For each model, you can find:
 
-- A main script (e.g., `baseline_sarima.py`) in `scripts` folder that can be run from the command line.
-- A subfolder (e.g., `scripts/sarima/`) with modularized helper functions for loading, preprocessing, training, forecasting, and evaluation.
+- A main script (e.g., [`baseline_sarima.py`](scripts/baseline_sarima.py)) in [`scripts`](scripts/) folder that can be run from the command line.
+- A subfolder (e.g., [`scripts/sarima/`](scripts/sarima/)) with modularized helper functions for loading, preprocessing, training, forecasting, and evaluation.
 - Users typically run the main script; helper files are imported and not meant to be executed directly.
 
 ### (Optional) Other Scripts
 
 #### 1. Unit Tests for Utility Functions
 
-We have included unit tests for the utility functions used by multiple models in the project. These tests can be found in the `tests/` directory and are designed to ensure the correctness of the utility functions.
+We have included unit tests for the utility functions used by multiple models in the project. These tests can be found in the [`tests/`](tests/) directory and are designed to ensure the correctness of the utility functions.
 
 To run the function tests, enter the following in the root of the repository: 
 
@@ -176,7 +176,7 @@ pytest
 
 #### 2. Window-Based Evaluation
 
-We have provided additional scripts for evaluating model performance across different time-based windows (e.g., expanding, reverse expanding, sliding) for HWES, SARIMA, and XGBoost under the `scripts/experimentation/` directory.
+We have provided additional scripts for evaluating model performance across different time-based windows (e.g., expanding, reverse expanding, sliding) for HWES, SARIMA, and XGBoost under the [`scripts/experimentation/`](scripts/experimentation/) directory.
 
 These scripts are designed for deeper insight and are **not required** to reproduce the main results. They can be run independently to explore how models perform under different time-based conditions.
 
@@ -191,7 +191,7 @@ These scripts are designed for deeper insight and are **not required** to reprod
 - Runtime estimates are based on a standard compute setup and may vary based on your hardware.
 - Please refer to the top of the specific script files for detailed usage instructions and available modes.
 - The available arguments for each script include **`--parquet-path`** to specify the data file, and **`--mode`** to select the time-based windowing strategy (e.g., expanding, reverse expanding, sliding).
-- These experiments can only be excuted on the full dataset (`data/raw/mar_5_may_12.parquet`) and are **not** compatible with the sample dataset (`data/raw/sample_8_days.parquet`).
+- These experiments can only be excuted on the full dataset ([`data/raw/mar_5_may_12.parquet`](data/raw/mar_5_may_12.parquet)) and are **not** compatible with the sample dataset ([`data/raw/sample_8_days.parquet`](data/raw/sample_8_days.parquet)).
 
 ## 🖇 Contributing
 
