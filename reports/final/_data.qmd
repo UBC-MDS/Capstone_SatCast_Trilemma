@@ -1,8 +1,8 @@
-This section outlines the core data and techniques used in our analysis, including data overview, preprocessing, model development, hyperparameter optimization, and evaluation strategies that guided our approach to fee forecasting.
+This section outlines the core data and methods used in our analysis, including data overview, preprocessing, model development, hyperparameter tuning, and evaluation strategies for fee forecasting.
 
 ## Dataset Overview
 
-We worked with a time series dataset constructed from 5-minute snapshots of the Bitcoin mempool ([mempool.space](https://mempool.space/)), captured between March 5 and May 12 2025 (@fig-mempool-gif). The mempool is a real-time queue of unconfirmed transactions waiting to be included in a block, which serves as proof that the transactions have been validated and recorded on the blockchain. Each snapshot captures the network state at a given point in time and they collectively form a time series that reflects both blockchain-level activity and evolving market demand conditions—capturing the key drivers of transaction fee dynamics.
+We worked with a time series dataset constructed from 5-minute snapshots of the Bitcoin mempool ([mempool.space](https://mempool.space/)), collected between March 5 and May 12 2025 (@fig-mempool-gif). The mempool is a real-time queue of unconfirmed transactions that wait to be included in a block, which proves that the network has validated and recorded them on the blockchain. Each snapshot captures the network state at a specific moment, forming a time series that reflects both blockchain activity and shifting market demand—the key drivers of transaction fee dynamics.
 
 ```{python}
 #| label: fig-mempool-gif
@@ -24,7 +24,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-Our primary target variable, the recommended Fastest Fee (in sats/vByte), reflects the rate needed for near-immediate transaction confirmation and serves as the core signal for all modeling. The provided time series dataset includes 61 features spanning mempool activity, transaction volume, block statistics, mining difficulty, BTC price, and other relevant indicators. For clarity, we grouped these into four high-level categories (see @tbl-features), each capturing a distinct aspect of network or market behavior affecting fee dynamics.
+Our primary target variable, the recommended *fastestFee* (in sats/vByte), represents the rate required for near-immediate confirmation and serves as the core signal for modeling. The dataset includes 61 features covering mempool activity, transaction volume, block statistics, mining difficulty, BTC price, and related indicators. For clarity, we grouped these into four categories (see @tbl-features), each representing a distinct aspect of network or market behavior that influences fee dynamics.
 
 ::: {.table #tbl-features}
 

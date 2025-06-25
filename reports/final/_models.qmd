@@ -1,6 +1,6 @@
 ## Models   
 
-To understand and anticipate Bitcoin transaction fee rate dynamics, we implemented a progressive series of models. Each model was chosen to overcome specific limitations identified in its predecessor, forming an iterative pipeline that is summarized in @fig-models. Below, we describe each model, its contributions, and where it ultimately fell short.
+As part of our modeling strategy, we implemented a series of progressively refined models. Each was selected to address limitations of its predecessor, forming an iterative pipeline summarized in @fig-models. Below, we describe each model, outline its contributions and remaining challenges.
 
 ![Model progression from simple baselines to deep learning, each addressing prior gaps.](../../img/model_progression.png){#fig-models width=100%}
 ```{python}
@@ -14,19 +14,21 @@ num2_3 = df["mempool_fee_histogram_bin_2_3"].values.sum()
 ```
 ### Dummy Model (Global Median)
 
-We began with a dummy model that predicted a constant value: the global median of the fee rate series. As shown in the distribution of fastest fee rates (@fig-fastestfee-distribution), roughly `{python} f"{(num1_2/total*100):.1f}"`% of all transactions fell into the 1–2 sats/vB bin; including 2–3 sats/vB brought the cumulative share above `{python} f"{((num1_2+num2_3)/total*100):.1f}"`%. It made the median a surprisingly strong benchmark. While this model ignored all temporal and contextual variation, it provided a reference point to quantify the inherent difficulty of the forecasting task. No training or hyperparameter tuning was required for this static approach.
+We began with a dummy model that predicted a constant value: the global median of the fee rate series. As shown in the distribution of fastest fee rates (@fig-fastestfee-distribution), approximately `{python} f"{(num1_2/total*100):.1f}"`% of all transactions fell into the 1–2 sats/vB bin, and including 2–3 sats/vB raised the cumulative share above `{python} f"{((num1_2+num2_3)/total*100):.1f}"`%. This made the median a surprisingly strong benchmark. Although the model ignored all temporal and contextual information, it served as a useful reference for evaluating task difficulty. No training or tuning was required.
 
 ### Holt-Winters Exponential Smoothing (HWES)
 
-We then implemented Holt-Winters Exponential Smoothing given clear seasonality and trend observed in our decomposition analysis (@fig-decomp). This method supports both additive and multiplicative structures, as well as optional damped trends. We performed a grid search to identify the optimal configuration of these components. However, residual autocorrelation observed in ACF and PACF plots (@fig-acf) indicated that HWES failed to capture deeper temporal dependencies, limiting its forecasting accuracy.
+We then implemented HWES to model the clear trend and seasonality revealed by our decomposition analysis (@fig-decomp). HWES supports both additive and multiplicative structures, along with optional damped trends. We used grid search to optimize these components.
 
 ![FastestFee exhibits multiplicative trend and seasonality structure.](../../results/plots/decomposition_multiplicative.png){#fig-decomp width=100%}
 
-### SARIMA
-
-To address the temporal dependencies missed by HWES, we introduced SARIMA that combines autoregressive, differencing, and moving average components to model time-dependent and seasonal patterns. Drawing on exploratory analysis, including strong autocorrelation at short lags, partial autocorrelation structure, and daily seasonality, we manually selected parameters to reflect short-term dynamics and recurring cycles in the fee series. However, SARIMA does not support exogenous variables, which limited our ability to incorporate external factors such as transaction volume or mempool congestion.
+However, autocorrelation patterns observed in ACF and PACF plots (@fig-acf) indicated that HWES failed to capture deeper temporal dependencies, limiting its forecasting accuracy.
 
 ![Residual autocorrelation highlights unmodeled temporal dependencies.](../../results/plots/acf_pacf_plot.png){#fig-acf width=100%}
+
+### SARIMA
+
+To address the temporal dependencies missed by HWES, we introduced SARIMA that combines autoregressive, differencing, and moving average components to model time-dependent and seasonal patterns. Based on exploratory analysis—strong short-lag autocorrelation, partial autocorrelation structure, and daily seasonality—we manually selected parameters to reflect short-term dynamics and recurring cycles. However, SARIMA lacks support for exogenous variables, limiting our ability to incorporate other signals such as transaction volume or mempool congestion.
 
 ### XGBoost
 ```{python}
@@ -69,24 +71,26 @@ for i in corr_features:
 spearman_corr = spearman_corr.astype(float).rename(index=label_map, columns=label_map)
 
 ```
-We next adopted XGBoost to leverage a broader set of concurrent features. As shown in the correlation heatmap (@fig-spearman-heat), variables such as mempool total fee(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Mempool Total Fee"],2)):.2f}"""`), mempool count(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Mempool Count"],2)):.2f}"""`), and projected block fees(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Next Block Total Fee"],2)):.2f}"""`) were strongly correlated with the fastest fee rate. XGBoost, a gradient-boosted tree model, enabled us to capture non-linear interactions among these features. It expanded our modeling capacity beyond univariate structures and allowed fine-grained feature importance analysis. We tuned the model using randomized search over tree depth, learning rate, and regularization terms.
+
+We next adopted XGBoost to leverage a broader set of concurrent features. As shown in the correlation heatmap (@fig-spearman-heat), variables such as *mempool total fee*(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Mempool Total Fee"],2)):.2f}"""`), *mempool count*(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Mempool Count"],2)):.2f}"""`), and *projected block fees*(`{python} f"""{(round(spearman_corr.at["Fastest Fee", "Next Block Total Fee"],2)):.2f}"""`) were strongly correlated with the *fastestFee*. XGBoost, a gradient-boosted tree model, captured non-linear interactions among features and extended our modeling beyond univariate structures. It also enabled detailed feature importance analysis. We tuned it using randomized search over tree depth, learning rate, and regularization parameters.
 
 ![Strong correlations observed between target fee rate and key explanatory variables.](../../results/plots/spearman_correlation.png){#fig-spearman-heat width=100%}
 
 ### Prophet
 
-Then we moved to advanced models. First we extended the HWES baseline with Prophet to better handle abrupt changes in fee trends. While both methods model trend and seasonality, Prophet improves flexibility by incorporating automatic changepoint detection and user-defined seasonal effects. We configured Prophet with hourly, daily, and weekly seasonalities to reflect recurring fee cycles, and tuned changepoint sensitivity to capture sudden demand shifts such as batch fee spikes or market congestion.
+Then we moved to advanced models. First we extended the HWES baseline using Prophet to better handle abrupt changes in fee trends. Like HWES, Prophet models trend and seasonality, but adds flexibility through automatic changepoint detection and customizable seasonal effects. We configured hourly, daily, and weekly seasonalities to reflect recurring fee cycles and tuned changepoint sensitivity to capture sudden shifts, such as batch fee spikes or market congestion.
 
 ### DeepAR
 
-Building on the autoregressive structure of SARIMA and the feature integration strength of XGBoost, we explored DeepAR—an LSTM-based model developed by Amazon for probabilistic sequence forecasting. Unlike traditional models, DeepAR learns global patterns across sequences and captures non-linear temporal dependencies, while also allowing the inclusion of time-varying and static covariates. We used PyTorch Lightning’s Trainer to manage training configuration and Tuner to automatically search for optimal hyperparameters, including learning rate and hidden units. Early stopping was applied to prevent overfitting and stabilize convergence. This setup allowed us to model sequential fee dynamics more expressively and robustly.
+Building on SARIMA’s autoregressive structure and XGBoost’s feature integration, we explored DeepAR—an LSTM-based model designed for probabilistic sequence forecasting. DeepAR captures non-linear temporal dependencies and learns global patterns across sequences, while supporting both time-varying and static covariates. We used PyTorch Lightning’s *Trainer* for training management and *Tuner* for hyperparameter optimization, including learning rate and hidden units. Early stopping was applied to prevent overfitting and ensure stable convergence. This setup enabled more expressive and robust modeling of sequential fee dynamics.
 
 ### Temporal Fusion Transformer (TFT)
 
-Finally, we introduced the Temporal Fusion Transformer (TFT), the most advanced model in our pipeline. TFT builds on DeepAR’s ability to incorporate time-varying covariates and static metadata, while advancing the architecture with explicit variable selection, multi-horizon attention, and interpretable output mechanisms. This allows TFT to capture richer dependencies and highlight feature importance in ways DeepAR cannot. We carefully optimized the TFT architecture, including variable selection layers, gated residual networks, and learning rate schedules. This model allowed us to capture complex interactions and feature importances while generating multi-horizon probabilistic forecasts.
+Finally, we introduced TFT, the most advanced model in our pipeline. TFT extends DeepAR by incorporating explicit variable selection, multi-horizon attention, and interpretable outputs, while preserving support for time-varying covariates and static metadata. These enhancements allow it to capture richer dependencies and reveal feature importance more effectively. We carefully optimized the architecture by tuning variable selection layers, gated residual networks, and learning rate schedules. TFT enabled us to model complex interactions and produce multi-horizon probabilistic forecasts with greater interpretability.
+
 
 ### Considered Alternatives and Limitations
 
 Our efforts extended beyond conventional forecasting once it became clear that traditional models failed to capture spike behavior. We reframed the problem as a classification task to predict spike occurrences within a time window, but the rarity and unpredictability of these events made the approach unreliable. We also explored methods like Distributed Lag Non-Linear Models (DLNM) and Fourier transforms, but their assumptions did not fit the data, as fee spikes lacked consistent leading signals and showed no periodic structure.
 
-A major limitation in our modeling was the reliance on lagged exogenous features, which constrained the model’s ability to anticipate sudden fee spikes. To address this, we considered a two-stage forecasting setup in which key indicators would be predicted first and then fed into the fee model to enable more forward-looking forecasts. However, given the lack of reliable leading signals, the partner’s emphasis on fully utilizing existing features, and the risk of compounding errors in multi-stage pipelines, we chose to prioritize model depth over input expansion within the project’s limited timeframe.
+A major limitation in our modeling was the reliance on lagged exogenous features, which constrained the model’s ability to anticipate sudden fee spikes. To address this, we considered a two-stage pipeline: first forecasting key indicators, then feeding them into the fee model. However, due to the absence of reliable leading signals, the partner’s emphasis on fully leveraging existing features, and the risk of compounding errors in multi-stage setups, we prioritized model depth over input expansion within the project’s limited timeframe.

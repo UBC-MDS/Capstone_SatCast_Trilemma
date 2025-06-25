@@ -1,5 +1,3 @@
-## Terminology
-
 <!--\begin{table}-->
 \renewcommand{\arraystretch}{1.5}
 \begin{longtable}{p{3cm}p{12cm}}

@@ -1,7 +1,7 @@
 ---
 title: "Final Report: Forecasting Bitcoin Transaction Fees"
 subtitle: "Partner: Trilemma Foundation"
-author: "Jenny (Yuci) Zhang, Tengwei Wang, Ximin Xu, Yajing Liu"
+author: "Yuci (Jenny) Zhang, Ximin Xu, Yajing Liu, Tengwei Wang"
 date: "June 25, 2025"
 jupyter: python3
 format:
@@ -11,6 +11,7 @@ format:
         fig-pos: "H"
         tbl-pos: "H"
 number-sections: true
+appendix: true
 bibliography: references.bib
 execute:
   echo: false
@@ -29,16 +30,36 @@ with open("../../results/tables/all_forecasts.pkl", "rb") as f:
     forecasts = pickle.load(f)
 
 metrics_df = pd.read_csv("../../results/tables/all_model_metrics.csv", index_col=0)
+
+customloss_baselines = metrics_df.loc["custom_loss", ["HWES", "SARIMA", "Prophet", "XGBoost"]]
+custom_min_baseline = customloss_baselines.min()
+custom_max_baseline = customloss_baselines.max()
+custom_loss_tft = metrics_df.loc["custom_loss", "TFT"]
+custom_loss_improvement_pct = 100 * (custom_min_baseline - custom_loss_tft) / custom_min_baseline
+
+rmse_tft = metrics_df.loc["rmse", "TFT"]
+rmse_baselines = metrics_df.loc["rmse", ["HWES", "SARIMA", "Prophet", "XGBoost"]]
+rmse_min_baseline = rmse_baselines.min()
+rmse_max_baseline = rmse_baselines.max()
+rmse_improvement_pct = 100 * (rmse_min_baseline - rmse_tft) / rmse_min_baseline
+
+mape_tft = metrics_df.loc["mape", "TFT"]
+mape_baselines = metrics_df.loc["mape", ["HWES", "SARIMA", "Prophet", "XGBoost"]]
+mape_min_baseline = mape_baselines.min()
+mape_max_baseline = mape_baselines.max()
+mape_improvement_pct = 100 * (mape_min_baseline - mape_tft) / mape_min_baseline
+
+min_improvement_pct = min(custom_loss_improvement_pct, rmse_improvement_pct, mape_improvement_pct)
+max_improvement_pct = max(custom_loss_improvement_pct, rmse_improvement_pct, mape_improvement_pct)
 ```
 
 \newpage
 # Executive Summary  
 
-[^note]: Refer to Appendix (@sec-appendix) for formal definitions of Bitcoin-related terms.
-
 {{< include _summary.qmd >}}
 
 # Introduction
+[^note]: Refer to @appendix for formal definitions of Bitcoin-related terms.
 
 {{< include _background.qmd >}}
 {{< include _objective.qmd >}}
@@ -59,8 +80,8 @@ metrics_df = pd.read_csv("../../results/tables/all_model_metrics.csv", index_col
 {{< include _conclusion.qmd >}}
 
 \newpage
-# Appendix {#sec-appendix}
+# Appendix {.appendix #appendix}
 
-{{< include _appendix.qmd >}}
+{{< include appendix.qmd >}}
 
 # References
