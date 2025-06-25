@@ -96,8 +96,10 @@ If you want to get a summary of all models, results, and visualizations, start b
 **Run:**
 
 ```bash
-jupyter lab analysis/comprehensive_overview.ipynb
+jupyterlab
 ```
+
+After launching JupyterLab, navigate to `analysis/comprehensive_overview.ipynb` to explore the full project summary. (Note: This ensures all images render correctly, since they use relative paths.)
 
 This notebook:
 
@@ -125,6 +127,17 @@ This will:
 - Load and preprocess the dataset
 - Use stored models (HWES, SARIMA, XGBoost, Prophet, DeepAR, TFT) to generate forecasts
 - Save forecasts and metrics to `results/models/`, `results/tables/`, and `results/plots/` and no model training is triggered.
+
+> ⚠️ **Note on Model Consistency**
+
+To ensure `analysis.py` generates the intended final forecasts, make sure the models in `results/models/` match the officially trained versions stored in `results/saved_models/`.
+
+If you've run other scripts (e.g., for tuning or ablation), the files in `results/models/` may have been overwritten.  
+In that case, **please copy the official model files from `saved_models/` back into `results/models/`** before running:
+
+```bash
+python scripts/analysis.py
+```
 
 ### Full Model Execution (Custom Training)
 
