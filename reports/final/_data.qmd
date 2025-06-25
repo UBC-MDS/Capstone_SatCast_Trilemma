@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 gif_path = Path().resolve().parent.parent / "img" / "mempool.gif"
 img = Image.open(gif_path)
 
-plt.figure(figsize=(8, 5))
+plt.figure(figsize=(6, 4))
 plt.imshow(img)
 plt.axis("off")
 plt.tight_layout()

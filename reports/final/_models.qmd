@@ -3,6 +3,7 @@
 As part of our modeling strategy, we implemented a series of progressively refined models. Each was selected to address limitations of its predecessor, forming an iterative pipeline summarized in @fig-models. Below, we describe each model, outline its contributions and remaining challenges.
 
 ![Model progression from simple baselines to deep learning, each addressing prior gaps.](../../img/model_progression.png){#fig-models width=100%}
+
 ```{python}
 import pandas as pd
 df = pd.read_parquet('../../data/raw/mar_5_may_12.parquet')
@@ -12,6 +13,7 @@ num1_2 = df["mempool_fee_histogram_bin_1_2"].values.sum()
 num2_3 = df["mempool_fee_histogram_bin_2_3"].values.sum()
 
 ```
+
 ### Dummy Model (Global Median)
 
 We began with a dummy model that predicted a constant value: the global median of the fee rate series. As shown in the distribution of fastest fee rates (@fig-fastestfee-distribution), approximately `{python} f"{(num1_2/total*100):.1f}"`% of all transactions fell into the 1–2 sats/vB bin, and including 2–3 sats/vB raised the cumulative share above `{python} f"{((num1_2+num2_3)/total*100):.1f}"`%. This made the median a surprisingly strong benchmark. Although the model ignored all temporal and contextual information, it served as a useful reference for evaluating task difficulty. No training or tuning was required.
